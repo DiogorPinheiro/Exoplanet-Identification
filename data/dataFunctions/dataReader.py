@@ -1,6 +1,7 @@
 from astropy.io import fits
 import numpy as np
 import os
+from pathlib import Path
 
 LONG_QUARTER_PREFIXES = {'0': ['2009131105131'],
                          '1': ['2009166043257'],
@@ -24,22 +25,25 @@ LONG_QUARTER_PREFIXES = {'0': ['2009131105131'],
 
 def filenameWarehouse(kepid, dir):
     '''
-    Get all filenames (their absolute path) into a list in order to be read 
+    Get all filenames (their absolute path) into a list  
 
     input : kepid(ID of the target star), dir (directory of the file)
-    output : list of filenames
+    output : list of paths for every file contained in the directory provided
 
     '''
-    prefix = "LONG_QUARTER_PREFIXES"
+    prefix = LONG_QUARTER_PREFIXES
     aggregate = []
-    for i in range(18):  # For each one of quarter prefixes
-        for pref in prefix[i]:
-            base_name = "kplr{}-{}_lls.fits".format(kepid, pref)  # File format
-            filename = os.path.join(dir, base_name)
+    kepid = "{:09d}".format(int(kepid)) # Padding the kepID to a 9 digit number
+    dir=os.path.join(dir,kepid[0:4],kepid)  # Create directory following the format used
+    
+    for i in range(18):  # For all quarter prefixes
+        for pref in prefix[str(i)]: # For every value in the dictionaire
+            base_name = "kplr{}-{}_llc.fits".format(kepid, pref)  # File format
+            filename = os.path.join(dir, base_name) # Create absolute path for the file
             # Check if file actually exists (sometimes there is a missing quarter)
-            if os.path.exists(filename):
+            if Path(filename).exists():
                 aggregate.append(filename)
-
+   
     return aggregate
 
 
@@ -49,16 +53,23 @@ def fitsConverter(aggregate):
     Read the HDUList of each file and store the quarter and data to be used (PDCSAP_FLUX and Time)
 
     input: List of filenames (their absolute path)
-    output: Array of time values, array of PDCSAP_FLUX values and their respective quarters name
+    output: Array of time values and an array of PDCSAP_FLUX values
 
     '''
     brightness = []  # PDCSAP_FLUX
     time = []
     quarter = []
-    with fits.open(aggregate, mode="readonly") as hdulist:
-        # hdulist.info()
-        quarter = hdulist['Primary'].header['Quarter']
-        time.append(hdulist[1].data['time'])
-        quarter.append(hdulist[1].data['PDCSAP_FLUX'])
+    for f in aggregate:
+        with fits.open(f, mode="readonly") as hdulist:
+            # hdulist.info()
+            quarter.append(hdulist['Primary'].header['Quarter'])
+            time.append(hdulist[1].data['time'])
+            brightness.append(hdulist[1].data['PDCSAP_FLUX'])
 
+    for i, (t,bright) in enumerate(zip(time,brightness)):   # Avoid Nan values 
+        aux = np.logical_and(np.isfinite(t),np.isfinite(bright))    # Check if it is a number of a Nan, return bool
+        time[i]=t[aux]  # Remove those that have Nan (we are manipulating numpy arrays, so this was the only way found)
+        brightness[i]=bright[aux]
+  
+    
     return time, brightness
