@@ -40,6 +40,7 @@ def filenameWarehouse(kepid, dir):
         for pref in prefix[str(i)]: # For every value in the dictionaire
             base_name = "kplr{}-{}_llc.fits".format(kepid, pref)  # File format
             filename = os.path.join(dir, base_name) # Create absolute path for the file
+            print(filename)
             # Check if file actually exists (sometimes there is a missing quarter)
             if Path(filename).exists():
                 aggregate.append(filename)
@@ -66,10 +67,9 @@ def fitsConverter(aggregate):
             time.append(hdulist[1].data['time'])
             brightness.append(hdulist[1].data['PDCSAP_FLUX'])
 
-    for i, (t,bright) in enumerate(zip(time,brightness)):   # Avoid Nan values 
-        aux = np.logical_and(np.isfinite(t),np.isfinite(bright))    # Check if it is a number of a Nan, return bool
-        time[i]=t[aux]  # Remove those that have Nan (we are manipulating numpy arrays, so this was the only way found)
+    for i, (t,bright) in enumerate(zip(time,brightness)):   # Avoid NaN values 
+        aux = np.logical_and(np.isfinite(t),np.isfinite(bright))    # Check if it is a number of a NaN, return bool
+        time[i]=t[aux]  # Remove those that have NaN (we are manipulating numpy arrays, so this was the only way found)
         brightness[i]=bright[aux]
   
-    
     return time, brightness

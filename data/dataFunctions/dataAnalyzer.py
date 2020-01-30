@@ -8,7 +8,7 @@ filename = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º 
 
 def fileDetail(filename):
     '''
-        Provide detailed info on the HDUList contained in the file
+        Provide detailed info on the HDUList contained in the FITS file
     '''
     with fits.open(filename) as hdulist:
         header1 = hdulist[1].header
