@@ -1,7 +1,8 @@
 from astropy.io import fits
 from astropy.table import Table
 import matplotlib.pyplot as plt
-
+import numpy as np
+import dataReader as dr
 
 filename = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData/0044/004458082/kplr004458082-2009259160929_llc.fits"
 
@@ -65,3 +66,27 @@ def graphComparisonPlot(filename):
         ax.set(xlabel='Time (days)', ylabel='Flux ')
         ax.label_outer()
     plt.show()
+
+def graphFullLightCurve(time,flux):
+    for i in flux:  # Same scale for all segments  
+        i /= np.median(i)
+
+    plt.plot(np.concatenate(time),np.concatenate(flux),'-r')
+    plt.yticks([]) 
+    plt.show()
+    
+def showFileNames(filenames):
+    print("Number of Files : {}".format(len(filenames)))
+    print("\n".join(filenames))
+    
+def plotSeveralGraphs(kepids,dir,Nrows,Ncolumns):
+    fig = plt.figure()
+    for i, kep in enumerate(kepids):
+        filenames = dr.filenameWarehouse(kep,dir)
+        time, flux = dr.fitsConverter(filenames)
+        ax = fig.add_subplot(Nrows,Ncolumns,(i+1))
+        for f in flux:  # Same scale for all segments  
+            f /= np.median(f)
+        ax.plot(np.concatenate(time),np.concatenate(flux))
+        plt.yticks([])  
+    plt.show()  
