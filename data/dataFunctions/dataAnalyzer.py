@@ -87,6 +87,10 @@ def plotSeveralGraphs(kepids,dir,Nrows,Ncolumns):
         ax = fig.add_subplot(Nrows,Ncolumns,(i+1))
         for f in flux:  # Same scale for all segments  
             f /= np.median(f)
+        #print(max(flux,key=lambda x: x[1]))
         ax.plot(np.concatenate(time),np.concatenate(flux))
-        plt.yticks([])  
+        #plt.yticks([])  
+        #plt.ylim(0.975,1.01)    #PC
+        plt.ylim(0.96,1.01)
+    #plt.gca().set_aspect('equal',adjustable='box')   
     plt.show()  

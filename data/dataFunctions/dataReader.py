@@ -59,11 +59,9 @@ def fitsConverter(aggregate):
     '''
     brightness = []  # PDCSAP_FLUX
     time = []
-    quarter = []
     for f in aggregate:
         with fits.open(f, mode="readonly") as hdulist:
             # hdulist.info()
-            quarter.append(hdulist['Primary'].header['Quarter'])
             time.append(hdulist[1].data['time'])
             brightness.append(hdulist[1].data['PDCSAP_FLUX'])
 
@@ -72,7 +70,7 @@ def fitsConverter(aggregate):
         time[i]=t[aux]  # Remove those that have NaN (we are manipulating numpy arrays, so this was the only way found)
         brightness[i]=bright[aux]
     
-    for f in brightness:
-        f -= 2*np.median(f)
-        f *= (-1)
+    #for f in brightness:
+    #    f -= 2*np.median(f)
+    #    f *= (-1)
     return time, brightness
