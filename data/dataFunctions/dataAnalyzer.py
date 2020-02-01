@@ -94,3 +94,25 @@ def plotSeveralGraphs(kepids,dir,Nrows,Ncolumns):
         plt.ylim(0.96,1.01)
     #plt.gca().set_aspect('equal',adjustable='box')   
     plt.show()  
+    
+def plotThresholdComparison(kepid,dir):
+    filenames = dr.filenameWarehouse(kepid,dir)
+    time, flux = dr.fitsConverter(filenames)
+    std=np.std(flux[0])
+    mean=np.mean(flux[0])
+    
+    mean_array=[]
+    mean_twostd=[]
+    mean_onestd=[]
+    for m in range(len(time[0])): 
+        mean_array.append(mean)
+    for m in range(len(time[0])): 
+        mean_onestd.append(mean-std)
+    for m in range(len(time[0])): 
+        mean_twostd.append(mean-(2*std))        
+     
+    plt.plot(time[0],flux[0],'b')   # Light Curve      
+    plt.plot(time[0],mean_array,'k')    # Mean 
+    plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
+    plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+    plt.show()

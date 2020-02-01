@@ -3,7 +3,11 @@ import numpy as np
 import dataAnalyzer as da
 import dataReader as dr
 import dataCleaner as dc
+import dataInfo as di
 from scipy.ndimage.filters import gaussian_filter
+import scipy.signal as signal
+import prox_tv as ptv
+from sklearn import preprocessing
 
 # Laptop
 #fname_PC = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData/0044/004458082/kplr004458082-2009259160929_llc.fits"
@@ -26,7 +30,18 @@ kepID = 11442793
 
 filenames = dr.filenameWarehouse(kepID,dir)
 time, flux = dr.fitsConverter(filenames)
-da.graphFullLightCurve(time,flux)
+#std=np.std(flux[0])
+#mean=np.mean(flux[0])
+thresh_values=[]
+#print(mean-2*std)
+count=0
+
+
+
+
+#da.plotThresholdComparison(kepID,dir)
+#
+# da.graphFullLightCurve(time,flux)
 
 # ------------------------------------------ PC Plotting ------------------------------------------------
 
@@ -46,7 +61,35 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 # ------------------------------------------ Cleaner -----------------------------------------------------
 #print(len(flux))
 test=[[1,2,3,4],[2,3,4,5]]
-value = dc.moving_average(flux,15)
-fs=dc.percentageChange(flux,value)
-#plt.plot(np.concatenate(time),np.concatenate(value))
+fs=[]
+#print(len(flux))
+#for f in flux:  # Same scale for all segments  
+#        value = dc.moving_average(f,15)
+#        fs=dc.percentageChange(f,value)
+f1 = ptv.tv1_1d(flux[0],20)
+
+#plt.plot(time[0],flux[0],'k')
+#plt.plot(time[0],f1,'-g')
+print(min(f1))
+std=np.std(f1)
+mean=np.mean(f1)
+indexes,_=signal.find_peaks(f1,height=(0,mean-(2*std)))
+print(indexes)
+
+mean_array=[]
+mean_twostd=[]
+mean_onestd=[]
+for m in range(len(time[0])): 
+        mean_array.append(mean)
+for m in range(len(time[0])): 
+        mean_onestd.append(mean-std)
+for m in range(len(time[0])): 
+        mean_twostd.append(mean-(2*std))        
+plt.plot(time[0],f1,'b')   # Light Curve      
+plt.plot(time[0],mean_array,'k')    # Mean 
+plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
+plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+plt.show()
+
+#plt.plot(time[0],f2,'-r')
 #plt.show()
