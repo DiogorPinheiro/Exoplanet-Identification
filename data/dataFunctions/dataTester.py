@@ -85,11 +85,12 @@ for m in range(len(time[0])):
         mean_onestd.append(mean-std)
 for m in range(len(time[0])): 
         mean_twostd.append(mean-(2*std))        
-plt.plot(time[0],f1,'b')   # Light Curve      
+
+plt.plot(time[0],flux[0],'c')     
+plt.plot(time[0],f1,'m')   # Light Curve 
 plt.plot(time[0],mean_array,'k')    # Mean 
 plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
 plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
 plt.show()
 
-#plt.plot(time[0],f2,'-r')
 #plt.show()
