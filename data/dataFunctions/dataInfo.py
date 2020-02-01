@@ -26,17 +26,21 @@ def getMaxPeakPerFile(data):
         max_peak.append(min(f))
 # Get Strong Peaks
 def getStrongPeaks(data):
-    indexes,peaks=signal.find_peaks(data,height=(0,np.mean(data-(2*np.std(data)))))
-    return peaks['peak_heights']
-# Get Medium Peaks
+    indexes,prop=signal.find_peaks(-data,-(np.mean(data)-(2*np.std(data)))) # Use signal invertion for detection
+    inv=[]
+    for i in prop['peak_heights']:  # Invert Signal to positive values
+        inv.append(i*(-1))
+    return inv
+# Get Medium Peaks      - TO CHANGE
 def getMediumPeaks(data):
     # Below 1 STD but above 2 STD
     indexes,peaks=signal.find_peaks(data,height=(np.mean(data-(2*np.std(data))),np.mean(data-np.std(data))))
     return peaks['peak_heights']
-# Get Weak Peaks
+# Get Weak Peaks    - TO CHANGE
 def getWeakPeaks(data):
     # Below mean and above 1 STD
     indexes,peaks=signal.find_peaks(data,height=(np.mean(data-(np.std(data))), np.mean(data)))
     return peaks['peak_heights']
 # Get Points For Each Category
+
 

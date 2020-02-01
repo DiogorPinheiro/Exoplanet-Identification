@@ -66,15 +66,27 @@ fs=[]
 #for f in flux:  # Same scale for all segments  
 #        value = dc.moving_average(f,15)
 #        fs=dc.percentageChange(f,value)
-f1 = ptv.tv1_1d(flux[0],20)
+f1 = ptv.tv1_1d(flux[0],30)
 
 #plt.plot(time[0],flux[0],'k')
 #plt.plot(time[0],f1,'-g')
 print(min(f1))
 std=np.std(f1)
 mean=np.mean(f1)
-indexes,_=signal.find_peaks(f1,height=(0,mean-(2*std)))
-print(indexes)
+indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
+arr=prop['peak_heights']
+
+a = signal.peak_widths(-f1,indexes)
+print(a['width_heights'])
+inv=[]
+for i in prop['peak_heights']:
+        inv.append(i*(-1))
+#print(inv)
+
+
+
+
+
 
 mean_array=[]
 mean_twostd=[]
