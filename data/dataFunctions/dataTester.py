@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from astropy.io import fits
 import dataAnalyzer as da
 import dataReader as dr
 import dataCleaner as dc
@@ -8,6 +9,7 @@ from scipy.ndimage.filters import gaussian_filter
 import scipy.signal as signal
 import prox_tv as ptv
 from sklearn import preprocessing
+import lightkurve as lk
 
 # Laptop
 #fname_PC = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData/0044/004458082/kplr004458082-2009259160929_llc.fits"
@@ -26,7 +28,7 @@ dataFiles = [fname_PC, fname_NTP, fname_AFP]
 
 # ------------------------------------------- FITS File Manipulation ------------------------------------
 dir = "/home/jcneves/Documents/keplerData"
-kepID = 11442793
+kepID = 5602588
 
 filenames = dr.filenameWarehouse(kepID,dir)
 time, flux = dr.fitsConverter(filenames)
@@ -35,8 +37,6 @@ time, flux = dr.fitsConverter(filenames)
 thresh_values=[]
 #print(mean-2*std)
 count=0
-
-
 
 
 #da.plotThresholdComparison(kepID,dir)
@@ -60,13 +60,24 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 
 # ------------------------------------------ Cleaner -----------------------------------------------------
 #print(len(flux))
-test=[[1,2,3,4],[2,3,4,5]]
-fs=[]
-#print(len(flux))
-#for f in flux:  # Same scale for all segments  
-#        value = dc.moving_average(f,15)
-#        fs=dc.percentageChange(f,value)
 f1 = ptv.tv1_1d(flux[0],30)
+
+med=dc.moving_average(flux[0],15)
+s=dc.percentageChange(flux[0])
+#print(s)
+
+lc=lk.LightCurve(time[0],f1)
+ret = lc.normalize()
+ret.flatten()
+f1=ret.flux
+s=dc.percentageChange(f1)
+
+#plt.plot(time[0],s)
+#plt.show()
+
+#mv=[4,6,5,8,9]
+
+#print(dc.moving_average(mv,5))
 
 #plt.plot(time[0],flux[0],'k')
 #plt.plot(time[0],f1,'-g')
@@ -77,15 +88,17 @@ indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
 arr=prop['peak_heights']
 
 a = signal.peak_widths(-f1,indexes)
-print(a['width_heights'])
+#print(a['width_heights'])
 inv=[]
 for i in prop['peak_heights']:
         inv.append(i*(-1))
 #print(inv)
 
 
-
-
+graphThresholdPC_array=[11442793,4458082,5602588]
+graphThresholdAFP_array= [1162345, 892772, 1026957]
+graphThresholdNTP_array= [892667, 1292087, 1574792]
+da.graphThresholdExamples(graphThresholdNTP_array,dir)
 
 
 mean_array=[]
@@ -97,12 +110,9 @@ for m in range(len(time[0])):
         mean_onestd.append(mean-std)
 for m in range(len(time[0])): 
         mean_twostd.append(mean-(2*std))        
-
-plt.plot(time[0],flux[0],'c')     
+#plt.plot(time[0],flux[0],'c')     
 plt.plot(time[0],f1,'m')   # Light Curve 
 plt.plot(time[0],mean_array,'k')    # Mean 
 plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
 plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
-plt.show()
-
 #plt.show()

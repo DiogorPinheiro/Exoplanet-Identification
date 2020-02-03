@@ -3,9 +3,10 @@ from astropy.table import Table
 import matplotlib.pyplot as plt
 import numpy as np
 import dataReader as dr
-
-filename = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData/0044/004458082/kplr004458082-2009259160929_llc.fits"
-
+import dataCleaner as dc
+import prox_tv as ptv
+import lightkurve as lk
+from lightkurve import SFFCorrector
 
 def fileDetail(filename):
     '''
@@ -115,4 +116,40 @@ def plotThresholdComparison(kepid,dir):
     plt.plot(time[0],mean_array,'k')    # Mean 
     plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
     plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+    plt.show()
+    
+    
+def graphThresholdExamples(kepids,dir):
+    fig, axs = plt.subplots(3)
+
+    for i,files in enumerate(kepids):
+        filename = dr.filenameWarehouse(files,dir)
+        t,f = dr.fitsConverter(filename)
+        #print(filename[0])
+        f1 = ptv.tv1_1d(f[0],30)
+        lc=lk.LightCurve(t[0],f1)
+        ret = lc.normalize()
+        f1 = ret.flux
+        f1=dc.percentageChange(f1)
+        std=np.std(f1)
+        mean=np.mean(f1)
+        mean_array=[]
+        mean_twostd=[]
+        mean_onestd=[]
+        for m in range(len(t[0])): 
+            mean_array.append(mean)
+        for m in range(len(t[0])): 
+            mean_onestd.append(mean-std)
+        for m in range(len(t[0])): 
+            mean_twostd.append(mean-(2*std))   
+        
+        axs[i].plot(t[0], f1)
+        axs[i].plot(t[0],mean_array,'k')    # Mean 
+        axs[i].plot(t[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
+        axs[i].plot(t[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+    
+
+    for ax in axs.flat:
+        ax.set(xlabel='Time (days)', ylabel='Flux ')
+        ax.label_outer()
     plt.show()
