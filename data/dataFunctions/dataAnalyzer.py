@@ -6,6 +6,7 @@ import dataReader as dr
 import dataCleaner as dc
 import prox_tv as ptv
 import lightkurve as lk
+import scipy.signal as signal
 from lightkurve import SFFCorrector
 
 def fileDetail(filename):
@@ -130,7 +131,7 @@ def graphThresholdExamples(kepids,dir):
         lc=lk.LightCurve(t[0],f1)
         ret = lc.normalize()
         f1 = ret.flux
-        f1=dc.percentageChange(f1)
+        f1=dc.percentageChange(f1,2)
         std=np.std(f1)
         mean=np.mean(f1)
         mean_array=[]

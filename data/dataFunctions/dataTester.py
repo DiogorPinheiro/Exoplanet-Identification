@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from astropy.io import fits
 import dataAnalyzer as da
 import dataReader as dr
@@ -10,6 +11,8 @@ import scipy.signal as signal
 import prox_tv as ptv
 from sklearn import preprocessing
 import lightkurve as lk
+
+
 
 # Laptop
 #fname_PC = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData/0044/004458082/kplr004458082-2009259160929_llc.fits"
@@ -28,7 +31,7 @@ dataFiles = [fname_PC, fname_NTP, fname_AFP]
 
 # ------------------------------------------- FITS File Manipulation ------------------------------------
 dir = "/home/jcneves/Documents/keplerData"
-kepID = 5602588
+kepID = 5796675
 
 filenames = dr.filenameWarehouse(kepID,dir)
 time, flux = dr.fitsConverter(filenames)
@@ -62,26 +65,30 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 #print(len(flux))
 f1 = ptv.tv1_1d(flux[0],30)
 
-med=dc.moving_average(flux[0],15)
-s=dc.percentageChange(flux[0])
-#print(s)
+s=dc.percentageChange(flux[0],15)
+#plt.plot(time[0],s)
+#plt.show()
 
 lc=lk.LightCurve(time[0],f1)
 ret = lc.normalize()
 ret.flatten()
 f1=ret.flux
-s=dc.percentageChange(f1)
+s=dc.percentageChange(f1,15)
 
 #plt.plot(time[0],s)
 #plt.show()
+t = [1,2,3,4]
+def running(seq,window):
+        s = np.insert(np.cumsum(seq),0,[0])
+        return (s[window:]-s[:-window])*(1./window)
 
-#mv=[4,6,5,8,9]
-
-#print(dc.moving_average(mv,5))
+#mv=[1,2,3,4]
+#mm=running(mv,2)
+#plt.scatter(t,mm)
 
 #plt.plot(time[0],flux[0],'k')
 #plt.plot(time[0],f1,'-g')
-print(min(f1))
+#print(min(f1))
 std=np.std(f1)
 mean=np.mean(f1)
 indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
@@ -98,7 +105,7 @@ for i in prop['peak_heights']:
 graphThresholdPC_array=[11442793,4458082,5602588]
 graphThresholdAFP_array= [1162345, 892772, 1026957]
 graphThresholdNTP_array= [892667, 1292087, 1574792]
-da.graphThresholdExamples(graphThresholdNTP_array,dir)
+da.graphThresholdExamples(graphThresholdPC_array,dir)
 
 
 mean_array=[]
