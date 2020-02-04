@@ -31,7 +31,7 @@ dataFiles = [fname_PC, fname_NTP, fname_AFP]
 
 # ------------------------------------------- FITS File Manipulation ------------------------------------
 dir = "/home/jcneves/Documents/keplerData"
-kepID = 5796675
+kepID = 11442793
 
 filenames = dr.filenameWarehouse(kepID,dir)
 time, flux = dr.fitsConverter(filenames)
@@ -63,49 +63,42 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 
 # ------------------------------------------ Cleaner -----------------------------------------------------
 #print(len(flux))
-f1 = ptv.tv1_1d(flux[0],30)
+#f1 = ptv.tv1_1d(flux[0],30)
 
-s=dc.percentageChange(flux[0],15)
-#plt.plot(time[0],s)
-#plt.show()
+#val = dc.movingAverage(flux[0],15)
+#s=dc.percentageChange(flux[0],val)
+#lc=lk.LightCurve(time[0],val)
+#ret = lc.normalize()
+#val = ret.flux
 
-lc=lk.LightCurve(time[0],f1)
-ret = lc.normalize()
-ret.flatten()
-f1=ret.flux
-s=dc.percentageChange(f1,15)
+#lc=lk.LightCurve(time[0],f1)
+#ret = lc.normalize()
+#ret.flatten()
+#f1=ret.flux
+#s=dc.percentageChange(f1,15)
 
-#plt.plot(time[0],s)
-#plt.show()
-t = [1,2,3,4]
-def running(seq,window):
-        s = np.insert(np.cumsum(seq),0,[0])
-        return (s[window:]-s[:-window])*(1./window)
 
-#mv=[1,2,3,4]
-#mm=running(mv,2)
-#plt.scatter(t,mm)
 
 #plt.plot(time[0],flux[0],'k')
 #plt.plot(time[0],f1,'-g')
 #print(min(f1))
-std=np.std(f1)
-mean=np.mean(f1)
-indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
-arr=prop['peak_heights']
+#std=np.std(val)
+#mean=np.mean(val)
+#indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
+#arr=prop['peak_heights']
 
-a = signal.peak_widths(-f1,indexes)
+#a = signal.peak_widths(-f1,indexes)
 #print(a['width_heights'])
-inv=[]
-for i in prop['peak_heights']:
-        inv.append(i*(-1))
+#inv=[]
+#for i in prop['peak_heights']:
+#        inv.append(i*(-1))
 #print(inv)
 
 
 graphThresholdPC_array=[11442793,4458082,5602588]
 graphThresholdAFP_array= [1162345, 892772, 1026957]
 graphThresholdNTP_array= [892667, 1292087, 1574792]
-da.graphThresholdExamples(graphThresholdPC_array,dir)
+da.graphThresholdExamples(graphThresholdNTP_array,dir)
 
 
 mean_array=[]
@@ -118,8 +111,8 @@ for m in range(len(time[0])):
 for m in range(len(time[0])): 
         mean_twostd.append(mean-(2*std))        
 #plt.plot(time[0],flux[0],'c')     
-plt.plot(time[0],f1,'m')   # Light Curve 
-plt.plot(time[0],mean_array,'k')    # Mean 
-plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
-plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+#plt.plot(time[0],val,'m')   # Light Curve 
+#plt.plot(time[0],mean_array,'k')    # Mean 
+#plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
+#plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
 #plt.show()

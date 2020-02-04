@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.signal as signal
+import pandas as pd
 
 # Calculate Global Mean
 def getGlobalMean(data):
@@ -42,5 +43,21 @@ def getWeakPeaks(data):
     indexes,peaks=signal.find_peaks(data,height=(np.mean(data-(np.std(data))), np.mean(data)))
     return peaks['peak_heights']
 # Get Points For Each Category
+def categorizedPoints(data):
+    strongPeaks=getStrongPeaks(data)
+    mediumPeaks=getMediumPeaks(data)
+    weakPeaks=getWeakPeaks(data)
+    return strongPeaks,mediumPeaks,weakPeaks
+# Get kepid Label
+def labelFinder(table,kepid):
+    #print(findColumnNumber(table,kepid))
+    for i, r in table.iterrows():
+        if r['kepid'] == kepid:
+            return r['av_training_set']
+#get CSV data
+def dataCSV(filename):
+    return pd.read_csv(filename, skiprows=15 , usecols = [0,8])
 
-
+        
+def listKepids(filename):
+    table = pd.read_csv(filename, skiprows=15 , usecols = [0])

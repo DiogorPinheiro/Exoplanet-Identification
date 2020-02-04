@@ -126,12 +126,12 @@ def graphThresholdExamples(kepids,dir):
     for i,files in enumerate(kepids):
         filename = dr.filenameWarehouse(files,dir)
         t,f = dr.fitsConverter(filename)
-        #print(filename[0])
-        f1 = ptv.tv1_1d(f[0],30)
+        f1=dc.movingAverage(f[0],15)
+        #f1 = ptv.tv1_1d(f[0],30)
         lc=lk.LightCurve(t[0],f1)
         ret = lc.normalize()
         f1 = ret.flux
-        f1=dc.percentageChange(f1,2)
+        #f1=dc.percentageChange(f1,2)
         std=np.std(f1)
         mean=np.mean(f1)
         mean_array=[]
@@ -151,6 +151,6 @@ def graphThresholdExamples(kepids,dir):
     
 
     for ax in axs.flat:
-        ax.set(xlabel='Time (days)', ylabel='Flux ')
+        ax.set(xlabel='Time (days)')
         ax.label_outer()
     plt.show()

@@ -1,7 +1,7 @@
 import numpy as np
 import prox_tv as ptv
 
-def moving_average(N,window):
+def movingAverage(N,window):
     '''
         Calculate the moving average of the provided numpy array list
         
@@ -9,18 +9,15 @@ def moving_average(N,window):
         output: array with the corresponding moving average 
     '''
     N_padded = np.pad(N,(window//2,window-1-window//2),mode='edge')
-    middle=int(window/2)+1 # Assuming that the window will always be an odd number
-    res_array=np.convolve(N_padded, np.ones((window,))/window, mode='same')
-    return res_array[middle]
+        
+    return np.convolve(N_padded, np.ones((window,))/window, mode='valid')
     
-def percentageChange(data,window):
+def percentageChange(data,average):
     percentage_change_array = []
-    for i, t in enumerate(data):
-        #print("data={};average={}\n".format(t,f))
-        value = (t-moving_average(data,window))/moving_average(data,window)
-        #print("value={}\n".format(value))
-        #print(value)
-        percentage_change_array.append(value*100)
+    for i, (t,f) in enumerate(zip(data,average)):
+        value = (f-t)/t
+        print("data={};average={};Result={}\n".format(t,f,value))
+        percentage_change_array.append(value)
     #print(percentage_change_array)   
     return percentage_change_array
 
