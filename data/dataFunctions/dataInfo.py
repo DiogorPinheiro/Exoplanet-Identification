@@ -30,18 +30,24 @@ def getStrongPeaks(data):
     indexes,prop=signal.find_peaks(-data,-(np.mean(data)-(2*np.std(data)))) # Use signal invertion for detection
     inv=[]
     for i in prop['peak_heights']:  # Invert Signal to positive values
-        inv.append(i*(-1))
+        inv.append(i)
     return inv
-# Get Medium Peaks      - TO CHANGE
+# Get Medium Peaks      
 def getMediumPeaks(data):
     # Below 1 STD but above 2 STD
-    indexes,peaks=signal.find_peaks(data,height=(np.mean(data-(2*np.std(data))),np.mean(data-np.std(data))))
-    return peaks['peak_heights']
-# Get Weak Peaks    - TO CHANGE
+    indexes,prop=signal.find_peaks(-data,(-(np.mean(data)-(np.std(data))),-(np.mean(data)-(2*np.std(data)))))
+    inv=[]
+    for i in prop['peak_heights']:  # Invert Signal to positive values
+        inv.append(i)
+    return inv
+# Get Weak Peaks    
 def getWeakPeaks(data):
     # Below mean and above 1 STD
-    indexes,peaks=signal.find_peaks(data,height=(np.mean(data-(np.std(data))), np.mean(data)))
-    return peaks['peak_heights']
+    indexes,prop=signal.find_peaks(-data,(-np.mean(data),-(np.mean(data)-(np.std(data)))))
+    inv=[]
+    for i in prop['peak_heights']:  # Invert Signal to positive values
+        inv.append(i)
+    return inv
 # Get Points For Each Category
 def categorizedPoints(data):
     strongPeaks=getStrongPeaks(data)
@@ -57,7 +63,6 @@ def labelFinder(table,kepid):
 #get CSV data
 def dataCSV(filename):
     return pd.read_csv(filename, skiprows=15 , usecols = [0,8])
-
-        
+# Listar Kepids        
 def listKepids(filename):
     table = pd.read_csv(filename, skiprows=15 , usecols = [0])

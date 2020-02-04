@@ -65,25 +65,18 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 #print(len(flux))
 #f1 = ptv.tv1_1d(flux[0],30)
 
-#val = dc.movingAverage(flux[0],15)
+val = dc.movingAverage(flux[0],20)
 #s=dc.percentageChange(flux[0],val)
-#lc=lk.LightCurve(time[0],val)
-#ret = lc.normalize()
-#val = ret.flux
-
-#lc=lk.LightCurve(time[0],f1)
-#ret = lc.normalize()
-#ret.flatten()
-#f1=ret.flux
-#s=dc.percentageChange(f1,15)
-
+lc=lk.LightCurve(time[0],val)
+ret = lc.normalize()
+val = ret.flux
 
 
 #plt.plot(time[0],flux[0],'k')
 #plt.plot(time[0],f1,'-g')
 #print(min(f1))
-#std=np.std(val)
-#mean=np.mean(val)
+std=np.std(val)
+mean=np.mean(val)
 #indexes,prop=signal.find_peaks(-f1,-(mean-(2*std)))
 #arr=prop['peak_heights']
 
@@ -94,11 +87,13 @@ kepids_AFP=[1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 157569
 #        inv.append(i*(-1))
 #print(inv)
 
-
+print(di.getStrongPeaks(val))
+print(di.getWeakPeaks(val))
+print(di.getMediumPeaks(val))
 graphThresholdPC_array=[11442793,4458082,5602588]
 graphThresholdAFP_array= [1162345, 892772, 1026957]
 graphThresholdNTP_array= [892667, 1292087, 1574792]
-da.graphThresholdExamples(graphThresholdNTP_array,dir)
+#da.graphThresholdExamples(graphThresholdNTP_array,dir)
 
 
 mean_array=[]
@@ -111,8 +106,8 @@ for m in range(len(time[0])):
 for m in range(len(time[0])): 
         mean_twostd.append(mean-(2*std))        
 #plt.plot(time[0],flux[0],'c')     
-#plt.plot(time[0],val,'m')   # Light Curve 
-#plt.plot(time[0],mean_array,'k')    # Mean 
-#plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
-#plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
-#plt.show()
+plt.plot(time[0],val,'m')   # Light Curve 
+plt.plot(time[0],mean_array,'k')    # Mean 
+plt.plot(time[0],mean_onestd,'g')   # One Standard Deviation Below The Mean
+plt.plot(time[0],mean_twostd,'r')   # Two Standard Deviations Below The Mean
+plt.show()

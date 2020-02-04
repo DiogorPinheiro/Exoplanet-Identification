@@ -16,7 +16,7 @@ def percentageChange(data,average):
     percentage_change_array = []
     for i, (t,f) in enumerate(zip(data,average)):
         value = (f-t)/t
-        print("data={};average={};Result={}\n".format(t,f,value))
+        #print("data={};average={};Result={}\n".format(t,f,value))
         percentage_change_array.append(value)
     #print(percentage_change_array)   
     return percentage_change_array
