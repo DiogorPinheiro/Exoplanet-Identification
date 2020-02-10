@@ -6,39 +6,32 @@ import pandas as pd
 
 
 def getGlobalMean(data):
-    mean_data = []
-    for f in data:
-        mean_data.append(np.mean(f))
-    return mean_data
+    return np.mean(data)
 # Calculate Global Median
 
 
 def getGlobalMedian(data):
-    median_data = []
-    for f in data:
-        median_data.append(np.median(f))
-    return median_data
+    return np.median(data)
 # Calculate Global Standard Deviation
 
 
 def getGlobalSTD(data):
-    std_data = []
-    for f in data:
-        std_data.append(np.std(f))
-    return std_data
+    return np.std(data)
 # Calculate Maximum Peak (Minimum Value)
 
 
 def getMaxPeakPerFile(data):
-    max_peak = []
-    for f in data:
-        max_peak.append(min(f))
+    return max(data)
 # Get Strong Peaks
 
 
 def getStrongPeaks(data):
     # Use signal invertion for detection
-    indexes, prop = signal.find_peaks(-data, -(np.mean(data)-(2*np.std(data))))
+    indexes, prop = signal.find_peaks(-data, -np.mean(data)+(2*np.std(data)), distance=100 )
+    #print("std:{} ; 2*std:{} ".format( -np.std(data), -2*np.std(data)))
+    #print("2+std:{} ; std:{} ; mean:{}".format( -np.mean(data)+(2*np.std(data)), -np.mean(data)+(np.std(data)), -np.mean(data) ))
+    #print(prop['peak_heights'])
+    #print(len(indexes))
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
@@ -49,7 +42,7 @@ def getStrongPeaks(data):
 def getMediumPeaks(data):
     # Below 1 STD but above 2 STD
     indexes, prop = signal.find_peaks(
-        -data, (-(np.mean(data)-(np.std(data))), -(np.mean(data)-(2*np.std(data)))))
+        -data, -np.mean(data)+(np.std(data)), -np.mean(data)+(2*np.std(data)))
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
@@ -60,7 +53,7 @@ def getMediumPeaks(data):
 def getWeakPeaks(data):
     # Below mean and above 1 STD
     indexes, prop = signal.find_peaks(-data,
-                                      (-np.mean(data), -(np.mean(data)-(np.std(data)))))
+                                      (-np.mean(data), -np.mean(data)+(np.std(data))))
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
@@ -99,8 +92,9 @@ def dataCSV(filename):
 # Listar Kepids
 
 
-def listKepids(filename):
-    table = pd.read_csv(filename, skiprows=15, usecols=[0])
+def listKepids(file):
+    print(file.iloc[:,0])
+    return file.iloc[:,0]
 # Overall Peak Points Data
 
 
@@ -109,4 +103,5 @@ def overallPeakData(strong, medium, weak):
     aux.append(strong)
     aux.append(medium)
     aux.append(weak)
+    aux= np.concatenate(aux)
     return np.mean(aux), np.std(aux)

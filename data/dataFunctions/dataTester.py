@@ -35,13 +35,18 @@ kepID = 11442793
 
 filenames = dr.filenameWarehouse(kepID, dir)
 time, flux = dr.fitsConverter(filenames)
-# std=np.std(flux[0])
-# mean=np.mean(flux[0])
-thresh_values = []
-# print(mean-2*std)
-count = 0
-print(len(filenames))
 
+for i in flux:  # Same scale for all segments
+    i /= np.median(i)
+out_flux = np.concatenate(flux)
+out_time = np.concatenate(time)
+normalized_flux = dc.movingAverage(out_flux, 15)
+lc = lk.LightCurve(out_time, normalized_flux)
+ret = lc.normalize()
+val = ret.flux
+std = np.std(val)
+mean = np.mean(val)
+a=di.getStrongPeaks(val)
 # da.plotThresholdComparison(kepID,dir)
 #
 # da.graphFullLightCurve(time,flux)
@@ -65,7 +70,7 @@ kepids_AFP = [1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 1575
 # print(len(flux))
 #f1 = ptv.tv1_1d(flux[0],30)
 
-
+'''
 lc = lk.LightCurve(time[0], flux[0])
 ret = lc.normalize()
 val = ret.flux
@@ -90,36 +95,27 @@ print(a[0])
 graphThresholdPC_array = [11442793, 4458082, 5602588]
 graphThresholdAFP_array = [1162345, 892772, 1026957]
 graphThresholdNTP_array = [892667, 1292087, 1574792]
-# da.graphThresholdExamples(graphThresholdNTP_array,dir)
-
+da.graphThresholdExamples(graphThresholdNTP_array,dir)
+'''
 mean_array = []
 mean_twostd = []
 mean_onestd = []
-for m in range(len(time[0])):
-    mean_array.append(mean)
-for m in range(len(time[0])):
-    mean_onestd.append(mean-std)
-for m in range(len(time[0])):
-    mean_twostd.append(mean-(2*std))
+for m in range(len(out_time)):
+    mean_array.append(-mean)
+for m in range(len(out_time)):
+    mean_onestd.append(-mean+std)
+for m in range(len(out_time)):
+    mean_twostd.append(-mean+(2*std))
 # plt.plot(val_clean.time,flux[0],'c')
-plt.plot(time[0], val, 'm')   # Light Curve
-plt.plot(time[0], mean_array, 'k')    # Mean
+plt.plot(out_time, -val, 'm')   # Light Curve
+plt.plot(out_time, mean_array, 'k')    # Mean
 # One Standard Deviation Below The Mean
-plt.plot(time[0], mean_onestd, 'g')
+plt.plot(out_time,mean_onestd, 'g')
 # Two Standard Deviations Below The Mean
-plt.plot(time[0], mean_twostd, 'r')
+plt.plot(out_time, mean_twostd, 'r')
 plt.show()
 
 
-'''
-for i in flux:  # Same scale for all segments
-    i /= np.median(i)
-out_flux = np.concatenate(flux)
-out_time = np.concatenate(time)
-normalized_flux = dc.movingAverage(out_flux, 20)
-lc = lk.LightCurve(out_time, normalized_flux)
-ret = lc.normalize()
 
-plt.plot(out_time, ret.flux)
-plt.show()
-'''
+
+

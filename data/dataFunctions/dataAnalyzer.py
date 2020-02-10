@@ -2,8 +2,10 @@ from astropy.io import fits
 from astropy.table import Table
 import matplotlib.pyplot as plt
 import numpy as np
-import dataReader as dr
-import dataCleaner as dc
+from dataFunctions import dataReader
+from dataFunctions import dataCleaner
+#import dataReader as dr
+#import dataCleaner as dc
 import prox_tv as ptv
 import lightkurve as lk
 import scipy.signal as signal
@@ -84,8 +86,8 @@ def showFileNames(filenames):
 def plotSeveralGraphs(kepids,dir,Nrows,Ncolumns):
     fig = plt.figure()
     for i, kep in enumerate(kepids):
-        filenames = dr.filenameWarehouse(kep,dir)
-        time, flux = dr.fitsConverter(filenames)
+        filenames = dataReader.filenameWarehouse(kep,dir)
+        time, flux = dataReader.fitsConverter(filenames)
         ax = fig.add_subplot(Nrows,Ncolumns,(i+1))
         for f in flux:  # Same scale for all segments  
             f /= np.median(f)
@@ -98,8 +100,8 @@ def plotSeveralGraphs(kepids,dir,Nrows,Ncolumns):
     plt.show()  
     
 def plotThresholdComparison(kepid,dir):
-    filenames = dr.filenameWarehouse(kepid,dir)
-    time, flux = dr.fitsConverter(filenames)
+    filenames = dataReader.filenameWarehouse(kepid,dir)
+    time, flux = dataReader.fitsConverter(filenames)
     std=np.std(flux[0])
     mean=np.mean(flux[0])
     
@@ -124,14 +126,14 @@ def graphThresholdExamples(kepids,dir):
     fig, axs = plt.subplots(3)
 
     for i,files in enumerate(kepids):
-        filename = dr.filenameWarehouse(files,dir)
-        t,f = dr.fitsConverter(filename)
-        f1=dc.movingAverage(f[0],15)
+        filename = dataReader.filenameWarehouse(files,dir)
+        t,f = dataReader.fitsConverter(filename)
+        f1 = dataCleaner.movingAverage(f[0],15)
         #f1 = ptv.tv1_1d(f[0],30)
         lc=lk.LightCurve(t[0],f1)
         ret = lc.normalize()
         f1 = ret.flux
-        #f1=dc.percentageChange(f1,2)
+        #f1=dataCleaner.percentageChange(f1,2)
         std=np.std(f1)
         mean=np.mean(f1)
         mean_array=[]
