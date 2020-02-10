@@ -33,18 +33,21 @@ def filenameWarehouse(kepid, dir):
     '''
     prefix = LONG_QUARTER_PREFIXES
     aggregate = []
-    kepid = "{:09d}".format(int(kepid)) # Padding the kepID to a 9 digit number
-    dir=os.path.join(dir,kepid[0:4],kepid)  # Create directory following the format used
-    #print(kepid)
+    # Padding the kepID to a 9 digit number
+    kepid = "{:09d}".format(int(kepid))
+    # Create directory following the format used
+    dir = os.path.join(dir, kepid[0:4], kepid)
+    # print(kepid)
     for i in range(18):  # For all quarter prefixes
-        for pref in prefix[str(i)]: # For every value in the dictionaire
+        for pref in prefix[str(i)]:  # For every value in the dictionaire
             base_name = "kplr{}-{}_llc.fits".format(kepid, pref)  # File format
-            filename = os.path.join(dir, base_name) # Create absolute path for the file
-            #print(filename)
+            # Create absolute path for the file
+            filename = os.path.join(dir, base_name)
+            # print(filename)
             # Check if file actually exists (sometimes there is a missing quarter)
             if Path(filename).exists():
                 aggregate.append(filename)
-    #print(aggregate)
+    # print(aggregate)
     return aggregate
 
 
@@ -65,12 +68,14 @@ def fitsConverter(aggregate):
             time.append(hdulist[1].data['time'])
             brightness.append(hdulist[1].data['PDCSAP_FLUX'])
 
-    for i, (t,bright) in enumerate(zip(time,brightness)):   # Avoid NaN values 
-        aux = np.logical_and(np.isfinite(t),np.isfinite(bright))    # Check if it is a number of a NaN, return bool
-        time[i]=t[aux]  # Remove those that have NaN (we are manipulating numpy arrays, so this was the only way found)
-        brightness[i]=bright[aux]
-    
-    #for f in brightness:
+    for i, (t, bright) in enumerate(zip(time, brightness)):   # Avoid NaN values
+        # Check if it is a number of a NaN, return bool
+        aux = np.logical_and(np.isfinite(t), np.isfinite(bright))
+        # Remove those that have NaN (we are manipulating numpy arrays, so this was the only way found)
+        time[i] = t[aux]
+        brightness[i] = bright[aux]
+
+    # for f in brightness:
     #    f -= 2*np.median(f)
     #    f *= (-1)
     return time, brightness
