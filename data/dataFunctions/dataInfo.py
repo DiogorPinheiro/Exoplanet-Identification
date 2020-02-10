@@ -42,7 +42,7 @@ def getStrongPeaks(data):
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
-    return inv
+    return inv, indexes
 # Get Medium Peaks
 
 
@@ -53,7 +53,7 @@ def getMediumPeaks(data):
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
-    return inv
+    return inv, indexes
 # Get Weak Peaks
 
 
@@ -64,22 +64,25 @@ def getWeakPeaks(data):
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
-    return inv
+    return inv, indexes
 # Get Points For Each Category
 
 
 def getNonPeaks(data):
     # Above mean
     indexes, prop = signal.find_peaks(data, np.mean(data))
-    return prop['peak_heights']
+    return prop['peak_heights'], indexes
 
+def getPeaksWidth(data,indexes):
+    a = signal.peak_widths(data, indexes,rel_height=0.90)
+    return a[0]
 
 def categorizedPoints(data):
-    strongPeaks = getStrongPeaks(data)
-    mediumPeaks = getMediumPeaks(data)
-    weakPeaks = getWeakPeaks(data)
-    nonPeaks = getNonPeaks(data)
-    return strongPeaks, mediumPeaks, weakPeaks, nonPeaks
+    strongPeaks, indStrong = getStrongPeaks(data)
+    mediumPeaks, indMedium = getMediumPeaks(data)
+    weakPeaks, indWeak = getWeakPeaks(data)
+    nonPeaks, indNon = getNonPeaks(data)
+    return strongPeaks, indStrong, mediumPeaks, indMedium, weakPeaks, indWeak, nonPeaks, indNon
 # Get kepid Label
 
 

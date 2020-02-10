@@ -33,7 +33,7 @@ dir = "/home/jcneves/Documents/keplerData"
 dir_mac = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData"
 kepID = 11442793
 
-filenames = dr.filenameWarehouse(kepID, dir_mac)
+filenames = dr.filenameWarehouse(kepID, dir)
 time, flux = dr.fitsConverter(filenames)
 # std=np.std(flux[0])
 # mean=np.mean(flux[0])
@@ -65,7 +65,7 @@ kepids_AFP = [1162345, 892772, 1026957, 1160891, 1162150, 1162345, 1573174, 1575
 # print(len(flux))
 #f1 = ptv.tv1_1d(flux[0],30)
 
-'''
+
 lc = lk.LightCurve(time[0], flux[0])
 ret = lc.normalize()
 val = ret.flux
@@ -78,15 +78,12 @@ val = dc.movingAverage(val, 20)
 std = np.std(val)
 mean = np.mean(val)
 indexes, prop = signal.find_peaks(-val, -(np.mean(val)-(2*np.std(val))))
+print(indexes)
 
-a = signal.peak_widths(val, indexes)
-# print(a)
-# inv=[]
-# for i in prop['peak_heights']:
-#        inv.append(i*(-1))
-# print(inv)
-val = np.asarray(val, dtype=np.float32)
-# print(di.getStrongPeaks(val))
+a = signal.peak_widths(val, indexes,rel_height=0.999)
+print(a[0])
+#val = np.asarray(inv, dtype=np.float32)
+#print(di.getStrongPeaks(val))
 # print(di.getWeakPeaks(val))
 # print(di.getMediumPeaks(val))
 
@@ -94,7 +91,6 @@ graphThresholdPC_array = [11442793, 4458082, 5602588]
 graphThresholdAFP_array = [1162345, 892772, 1026957]
 graphThresholdNTP_array = [892667, 1292087, 1574792]
 # da.graphThresholdExamples(graphThresholdNTP_array,dir)
-
 
 mean_array = []
 mean_twostd = []
@@ -113,19 +109,9 @@ plt.plot(time[0], mean_onestd, 'g')
 # Two Standard Deviations Below The Mean
 plt.plot(time[0], mean_twostd, 'r')
 plt.show()
-'''
-'''
-normalized_flux = dc.movingAverage(flux[0], 20)
-lc = lk.LightCurve(time[0], normalized_flux)
-for i in range(1, len(filenames)):
-    normalized_flux2 = dc.movingAverage(flux[i], 20)
-    lc2 = lk.LightCurve(time[i], normalized_flux2)
-    lc.append(lc, lc2)
-    print(lc2)
-ret = lc.normalize()
-plt.plot(np.concatenate(time), np.concatenate(ret.flux))
-'''
 
+
+'''
 for i in flux:  # Same scale for all segments
     i /= np.median(i)
 out_flux = np.concatenate(flux)
@@ -136,3 +122,4 @@ ret = lc.normalize()
 
 plt.plot(out_time, ret.flux)
 plt.show()
+'''
