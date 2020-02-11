@@ -193,40 +193,21 @@ def appendToFile(row):
         writer=csv.writer(fd)
         writer.writerow(row)
 
-def meanRemoval():
-    '''
-        Normalize All Features Using Mean Removal
-        
-        Mean Removal :  x_norm = (x - mean) / std
-        
-        std: Standard Deviation 
-    '''
-    dataset = pd.read_csv('dataset.csv', delimiter=',',header=0)
-    #print(dataset)
-    for i in range(1,len(dataset.columns)-1):
-        data = dataset.iloc[:,i]
-        mean = np.mean(data)
-        std = np.std(data)
-        #print("mean={};std={}".format(mean,std))
-        for j in range(0,len(dataset)):
-            if std != 0:
-                value = (dataset.iloc[j,i] - mean) //std
-                #print("({},{});value:{}".format(i,j,value))
-                dataset.iloc[j,i] = value
-    
-    dataset.to_csv('dataset.csv')
-    
-
 def normalizeTable(fields):
     tm=len(fields)-1
     columns=fields[1:tm]
-    df = pd.read_csv("dataset.csv", sep=",")
+    df = pd.read_csv("dataset.csv", delimiter=',',header=0)
+    i=1
     for col in columns:
-        sLength = len(df[col])
         x_array = np.array(df[col])
-        col = preprocessing.normalize([x_array])
-        df1 = df1.assign(e=pd.Series(np.random.randn(sLength)).values)
-    #print(df)
+        val = preprocessing.normalize([x_array])
+        
+        for j in range(0,len(df)):
+            #print("({},{});value:{}".format(i,j,val[0,j]))
+            df.iloc[j,i]=val[0,j]
+        i+=1
+        
+    print(df)
     df.to_csv('dataset.csv')
 
 def main():
@@ -256,7 +237,7 @@ def main():
             #print(row)
             appendToFile(row) 
     
-    normalizeTable(fields)
+    #normalizeTable(fields)
     #meanRemoval()
     # Remove Duplicate
 main()
