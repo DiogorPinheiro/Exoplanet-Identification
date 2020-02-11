@@ -31,7 +31,7 @@ dataFiles = [fname_PC, fname_NTP, fname_AFP]
 # ------------------------------------------- FITS File Manipulation ------------------------------------
 dir = "/home/jcneves/Documents/keplerData"
 dir_mac = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/testData"
-kepID = 11442793
+kepID = 1576144
 
 filenames = dr.filenameWarehouse(kepID, dir)
 time, flux = dr.fitsConverter(filenames)
@@ -47,6 +47,8 @@ val = ret.flux
 std = np.std(val)
 mean = np.mean(val)
 a=di.getStrongPeaks(val)
+print(a)
+
 # da.plotThresholdComparison(kepID,dir)
 #
 # da.graphFullLightCurve(time,flux)
