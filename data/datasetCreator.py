@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import lightkurve as lk
@@ -89,6 +89,7 @@ def createFeaturesTable(table, kepid, normalized_flux):
         width_strongPeaks = dataInfo.getPeaksWidth(normalized_flux,indStrong)
         mean_StrongWidth = np.mean(width_strongPeaks)
         std_StrongWidth = np.std(width_strongPeaks)
+        max_strongPeaksPercentage = ((max_strongPeaks-global_mean)/abs(global_mean))*100  # Percentage Change
 
     num_mediumPeaks = len(mediumPeaks)
     if len(mediumPeaks):
@@ -152,9 +153,12 @@ def createFeaturesTable(table, kepid, normalized_flux):
         row.append(std_MediumWidth)
     if len(strongPeaks):
         row.append(max_strongPeaks)
+        row.append(max_strongPeaksPercentage)
     else:
         max_strongPeaks=-1   # Verificar se faz sentido
         row.append(max_strongPeaks)
+        max_strongPeaksPercentage=-1   # Verificar se faz sentido
+        row.append(max_strongPeaksPercentage)
     row.append(overall_mean)
     row.append(overall_std)
     if len(nonPeaks):
@@ -168,7 +172,7 @@ def createFeaturesTable(table, kepid, normalized_flux):
     
     # Pairwise Product Of All Values
     values=[num_strongPeaks,num_mediumPeaks,num_weakPeaks,global_mean,global_median,globa_std,mean_StrongWidth,mean_MediumWidth,
-            std_StrongWidth,std_MediumWidth,max_strongPeaks,overall_mean,overall_std,mean_NonPeaksW,std_NonPeaksW]
+            std_StrongWidth,std_MediumWidth,max_strongPeaks,max_strongPeaksPercentage,overall_mean,overall_std,mean_NonPeaksW,std_NonPeaksW]
 
     for i in range(0,len(values)-1):
         for j in range (i,len(values)):
@@ -179,7 +183,8 @@ def createFeaturesTable(table, kepid, normalized_flux):
                 continue
     
     row.append(label)
-    #print("Length:{}; values:{}".format(len(row),len(values)))           
+    #print("Length:{}; values:{}".format(len(row),len(values)))
+
     return row
 
 def appendToFile(row):
@@ -194,39 +199,38 @@ def appendToFile(row):
         writer.writerow(row)
 
 def normalizeTable(fields):
-    tm=len(fields)-1
-    columns=fields[1:tm]
-    df = pd.read_csv("dataset.csv", delimiter=',',header=0)
+
+    df = pd.read_csv("dataset.csv", delimiter=',',header=0,index_col=False)
+
+
     i=1
-    for col in columns:
+    for col in df.columns[1:(len(df.columns)-1)]:
         x_array = np.array(df[col])
+        #print("Array:{}".format(x_array))
         val = preprocessing.normalize([x_array])
-        
+        #print(val)
         for j in range(0,len(df)):
             #print("({},{});value:{}".format(i,j,val[0,j]))
             df.iloc[j,i]=val[0,j]
-        i+=1
-        
-    print(df)
-    df.to_csv('dataset.csv')
+        i+=1  
+
+    df.to_csv('dataset.csv',)
 
 def main():
     # Create table
     fields=['kepid','NumStrongPeaks','NumMediumPeaks','NumWeakPeaks','GlobalMean','GlobalMedian','GlobalSTD','MeanStrongPeakWidth','STDStrongPeakWidth','MeanMediumPeakWidth','STDMediumPeakWidth',
-            'MaxMagnitude','MeanOverallPoints','STDOverallPoints','NonPeakWidthMean','NonPeakWidthSTD']
-    for i in range(105):    # Create Headers For Pairwise Values
+            'MaxMagnitude','MaxMagnitudePercentage','MeanOverallPoints','STDOverallPoints','NonPeakWidthMean','NonPeakWidthSTD']
+    for i in range(120):    # Create Headers For Pairwise Values
         fields.append('Pairwise {}'.format(i+1))
     fields.append('label')
-    
-    with open("dataset.csv", "w") as fd:
+    with open("dataset.csv", "w") as fd:  # Write Header
         writer=csv.writer(fd)
         writer.writerow(fields)
-    
     table = getCSVData().drop_duplicates()
     # List of Kepids
-    #kepids = getKepids(table)
-    kepids=[11442793,4458082,1576141,1576144]
-
+    kepids = getKepids(table)
+    #kepids=[11442793,4458082,1576141,1576144]
+    values=[]
     for id in kepids:
         lab = labelCatcher(table, id)
         if lab != 'UNK':    # Avoid Unknown Light Curves
@@ -235,9 +239,9 @@ def main():
             normalized_flux,out_time = getConcatenatedLightCurve(flux,time)
             row = createFeaturesTable(table,id,normalized_flux)
             #print(row)
-            appendToFile(row) 
-    
-    #normalizeTable(fields)
-    #meanRemoval()
+            appendToFile(row)
+
+    normalizeTable(fields)
+        
     # Remove Duplicate
 main()
