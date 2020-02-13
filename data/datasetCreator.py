@@ -1,4 +1,3 @@
-#import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import lightkurve as lk
@@ -15,10 +14,20 @@ DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 
 def getCSVData():
+    '''
+        Call dataCSV Function To Get The Data Of CSV File
+
+        Output: Pandas Dataframe
+    '''
     return dataInfo.dataCSV(CSV_FILE)
 
 
 def getKepids(table):
+    '''
+        Get All Kepids In The CSV File
+
+        Output: List of Kepids Numbers (List of Int)
+    '''
     return dataInfo.listKepids(table)
 
 
@@ -70,7 +79,7 @@ def createFeaturesTable(table, kepid, normalized_flux):
         4. Return Row of Features
         
         Input: CSV Table, Kepid Number, Normalized Flux Associated To The Kepid
-        Output: Row Of Features 
+        Output: Row (Array) Of Features
     '''
     row = []
     
@@ -198,10 +207,14 @@ def appendToFile(row):
         writer=csv.writer(fd)
         writer.writerow(row)
 
-def normalizeTable(fields):
+def normalizeTable():
+    '''
+        Read CSV File And Normalize Each Column (Except Kepid and Label)
+
+        Replaces Values In CSV File With Their Normalized Version
+    '''
 
     df = pd.read_csv("dataset.csv", delimiter=',',header=0,index_col=False)
-
 
     i=1
     for col in df.columns[1:(len(df.columns)-1)]:
@@ -214,10 +227,19 @@ def normalizeTable(fields):
             df.iloc[j,i]=val[0,j]
         i+=1  
 
-    df.to_csv('dataset.csv',)
+    df.to_csv('dataset.csv',index=False)
 
 def main():
-    # Create table
+    '''
+        Main Controller Of This File
+
+        Steps:
+        1. Write Column Names To The CSV File
+        2. Get All Kepids Numbers
+        3. For Each Kepid : Read Light Curve, Concatenate All Light Curves Associated With Kepid, Create Row Of Features, Append Row To CSV File
+        4. Normalize Each Column Of The CSV File
+    '''
+    # Create Column Names
     fields=['kepid','NumStrongPeaks','NumMediumPeaks','NumWeakPeaks','GlobalMean','GlobalMedian','GlobalSTD','MeanStrongPeakWidth','STDStrongPeakWidth','MeanMediumPeakWidth','STDMediumPeakWidth',
             'MaxMagnitude','MaxMagnitudePercentage','MeanOverallPoints','STDOverallPoints','NonPeakWidthMean','NonPeakWidthSTD']
     for i in range(120):    # Create Headers For Pairwise Values
@@ -227,21 +249,19 @@ def main():
         writer=csv.writer(fd)
         writer.writerow(fields)
     table = getCSVData().drop_duplicates()
-    # List of Kepids
-    kepids = getKepids(table)
+
+    kepids = getKepids(table) # List of Kepids
     #kepids=[11442793,4458082,1576141,1576144]
-    values=[]
+
     for id in kepids:
         lab = labelCatcher(table, id)
         if lab != 'UNK':    # Avoid Unknown Light Curves
-            filenames = dataReader.filenameWarehouse(id, DATA_DIRECTORY)
-            time, flux = dataReader.fitsConverter(filenames)
-            normalized_flux,out_time = getConcatenatedLightCurve(flux,time)
-            row = createFeaturesTable(table,id,normalized_flux)
-            #print(row)
-            appendToFile(row)
+            filenames = dataReader.filenameWarehouse(id, DATA_DIRECTORY)    # Get Full Path Of All Light Curves
+            time, flux = dataReader.fitsConverter(filenames)        # Read Light Curves And Obtain Time And Flux
+            normalized_flux,out_time = getConcatenatedLightCurve(flux,time) # Concatenating All Light Curves
+            row = createFeaturesTable(table,id,normalized_flux) # Create Row Of Features
+            appendToFile(row)   # Append Row To CSV File
 
-    normalizeTable(fields)
-        
-    # Remove Duplicate
+    normalizeTable()    # Normalize All Columns In The CSV File
+
 main()
