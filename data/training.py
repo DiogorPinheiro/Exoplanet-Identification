@@ -47,7 +47,7 @@ def logRegParameterTuning(train_X,train_Y,val_X,val_Y):
 def svmParameterTuning(train_X,train_Y,val_X,val_Y):
     parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
     svr = svm.SVC(probability=False)
-    model = GridSearchCV(svr, parameters,n_jobs=4)
+    model = GridSearchCV(svr, parameters,n_jobs=4, verbose = 5)
     model.fit(train_X, train_Y)
     print("Tuned Hyperparameters :(best parameters) ", model.best_params_)
     print("Accuracy :", model.best_score_)
@@ -57,9 +57,9 @@ def models(algorithm, train_X,train_Y,val_X,val_Y,test_X, test_Y):
         #knnParametersTuning(train_X, train_Y, val_X, val_Y)
         model = KNeighborsClassifier(n_neighbors=3)
     if algorithm == 'SVM':
-        parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+        parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 5]}
         svr = svm.SVC(probability=False)
-        model = GridSearchCV(svr, parameters,n_jobs=4)
+        model = GridSearchCV(svr, parameters,n_jobs=4, verbose = 5)
         model.fit(train_X, train_Y)
         print("Tuned Hyperparameters :(best parameters) ", model.best_params_)
         print("Accuracy :", model.best_score_)
