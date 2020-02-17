@@ -2,10 +2,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import  numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
 
 def knnParametersTuning(train_X,train_Y,val_X,val_Y):
     k = list(range(1, 30))
@@ -77,6 +80,15 @@ def models(algorithm, train_X,train_Y,val_X,val_Y,test_X, test_Y):
 
     return  accuracyVal, accuracyTest
 
+def create_modelNN(unit=8, activation='relu'):
+    model = Sequential()
+    model.add(Dense(137, input_dim=137, activation='relu'))    # Input Layer -> Rectified linear unit activation function
+    model.add(Dense(units=unit, activation='sigmoid'))  # Hidden Layer -> Rectified linear unit activation function
+    model.add(Dense(1, activation='sigmoid'))   # Output Layer - > Sigmoid Function
+
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
 def showComparison(acc):
     plt.rcdefaults()
     tests = ['KNN', 'SVM', 'LogReg']
@@ -91,6 +103,33 @@ def showComparison(acc):
     ax.set_title('Accuracy Comparison Between Algorithms')
     plt.savefig('ML_Comparison.png', bbox_inches='tight')
 
+def fullyConnectedNN(train_X,train_Y,val_X,val_Y,test_X, test_Y):
+    model = KerasClassifier(build_fn=create_modelNN, verbose=0)
+    # define the grid search parameters
+    unit = [ 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270 ]
+    param_grid = dict(unit=unit)
+    grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
+    grid_result = grid.fit(train_X, train_Y)
+    print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+
+    #_, accuracy = grid.evaluate(val_X, val_Y)
+    #print('Accuracy: %.2f' % (accuracy * 100))
+
+    score_accuracy = grid.score(test_X,test_Y)
+    print("Score Accuracy - Test : {}".format(score_accuracy))
+
+def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
+    result_accuracy = []
+    result_acc = []
+    algorithms = ['KNN', 'SVM', 'LogReg']
+    # algorithms = ['KNN','LogReg']
+    for algo in algorithms:
+        ra, rac = models(algo, train_X, train_Y, val_X, val_Y, test_X, test_Y)
+        result_accuracy.append(ra)
+        result_acc.append(rac)
+
+    showComparison(result_acc)
+
 def main():
     data=np.loadtxt('dataset.csv',delimiter=',',skiprows=1)
     X=data[1:,0:-1] # Input
@@ -98,15 +137,7 @@ def main():
     train_X,val_X,test_X=np.split(X,[int(.8*len(X)),int(0.9*len(X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y,val_Y,test_Y=np.split(Y,[int(.8*len(Y)),int(0.9*len(Y))])
 
-    result_accuracy = []
-    result_acc = []
-    algorithms = ['KNN','SVM','LogReg']
-    #algorithms = ['KNN','LogReg']
-    for algo in algorithms:
-        ra,rac = models(algo,train_X,train_Y,val_X,val_Y,test_X,test_Y)
-        result_accuracy.append(ra)
-        result_acc.append(rac)
-
-    showComparison(result_acc)
+    #callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y)
+    fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
 
 main()
