@@ -11,11 +11,19 @@ from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
 
 def knnParametersTuning(train_X,train_Y,val_X,val_Y):
+    '''
+        Tune K-Nearest Neighbors Hyper-Parameters
+        Trains And Tests Data Using The Area Under Curve As Evaluation Metric
+
+        Input: X and Y Values Of The Training And Validation Sets
+        Output: Figure With Comparison Of Parameters (Saved To The Directory)
+    '''
     k = list(range(1, 30))
     train_results = []
     test_results = []
     for i in k:
         model = KNeighborsClassifier(n_neighbors=i)
+
         model.fit(train_X, train_Y)
         train_pred = model.predict(train_X)
 
@@ -31,6 +39,7 @@ def knnParametersTuning(train_X,train_Y,val_X,val_Y):
         test_results.append(roc_auc)
     print(test_results)
 
+    # Create Figure With Parameters Comparison
     line1, = plt.plot(k, train_results, 'b', label="Train AUC")
     line2, = plt.plot(k, test_results, 'r', label="Validation AUC")
     plt.legend(handler_map={line1: HandlerLine2D(numpoints=2)})
@@ -39,6 +48,12 @@ def knnParametersTuning(train_X,train_Y,val_X,val_Y):
     plt.savefig('knnScores.png', bbox_inches='tight')
 
 def logRegParameterTuning(train_X,train_Y,val_X,val_Y):
+    '''
+        Hyper-Parameter Tuning For The Logistic Regression Algorithm
+
+        Input: X and Y Values Of The Training And Validation Sets
+        Output: Prints Best Parameters Combination and Predicted Accuracy On The Training Data
+    '''
     grid = {"C": np.logspace(-3, 3, 7), "penalty": ["l1", "l2"]}  # l1 lasso l2 ridge
     logreg = LogisticRegression()
     logreg_cv = GridSearchCV(logreg, grid, cv=10)
@@ -48,6 +63,12 @@ def logRegParameterTuning(train_X,train_Y,val_X,val_Y):
     #smaller C specify stronger regularization.
 
 def svmParameterTuning(train_X,train_Y,val_X,val_Y):
+    '''
+            Hyper-Parameter Tuning For The Support Vector Machine Algorithm
+
+            Input: X and Y Values Of The Training And Validation Sets
+            Output: Prints Best Parameters Combination and Predicted Accuracy On The Training Data
+        '''
     parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
     svr = svm.SVC(probability=False)
     model = GridSearchCV(svr, parameters,n_jobs=4, verbose = 5)
@@ -56,6 +77,13 @@ def svmParameterTuning(train_X,train_Y,val_X,val_Y):
     print("Accuracy :", model.best_score_)
 
 def models(algorithm, train_X,train_Y,val_X,val_Y,test_X, test_Y):
+    '''
+        Choose Best HyperParameters, Trains And Evaluates The Algorithm
+
+        Input: algorithm - Array Of String With The Names Of All Used Algorithms
+               X and Y Values Of The Training And Validation Sets
+        Output: Prints The Prediction Results
+    '''
     if algorithm == 'KNN':
         #knnParametersTuning(train_X, train_Y, val_X, val_Y)
         model = KNeighborsClassifier(n_neighbors=3)
@@ -81,6 +109,13 @@ def models(algorithm, train_X,train_Y,val_X,val_Y,test_X, test_Y):
     return  accuracyVal, accuracyTest
 
 def create_modelNN(unit=8, activation='relu'):
+    '''
+        Creates A Fully Connected Neural Network Model
+
+        Input: Receives Tuned Hyper-Parameters -> unit - Dimensionality Of The Output Space (int)
+                                                  activation - Activation Function (string)
+        Output: Created Keras Model
+    '''
     model = Sequential()
     model.add(Dense(137, input_dim=137, activation='relu'))    # Input Layer -> Rectified linear unit activation function
     model.add(Dense(units=unit, activation='sigmoid'))  # Hidden Layer -> Rectified linear unit activation function
@@ -90,6 +125,12 @@ def create_modelNN(unit=8, activation='relu'):
     return model
 
 def showComparison(acc):
+    '''
+        Illustrates The Results Difference Between The Trained Algorithms
+
+        Input: acc - Array Of Float Values Corresponding To The Accuracy
+        Output: Figure With Comparison (Saved To The Current Directory)
+    '''
     plt.rcdefaults()
     tests = ['KNN', 'SVM', 'LogReg']
     y_pos = np.arange(len(tests))
@@ -104,6 +145,12 @@ def showComparison(acc):
     plt.savefig('ML_Comparison.png', bbox_inches='tight')
 
 def fullyConnectedNN(train_X,train_Y,val_X,val_Y,test_X, test_Y):
+    '''
+        Tuning of Hyper-Parameters, Training And Evaluation Of A Fully Connected Neural Network
+
+        Input: X and Y Values Of The Training And Validation Sets
+        Output: Prints The Prediction Results
+    '''
     model = KerasClassifier(build_fn=create_modelNN, verbose=0)
     # define the grid search parameters
     unit = [ 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270 ]
@@ -119,6 +166,12 @@ def fullyConnectedNN(train_X,train_Y,val_X,val_Y,test_X, test_Y):
     print("Score Accuracy - Test : {}".format(score_accuracy))
 
 def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
+    '''
+        Creates Sequence Of Training And Evaluation For All Algorithms
+
+        Input: X and Y Values Of The Training And Validation Sets
+        Output: Figure With Result Comparison (Provided By The showComparison Function)
+    '''
     result_accuracy = []
     result_acc = []
     algorithms = ['KNN', 'SVM', 'LogReg']

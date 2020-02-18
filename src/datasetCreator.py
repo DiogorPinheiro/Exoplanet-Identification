@@ -9,7 +9,7 @@ from dataFunctions import dataInfo
 from dataFunctions import dataAnalyzer
 from dataFunctions import dataReader
 
-CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 
@@ -248,6 +248,7 @@ def main():
     with open("dataset.csv", "w") as fd:  # Write Header
         writer=csv.writer(fd)
         writer.writerow(fields)
+
     table = getCSVData().drop_duplicates()
 
     kepids = getKepids(table) # List of Kepids
@@ -258,7 +259,7 @@ def main():
         if lab != 'UNK':    # Avoid Unknown Light Curves
             filenames = dataReader.filenameWarehouse(id, DATA_DIRECTORY)    # Get Full Path Of All Light Curves
             time, flux = dataReader.fitsConverter(filenames)        # Read Light Curves And Obtain Time And Flux
-            normalized_flux,out_time = getConcatenatedLightCurve(flux,time) # Concatenating All Light Curves
+            normalized_flux,out_time = getConcatenatedLightCurve(flux,time) # Concatenate All Light Curves
             row = createFeaturesTable(table,id,normalized_flux) # Create Row Of Features
             appendToFile(row)   # Append Row To CSV File
 
