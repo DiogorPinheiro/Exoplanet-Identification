@@ -12,22 +12,6 @@ from dataFunctions import dataReader
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
-def getConcatenatedLightCurve(flux,time):
-    '''
-        Concatenate all Light Curves associated with the kepid and normalize values
-
-        Input: kepid number
-        Output: normalized concatenated light curve
-    '''
-    for i in flux:  # Same scale for all segments
-        i /= np.median(i)
-    out_flux = np.concatenate(flux)
-    out_time = np.concatenate(time)
-    normalized_flux = dataCleaner.movingAverage(out_flux, 15)
-    lc = lk.LightCurve(out_time, normalized_flux)
-    ret = lc.normalize()
-    return ret.flux, out_time
-
 def getKepids(table):
     '''
         Get All Kepids In The CSV File
@@ -50,5 +34,6 @@ def main():
     kepids = getKepids(table)  # List of Kepids
 
     dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
+    # Create function for a functional 1D-CNN
 
 main()
