@@ -119,3 +119,19 @@ def createFluxDatabase(table,kepids,DATA_DIRECTORY):
             flux_values.append(normalized_flux)
 
     pickle.dump(flux_values, open("concateneted_flux.p", "wb"))
+
+def getConcatenatedLightCurve(flux,time):
+    '''
+        Concatenate all Light Curves associated with the kepid and normalize values
+
+        Input: kepid number
+        Output: normalized concatenated light curve
+    '''
+    for i in flux:  # Same scale for all segments
+        i /= np.median(i)
+    out_flux = np.concatenate(flux)
+    out_time = np.concatenate(time)
+    normalized_flux = dataCleaner.movingAverage(out_flux, 15)
+    lc = lk.LightCurve(out_time, normalized_flux)
+    ret = lc.normalize()
+    return ret.flux, out_time

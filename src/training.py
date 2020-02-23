@@ -185,12 +185,13 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
 
 def main():
     data=np.loadtxt('dataset.csv',delimiter=',',skiprows=1)
-    X=data[1:,0:-1] # Input
-    Y= data[1:,-1]  # Labels
+    X=data[0:,0:-1] # Input
+    Y= data[0:,-1]  # Labels
     train_X,val_X,test_X=np.split(X,[int(.8*len(X)),int(0.9*len(X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y,val_Y,test_Y=np.split(Y,[int(.8*len(Y)),int(0.9*len(Y))])
 
+
     #callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y)
-    fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
+    #fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
 
 main()

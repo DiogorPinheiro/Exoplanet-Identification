@@ -53,22 +53,6 @@ def labelCatcher(table, kepid):
     '''
     return dataInfo.labelFinder(table, kepid)
 
-def getConcatenatedLightCurve(flux,time):
-    '''
-        Concatenate all Light Curves associated with the kepid and normalize values
-
-        Input: kepid number
-        Output: normalized concatenated light curve 
-    '''
-    for i in flux:  # Same scale for all segments
-        i /= np.median(i)
-    out_flux = np.concatenate(flux)
-    out_time = np.concatenate(time)
-    normalized_flux = dataCleaner.movingAverage(out_flux, 15)
-    lc = lk.LightCurve(out_time, normalized_flux)
-    ret = lc.normalize()
-    return ret.flux, out_time
-
 def createFeaturesTable(table, kepid, normalized_flux):
     '''
         1. Read and Convert Data
@@ -252,6 +236,7 @@ def main():
     table = getCSVData().drop_duplicates()
 
     kepids = getKepids(table) # List of Kepids
+    print(kepids)
     #kepids=[11442793,4458082,1576141,1576144]
 
     for id in kepids:
@@ -259,7 +244,7 @@ def main():
         if lab != 'UNK':    # Avoid Unknown Light Curves
             filenames = dataReader.filenameWarehouse(id, DATA_DIRECTORY)    # Get Full Path Of All Light Curves
             time, flux = dataReader.fitsConverter(filenames)        # Read Light Curves And Obtain Time And Flux
-            normalized_flux,out_time = getConcatenatedLightCurve(flux,time) # Concatenate All Light Curves
+            normalized_flux,out_time = dataReader.getConcatenatedLightCurve(flux,time) # Concatenate All Light Curves
             row = createFeaturesTable(table,id,normalized_flux) # Create Row Of Features
             appendToFile(row)   # Append Row To CSV File
 

@@ -86,11 +86,9 @@ def labelFinder(table, kepid):
             return r['av_training_set']
 # get CSV data
 
-
 def dataCSV(filename):
-    return pd.read_csv(filename, skiprows=15, usecols=[0, 8])
+    return pd.read_csv(filename, skiprows=15, usecols=[0, 2, 4, 6, 8])
 # Listar Kepids
-
 
 def listKepids(file):
     print(file.iloc[:,0])
@@ -105,3 +103,18 @@ def overallPeakData(strong, medium, weak):
     aux.append(weak)
     aux= np.concatenate(aux)
     return np.mean(aux), np.std(aux)
+
+def getTCEPeriod(table,kepid):
+    for i, r in table.iterrows():
+        if r['kepid'] == kepid:
+            return r['tce_period']
+
+def getTCEDuration(table,kepid):
+    for i, r in table.iterrows():
+        if r['kepid'] == kepid:
+            return r['tce_duration']
+
+def getTCETransitMidpoint(table,kepid):
+    for i, r in table.iterrows():
+        if r['kepid'] == kepid:
+            return r['tce_time0bk']

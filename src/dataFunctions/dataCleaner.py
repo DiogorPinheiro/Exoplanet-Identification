@@ -77,3 +77,4 @@ def shiftDown(data):
     for i in data:
         aux.append(i - 1)
     return aux
+
