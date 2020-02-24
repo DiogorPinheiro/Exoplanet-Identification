@@ -117,6 +117,30 @@ plt.plot(out_time,mean_onestd, 'g')
 plt.plot(out_time, mean_twostd, 'r')
 plt.show()
 
+'''
+'''
+filenames = dr.filenameWarehouse(kepID, dir_mac)
+time, flux = dr.fitsConverter(filenames)
+out = savgol_filter(flux[0], 51, 3)
+out2 = dc.movingAverage(flux[0], 15)
+out3 = dc.timeVariation(flux[0])
+
+fig, axs = plt.subplots(3)
+axs[0].plot(time[0], flux[0], 'k')
+axs[0].plot(time[0], out, 'r')
+axs[0].axis('off')
+axs[0].set_title('Savitsky-Golay Filter')
+axs[1].plot(time[0], flux[0], 'k')
+axs[1].plot(time[0], out2, 'g')
+axs[1].set_title('Moving Average Filter')
+axs[1].axis('off')
+axs[2].plot(time[0], flux[0], 'k')
+axs[2].plot(time[0], out3, 'm')
+axs[2].set_title('Time Variation Filter')
+axs[2].axis('off')
+plt.show()
+'''
+
 
 
 

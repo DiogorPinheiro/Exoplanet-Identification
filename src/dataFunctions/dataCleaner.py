@@ -1,5 +1,7 @@
 import numpy as np
 import prox_tv as ptv
+from scipy.interpolate import interp1d
+from scipy.signal import savgol_filter
 
 def movingAverage(N, window):
     '''
@@ -78,3 +80,5 @@ def shiftDown(data):
         aux.append(i - 1)
     return aux
 
+def sovitzGolay(data):
+    return savgol_filter(data,51,3)

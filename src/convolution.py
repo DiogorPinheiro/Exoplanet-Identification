@@ -2,16 +2,14 @@ import numpy as np
 import pickle
 from sklearn import preprocessing
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Input, concatenate, Flatten
 from keras.layers.convolutional import Conv1D
-from keras.layers import GlobalMaxPooling1D
-import lightkurve as lk
-import pandas as pd
+from keras.layers import MaxPooling1D
+from keras.models import Model
+from keras import optimizers
+from sklearn.preprocessing import MinMaxScaler
 
-from dataFunctions import dataCleaner
 from dataFunctions import dataInfo
-from dataFunctions import dataAnalyzer
-from dataFunctions import dataReader
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
@@ -52,40 +50,65 @@ def normalizeData(data):
 
     return normalized_results
 
-def rawCNN(n_timesteps, n_features):
-    model = Sequential()
-    model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(n_timesteps,n_features)))
-    model.add(Conv1D(filters=64, activation='sigmoid'))
-    model.add(GlobalMaxPooling1D())
-    model.add(Dense(1, activation='sigmoid'))  # Output Layer - > Sigmoid Function
-
-
-
 def main():
     table = getCSVData().drop_duplicates()
-    #kepids = getKepids(table)  # List of Kepids
+    kepids = getKepids(table).drop_duplicates().reset_index(drop=True)  # List of Kepids
     #dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
-    # Raw Data For The Sequential 1D-CNN
-    #data = pickle.load(open( "concateneted_flux.p", "rb" ))
-    #data = np.asarray(data)
+    # Data For The Sequential 1D-CNN
+    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
+    local_X = data_local[0:, 1:-1]  # Input
+    local_Y = data_local[0:, -1]  # Labels
+    scaler_local = MinMaxScaler(feature_range=(0, 1))   # Scale Values
+    rescaled_local_X = scaler_local.fit_transform(local_X)
 
-    # Get Labels
-    #data_y = np.loadtxt('dataset.csv', delimiter=',', skiprows=1)
-    #Y = data_y[0:, -1]  # Labels
-    #normalized_data=normalizeData(data)
-    #print(len(data))
-    #print(len(normalized_data))
+    data_global = np.loadtxt('neural_input_global.csv', delimiter=',')
+    global_X = data_global[0:, 1:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    rescaled_global_X = scaler_global.fit_transform(global_X)
 
-    #for col in data:
-    #    print(len(col))
-    df = pd.read_csv("neural_input_global.csv", sep=",")
-    df.drop_duplicates(subset=None, inplace=True)
-    df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
-    # Write the my_dataframe.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)results to a different file
-    df.to_csv("neural_input_global.csv")
+    # Separate Data
+    train_X_local, val_X_local, test_X_local = np.split(rescaled_local_X, [int(.8 * len(rescaled_local_X)), int(0.9 * len(rescaled_local_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_Y_local, val_Y_local, test_Y_local = np.split(local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
+    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
 
-    #train_X, val_X, test_X = np.split(normalized_data, [int(.8 * len(normalized_data)), int(0.9 * len(normalized_data))])  # Training = 80%, Validation = 10%, Test = 10%
-    #train_Y, val_Y, test_Y = np.split(Y, [int(.8 * len(Y)), int(0.9 * len(Y))])
+    train_X_global, val_X_global, test_X_global = np.split(rescaled_global_X, [int(.8 * len(rescaled_global_X)), int(0.9 * len(rescaled_global_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_Y_global, val_Y_global, test_Y_global = np.split(global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
+    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+
+    # Shape Data
+    #print(train_X_local.shape)
+    x_train_local = train_X_local.reshape(train_X_local.shape[0], 1, train_X_local.shape[1])
+    #print(x_train_local.shape)
+
+    #print(train_X_global.shape)
+    x_train_global = train_X_global.reshape(train_X_global.shape[0], 1, train_X_global.shape[1])
+    #print(x_train_global.shape)
+
+    # CNN Model
+    inputLayer_local = Input(shape=x_train_local.shape)
+    inputLayer_global = Input(shape=x_train_global.shape)
+
+    conv_local = Conv1D(201, 10, strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1, activation='relu')
+    conv_global = Conv1D(2001, 10,  strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1, activation='relu')
+
+    convQ1 = conv_local(inputLayer_local)
+    poolLayerQ1 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ1)
+    convQ2 = conv_global(inputLayer_global)
+    poolLayerQ2 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ2)
+
+    concatLayerQ = concatenate([inputLayer_local, inputLayer_global], axis=1)
+    flatLayerQ = Flatten()(concatLayerQ)
+    denseLayerQ = Dense(10, activation='relu')(flatLayerQ)
+
+    outputLayer = Dense(2, activation='sigmoid')(denseLayerQ)
+
+    model = Model(inputs=[inputLayer_local, inputLayer_global], outputs=outputLayer)
+    sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+    model.fit(x_train, y_train,  epochs=20, batch_size=128)
+    score = model.evaluate(x_test, y_test, batch_size=128)
 
 main()
