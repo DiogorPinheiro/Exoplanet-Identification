@@ -93,22 +93,23 @@ def main():
     conv_local = Conv1D(201, 10, strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1, activation='relu')
     conv_global = Conv1D(2001, 10,  strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1, activation='relu')
 
-    convQ1 = conv_local(inputLayer_local)
+    convQ1 = conv_local(inputLayer_local)                                       # Disjoint Conv Layer
     poolLayerQ1 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ1)
     convQ2 = conv_global(inputLayer_global)
     poolLayerQ2 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ2)
 
-    concatLayerQ = concatenate([inputLayer_local, inputLayer_global], axis=1)
+    concatLayerQ = concatenate([inputLayer_local, inputLayer_global], axis=1)   # Concatenate Layer
     flatLayerQ = Flatten()(concatLayerQ)
-    denseLayerQ = Dense(10, activation='relu')(flatLayerQ)
+    denseLayerQ = Dense(200, activation='relu')(flatLayerQ)
 
-    outputLayer = Dense(2, activation='sigmoid')(denseLayerQ)
+    outputLayer = Dense(1, activation='sigmoid')(denseLayerQ)   # Output Layer
 
     model = Model(inputs=[inputLayer_local, inputLayer_global], outputs=outputLayer)
-    sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    opt = optimizers.Adam(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-    model.fit(x_train, y_train,  epochs=20, batch_size=128)
-    score = model.evaluate(x_test, y_test, batch_size=128)
+    # Training The Model
+    model.fit([train_X_local,train_X_global], train_Y_local, epochs=20, batch_size=128)
+    score = model.evaluate([test_X_local,test_X_global], test_Y_local, batch_size=128)
 
 main()
