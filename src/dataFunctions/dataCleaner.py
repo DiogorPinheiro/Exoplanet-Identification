@@ -81,4 +81,4 @@ def shiftDown(data):
     return aux
 
 def sovitzGolay(data):
-    return savgol_filter(data,51,3)
+    return savgol_filter(data, 51, 3)

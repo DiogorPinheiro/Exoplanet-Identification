@@ -192,6 +192,6 @@ def main():
 
 
     #callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y)
-    #fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
+    fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
 
 main()

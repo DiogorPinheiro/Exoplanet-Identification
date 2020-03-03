@@ -4,6 +4,7 @@ from sklearn import preprocessing
 import lightkurve as lk
 import pandas as pd
 import csv
+import time as t
 
 from dataFunctions import dataCleaner
 from dataFunctions import dataInfo
@@ -14,6 +15,10 @@ CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_d
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 GLOBAL_CSV = "../neural_input_global.csv"
 LOCAL_CSV = "../neural_input_local.csv"
+GLOBAL_CSV_SOVGOL = "../neural_input_global_sovgol.csv"
+LOCAL_CSV_SOVGOL = "../neural_input_local_sovgol.csv"
+GLOBAL_CSV_TIMEV = "../neural_input_global_timev.csv"
+LOCAL_CSV_TIMEV = "../neural_input_local_timev.csv"
 
 def getCSVData():
     '''
@@ -55,17 +60,19 @@ def getLabel(table, kepid):
         return 0
 
 def main():
+    start = t.time()
     table = getCSVData().drop_duplicates()
     kepids = (dataInfo.listKepids(table)).drop_duplicates().reset_index(drop=True) # List of Kepids (Avoid Duplicates)
     #dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
     global_flux=[]
     local_flux=[]
-
+    #kepids=kepids[0:15]
     for kep in kepids:
         filenames = dataReader.filenameWarehouse(kep, DATA_DIRECTORY)  # Get Full Path Of All Light Curves
         time, flux = dataReader.fitsConverter(filenames)  # Read Light Curves And Obtain Time And Flux
         out_flux, out_time = dataReader.getConcatenatedLightCurve(flux, time)  # Concatenate All Light Curves
+        out_flux = dataCleaner.sovitzGolay(out_flux)
 
         # Get Info About Host Star
         period = dataInfo.getTCEPeriod(table, kep)
@@ -88,35 +95,38 @@ def main():
         global_view = globaView(lc_fold)  # Global View
         gl_phase = global_view.phase
         gl_bri = global_view.flux
-
+        np.nan_to_num(gl_bri,nan=np.mean(gl_bri))
         global_info = []
-        if not(np.isnan(gl_bri).any()): # Avoid Rows With nan values
-            global_info.append(kep)
-            for i in gl_bri:
-                global_info.append(i)
-            global_info.append(label)
-            global_flux.append(global_info)
-
+        global_info.append(kep)
+        for i in gl_bri:
+            global_info.append(i)
 
         local_view = localView(lc_fold,fractional_duration) # Local View
         lc_phase = local_view.phase
         lc_bri = local_view.flux
+        np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
         local_info = []
-        if not (np.isnan(lc_bri).any()):
-            local_info.append(kep)
-            for j in lc_bri:
-                local_info.append(j)
+        local_info.append(kep)
+        for j in lc_bri:
+            local_info.append(j)
+
+        if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any() ): # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
             local_info.append(label)
             local_flux.append(local_info)
+            global_info.append(label)
+            global_flux.append(global_info)
 
-    with open(GLOBAL_CSV, 'w') as fd:
+    with open(GLOBAL_CSV_SOVGOL, 'w') as fd:
         for row in global_flux:
             writer = csv.writer(fd)
             writer.writerow(row)
 
-    with open(LOCAL_CSV, 'w') as fd:
+    with open(LOCAL_CSV_SOVGOL, 'w') as fd:
         for row in local_flux:
             writer = csv.writer(fd)
             writer.writerow(row)
+
+    end = t.time()
+    print(end - start)
 
 main()
