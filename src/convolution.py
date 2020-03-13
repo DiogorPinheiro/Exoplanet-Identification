@@ -1,5 +1,6 @@
 import numpy as np
 from comet_ml import Experiment, Optimizer
+import tensorflow as tf
 from sklearn import preprocessing
 from keras.models import Sequential
 from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation
@@ -54,34 +55,92 @@ def normalizeData(data):
 
     return normalized_results
 
-def bothViewsCNN(x_train_local, x_train_global, train_X_local, train_X_global, train_Y_local, test_X_local, test_X_global, test_Y_local ):
+def bothViewsCNN(x_train_local, x_train_global,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout ):
     # CNN Model
-    inputLayer_local = Input(shape=x_train_local.shape)
-    inputLayer_global = Input(shape=x_train_local.shape)
+    print(x_train_local.shape)
+    print(x_train_global.shape)
+    inputLayer_local = Input(shape=(x_train_local.shape[1],1 ))
+    inputLayer_global = Input(shape=(x_train_global.shape[1],1 ))
 
-    conv_local = Conv1D(201, 10, strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1,
+    conv_local = Conv1D(16, kernel_size=5, strides=1, padding='same', dilation_rate=1,
                         activation='relu')
-    conv_global = Conv1D(2001, 10, strides=1, input_shape=x_train_local.shape, padding='same', dilation_rate=1,
+    conv_global = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
                          activation='relu')
 
-    convQ1 = conv_local(inputLayer_local)  # Disjoint Conv Layer
-    poolLayerQ1 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ1)
-    convQ2 = conv_global(inputLayer_global)
-    poolLayerQ2 = MaxPooling1D(pool_size=5, strides=1, padding='valid')(convQ2)
+    # Input1
+    model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
+    model1 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)
+    model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)
+    model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)
+    model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)
+    model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model1)
+    model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Flatten()(model1)
 
-    concatLayerQ = concatenate([inputLayer_local, inputLayer_global], axis=1)  # Concatenate Layer
-    flatLayerQ = Flatten()(concatLayerQ)
-    denseLayerQ = Dense(200, activation='relu')(flatLayerQ)
+    # Input2
+    model2 = conv_local(inputLayer_local)
+    model2 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model2)  # Disjoint Conv Layer
+    model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
+    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model2)  # Disjoint Conv Layer
+    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
+                        activation='relu')(model2)
+    model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
+    model2 = Flatten()(model2)
+    # Concatenation
+    concatLayerQ = concatenate([model1, model2], axis=1)  # Concatenate Layer
+    #flatLayerQ = Flatten()(concatLayerQ)
+
+    # Fully-Connected Layers
+    denseLayerQ = Dense(512, activation='relu')(concatLayerQ)
+    denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
+    denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
+    denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
 
     outputLayer = Dense(1, activation='sigmoid')(denseLayerQ)  # Output Layer
 
     model = Model(inputs=[inputLayer_local, inputLayer_global], outputs=outputLayer)
-    opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-    # Training The Model
-    model.fit([train_X_local, train_X_global], train_Y_local, epochs=20, batch_size=128)
-    score = model.evaluate([test_X_local, test_X_global], test_Y_local, batch_size=128)
+    #opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    opt = optimizers.Adam(learning_rate=10e-5, beta_1=0.9, beta_2=0.999 ,amsgrad=False)
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy',auc_roc])
+
+    return model
+
+def auc_roc(y_true, y_pred):
+    # any tensorflow metric
+    value, update_op = tf.contrib.metrics.streaming_auc(y_pred, y_true)
+
+    # find all variables created for this metric
+    metric_vars = [i for i in tf.local_variables() if 'auc_roc' in i.name.split('/')[1]]
+
+    # Add metric variables to GLOBAL_VARIABLES collection.
+    # They will be initialized for new session.
+    for v in metric_vars:
+        tf.add_to_collection(tf.GraphKeys.GLOBAL_VARIABLES, v)
+
+    # force to update metric values
+    with tf.control_dependencies([update_op]):
+        value = tf.identity(value)
+        return value
 
 def training(model, X_train, y_train, X_val, y_val, nb_cv = 10, batch_size = 5, nb_epochs = 10):
     # define 10-fold cross validation test harness
@@ -138,9 +197,10 @@ def functionalCNN(x_train_global):
     model = Model(inputs=var, outputs=out)
     return model
 
-def fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epoch, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global):
-    model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
-    '''    with experiment.train():
+def fit(experiment, train_X_global,train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epoch, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global,train_X_local,train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local, x_train_local ):
+    #model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
+    model = bothViewsCNN(train_X_global,train_X_local,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout)
+    '''   with experiment.train():
         history = model.fit(train_X_global, train_Y_global,
                             batch_size=batch_size,
                             epochs=epoch,
@@ -160,11 +220,13 @@ def fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, 
 
     experiment.log_dataset_hash(train_X_global)
     '''
-    model.fit(train_X_global, train_Y_global, batch_size=batch_size, epochs=epoch, validation_data=(val_X_global, val_Y_global), callbacks=[EarlyStopping(monitor='val_loss',
-                              min_delta=0,
-                              patience=0,
-                              verbose=0, mode='auto')]   )
+    # Local or Global View
+    model.fit(train_X_global, train_Y_global, batch_size=batch_size, epochs=epoch, validation_data=(val_X_global, val_Y_global), callbacks=[EarlyStopping(monitor='val_loss',min_delta=0,patience=0,verbose=0, mode='auto')]   )
     score = model.evaluate(test_X_global, test_Y_global, verbose=0)[1]
+
+    # Local and Global View
+    #model.fit([train_X_global,train_X_local], train_Y_global, batch_size=batch_size, epochs=epoch,validation_data=([val_X_global,val_X_local], val_Y_global), callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto')])
+    #score = model.evaluate([test_X_global,test_X_local], test_Y_global, verbose=0)[1]
 
     return score
 
@@ -195,7 +257,7 @@ def seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_
 def main():
     start = t.time()
 
-    experiment = experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
+    #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
 
     table = getCSVData().drop_duplicates()
@@ -203,13 +265,13 @@ def main():
     #dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
     # Data For The Sequential 1D-CNN
-    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
+    data_local = np.loadtxt('neural_input_local_sovgol.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
     scaler_local = MinMaxScaler(feature_range=(0, 1))   # Scale Values
     rescaled_local_X = scaler_local.fit_transform(local_X)
 
-    data_global = np.loadtxt('neural_input_global.csv', delimiter=',')
+    data_global = np.loadtxt('neural_input_global_sovgol.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
     scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
@@ -233,8 +295,20 @@ def main():
     #print(x_train_global.shape)
 
     x_train_global =  np.expand_dims(train_X_global, axis=2)
-    #bothViewsCNN(x_train_local, x_train_global, train_X_local, train_X_global, train_Y_local, test_X_local, test_X_global, test_Y_local)
+    train_X_global = np.expand_dims(train_X_global, axis=2)
+    val_X_global = np.expand_dims(val_X_global, axis=2)
+    test_X_global = np.expand_dims(test_X_global, axis=2)
+    train_X_local = np.expand_dims(train_X_local, axis=2)
+    val_X_local = np.expand_dims(val_X_local, axis=2)
+    test_X_local = np.expand_dims(test_X_local, axis=2)
 
+    #model = bothViewsCNN(train_X_global, train_X_local, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    #model.fit([train_X_global, train_X_local], train_Y_global, batch_size=64, epochs=50,
+    #          validation_data=([val_X_global, val_X_local], val_Y_global),
+    #          callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
+    #score = model.evaluate([test_X_global, test_X_local], test_Y_global, verbose=0)[1]
+    #print("Test Accuracy = {}".format(score))
+'''
     batch_size = 128
     epochs = 20
     lay1_filters=128
@@ -274,11 +348,14 @@ def main():
     val_X_global = np.expand_dims(val_X_global, axis=2)
     test_X_global = np.expand_dims(test_X_global, axis=2)
     #model.fit(train_X_global, train_Y_global)
+    train_X_local = np.expand_dims(train_X_local, axis=2)
+    val_X_local = np.expand_dims(val_X_local, axis=2)
+    test_X_local = np.expand_dims(test_X_local, axis=2)
 
     config = {
         "algorithm": "bayes",
         "name": "Optimize CNN Network",
-        "spec": {"maxCombo": 30, "objective": "minimize", "metric": "loss"},
+        "spec": {"maxCombo": 3, "objective": "minimize", "metric": "loss"},
         "parameters": {
             "batch_size": {"type": "integer", "min": 20, "max": 254},
             "epochs":{"type": "integer", "min": 10, "max": 40},
@@ -295,7 +372,7 @@ def main():
         "trials": 1,
     }
 
-    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL", project_name="CNN-2")
+    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL", project_name="cnn-doubleinput")
 
     for experiment in opt.get_experiments():
         epochs = experiment.get_parameter("epochs")
@@ -310,7 +387,7 @@ def main():
         dense_f = experiment.get_parameter("dense_f")
         dense_dropout = experiment.get_parameter("dense_dropout")
 
-        acc = fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
+        acc = fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local,x_train_local )
         # Reverse the score for minimization
         experiment.log_metric("accuracy", acc)
 
@@ -321,5 +398,5 @@ def main():
 
     end = t.time()
     #print(end - start)
-
+'''
 main()
