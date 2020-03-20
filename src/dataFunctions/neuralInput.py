@@ -6,10 +6,14 @@ import pandas as pd
 import csv
 import time as t
 
-from dataFunctions import dataCleaner
-from dataFunctions import dataInfo
-from dataFunctions import dataAnalyzer
-from dataFunctions import dataReader
+#from dataFunctions import dataCleaner
+#from dataFunctions import dataInfo
+#from dataFunctions import dataAnalyzer
+#from dataFunctions import dataReader
+
+import dataInfo as di
+import dataCleaner as dc
+#import dataReader as dr
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
@@ -19,6 +23,8 @@ GLOBAL_CSV_SOVGOL = "../neural_input_global_sovgol.csv"
 LOCAL_CSV_SOVGOL = "../neural_input_local_sovgol.csv"
 GLOBAL_CSV_TIMEV = "../neural_input_global_timev.csv"
 LOCAL_CSV_TIMEV = "../neural_input_local_timev.csv"
+GLOBAL_CSV_MOVAVG = "../neural_input_global_movavg.csv"
+LOCAL_CSV_MOVAVG = "../neural_input_local_movavg.csv"
 
 def getCSVData():
     '''
@@ -26,7 +32,7 @@ def getCSVData():
 
         Output: Pandas Dataframe
     '''
-    return dataInfo.dataCSV(CSV_FILE)
+    return di.dataCSV(CSV_FILE)
 
 def globaView(curve):
     lc_global = curve.bin(bins=2001, method='median').normalize() - 1   # Fixed Length 2001 Bins
@@ -38,11 +44,14 @@ def globaView(curve):
 def localView(curve,f_dur):
     phase_mask = (curve.phase > -4 * f_dur) & (curve.phase < 4.0 * f_dur)
     lc_zoom = curve[phase_mask]
-    lc_local = lc_zoom.bin(bins=201, method='median').normalize() - 1   # Fixed Length 201 Bins
-    lc_local = (lc_local / np.abs(lc_local.flux.min())) * 2.0 + 1
-    #print(lc_local.flux.shape)
-    # lc_global.scatter()
-    return lc_local
+    if lc_zoom:
+        lc_local = lc_zoom.bin(bins=201, method='median').normalize() - 1   # Fixed Length 201 Bins
+        lc_local = (lc_local / np.abs(lc_local.flux.min())) * 2.0 + 1
+        #print(lc_local.flux.shape)
+        # lc_global.scatter()
+        return lc_local
+    else:
+        return False
 
 
 def getLabel(table, kepid):
@@ -53,80 +62,124 @@ def getLabel(table, kepid):
         Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive)
                 or NTP (Nontransiting Phenomenon)
     '''
-    label = dataInfo.labelFinder(table, kepid)
+    label = di.labelFinder(table, kepid)
     if label == 'PC':
         return 1
     else:
         return 0
 
+def writeFile(file,row):
+    with open(file, 'a') as fd:
+        writer=csv.writer(fd)
+        writer.writerow(row)
+
 def main():
     start = t.time()
     table = getCSVData().drop_duplicates()
-    kepids = (dataInfo.listKepids(table)).drop_duplicates().reset_index(drop=True) # List of Kepids (Avoid Duplicates)
-    #dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
+    kepids = (di.listKepids(table)).drop_duplicates().reset_index(
+        drop=True)  # List of Kepids (Avoid Duplicates)
+    # dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
-    global_flux=[]
-    local_flux=[]
-    #kepids=kepids[0:15]
+    #file = open("global.csv","w")
+    #file2=open("local.csv","w")
+    #file.close()
+    #file2.close()
+
+    global_flux = []
+    local_flux = []
+    lc_raw_keeper = []
+    #kepids = [2974858]
+    kepids = kepids[1153:] #462
+    count=0
     for kep in kepids:
-        filenames = dataReader.filenameWarehouse(kep, DATA_DIRECTORY)  # Get Full Path Of All Light Curves
-        time, flux = dataReader.fitsConverter(filenames)  # Read Light Curves And Obtain Time And Flux
-        out_flux, out_time = dataReader.getConcatenatedLightCurve(flux, time)  # Concatenate All Light Curves
-        out_flux = dataCleaner.sovitzGolay(out_flux)
+        # filenames = dr.filenameWarehouse(kep, dir_mac)  # Get Full Path Of All Light Curves
+        # Read Light Curves And Obtain Time And Flux
+        #time, flux = dr.fitsConverter(filenames)
+        # out_flux, out_time = dr.getConcatenatedLightCurve(flux, time)  # Concatenate All Light Curves
+        #out_flux = dc.sovitzGolay(out_flux)
+        count += 1
+        name = 'KIC {}'.format(kep)
+        print(name)
+        print("{}/{}".format(count,len(kepids)))
 
-        # Get Info About Host Star
-        period = dataInfo.getTCEPeriod(table, kep)
-        duration = dataInfo.getTCEDuration(table,kep)
-        tO = dataInfo.getTCETransitMidpoint(table,kep)
-        label = getLabel(table, kep)
+        lcfs = lk.search_lightcurvefile(
+            name, mission='kepler', cadence='long', quarter=[1, 2, 3, 4, 5, 6, 7])
+        if lcfs:    # Avoid empty objects
+            lcfs = lcfs[:7].download_all()
+
+            try:    # Avoid file with more than 1 target
+                lc_raw = lcfs.PDCSAP_FLUX.stitch()  # Combine all PDCSAP_FLUX extensions into a single lightcurve object
+                lc_raw_keeper.append(lc_raw)
+                lc_clean = lc_raw.remove_outliers(sigma=20, sigma_upper=4)  # Clean outliers that are above mean level
+            except:
+                continue
+
+            # Get Info About Host Star
+            period = di.getTCEPeriod(table, kep)    # Period
+            duration = di.getTCEDuration(table, kep)    # Transit Duration
+            tO = di.getTCETransitMidpoint(table, kep)   # Transit Epoch
+            label = getLabel(table, kep)
+
+        else:   # If lcfs == 'NoneType'
+            continue
 
         # Signal Pre-processing
-        lc = lk.LightCurve(out_time,out_flux)
-        lc_clean = lc.remove_outliers(sigma=20, sigma_upper=4)    # Clean Outliers
+        #lc = lk.LightCurve(out_time, out_flux)0
+        # lc_clean = lc.remove_outliers( sigma=20, sigma_upper=4)    # Clean Outliers
         temp_fold = lc_clean.fold(period, t0=tO)
         fractional_duration = (duration / 24.0) / period
         phase_mask = np.abs(temp_fold.phase) < (fractional_duration * 1.5)
-        transit_mask = np.in1d(lc_clean.time, temp_fold.time_original[phase_mask])  #  Mask The Transit To Avoid Self-subtraction When Flattening The Signal
+        # Mask The Transit To Avoid Self-subtraction When Flattening The Signal
+        transit_mask = np.in1d(
+            lc_clean.time, temp_fold.time_original[phase_mask])
 
-        lc_flat, trend_lc = lc_clean.flatten(return_trend=True, mask=transit_mask)  # Flatten The Mask While While Interpolating The Signal Points
+        # Flatten The Mask While While Interpolating The Signal Points
+        lc_flat, trend_lc = lc_clean.flatten(
+            return_trend=True, mask=transit_mask)
 
-        lc_fold = lc_flat.fold(period, t0=tO)   # Fold The Signal
-
+        lc_fold = lc_flat.fold(period,  t0=tO)   # Fold The Signal
         global_view = globaView(lc_fold)  # Global View
         gl_phase = global_view.phase
         gl_bri = global_view.flux
-        np.nan_to_num(gl_bri,nan=np.mean(gl_bri))
+        np.nan_to_num(gl_bri, nan=np.mean(gl_bri))
         global_info = []
         global_info.append(kep)
         for i in gl_bri:
             global_info.append(i)
-
-        local_view = localView(lc_fold,fractional_duration) # Local View
-        lc_phase = local_view.phase
-        lc_bri = local_view.flux
-        np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
-        local_info = []
-        local_info.append(kep)
-        for j in lc_bri:
-            local_info.append(j)
-
-        if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any() ): # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
+        
+        local_view = localView(lc_fold, fractional_duration)  # Local View
+        if local_view == False:
+            continue
+        else:
+            lc_phase = local_view.phase
+            lc_bri = local_view.flux
+            np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
+            local_info = []
+            local_info.append(kep)
+            for j in lc_bri:
+                local_info.append(j)
+        
+        # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
+        if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
             local_info.append(label)
-            local_flux.append(local_info)
+            writeFile("local.csv",local_info)
             global_info.append(label)
-            global_flux.append(global_info)
+            writeFile("global.csv",global_info)
 
-    with open(GLOBAL_CSV_SOVGOL, 'w') as fd:
-        for row in global_flux:
-            writer = csv.writer(fd)
-            writer.writerow(row)
+    #with open(GLOBAL_CSV, 'w') as fd:
+    #    for row in global_flux:
+    #        writer = csv.writer(fd)
+    #        writer.writerow(row)
 
-    with open(LOCAL_CSV_SOVGOL, 'w') as fd:
-        for row in local_flux:
-            writer = csv.writer(fd)
-            writer.writerow(row)
+    #with open(LOCAL_CSV, 'w') as fd:
+    #    for row in local_flux:
+    #        writer = csv.writer(fd)
+    #        writer.writerow(row)
+
+    #pickle.dump(lc_raw_keeper, open("lc_raw.p", "wb"))
 
     end = t.time()
     print(end - start)
+
 
 main()

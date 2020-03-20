@@ -69,41 +69,36 @@ def bothViewsCNN(x_train_local, x_train_global,lay1_filters,l1_kernel_size,pool_
 
     # Input1
     model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
-    model1 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)
+    model1 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)  # Disjoint Conv Layer
-    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)
+    model1 = Dropout(0.20)(model1)
+    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)  # Disjoint Conv Layer
-    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)
+    model1 = Dropout(0.20)(model1)
+    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)  # Disjoint Conv Layer
-    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)
+    model1 = Dropout(0.20)(model1)
+    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)  # Disjoint Conv Layer
-    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model1)
+    model1 = Dropout(0.20)(model1)
+    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
+    model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
+    model1 = Dropout(0.20)(model1)
     model1 = Flatten()(model1)
 
     # Input2
     model2 = conv_local(inputLayer_local)
-    model2 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model2)  # Disjoint Conv Layer
+    model2 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
-    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model2)  # Disjoint Conv Layer
-    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')(model2)
+    model2 = Dropout(0.20)(model2)
+    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
+    model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
+    model2 = Dropout(0.20)(model2)
     model2 = Flatten()(model2)
     # Concatenation
     concatLayerQ = concatenate([model1, model2], axis=1)  # Concatenate Layer
@@ -112,8 +107,12 @@ def bothViewsCNN(x_train_local, x_train_global,lay1_filters,l1_kernel_size,pool_
     # Fully-Connected Layers
     denseLayerQ = Dense(512, activation='relu')(concatLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
+    denseLayerQ = BatchNormalization()(denseLayerQ)
+    denseLayerQ = Dropout(0.10)(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
+    denseLayerQ = BatchNormalization()(denseLayerQ)
+    denseLayerQ = Dropout(0.10)(denseLayerQ)
 
     outputLayer = Dense(1, activation='sigmoid')(denseLayerQ)  # Output Layer
 
@@ -237,16 +236,16 @@ def seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_
     model.add(BatchNormalization())
     model.add(MaxPooling1D(pool_size=pool_size, strides=strides))
     model.add(Dropout(conv_dropout))
-    model.add(Activation('relu'))
+    model.add(Activation('Prelu'))
     model.add(Conv1D(filters=lay2_filters, kernel_size=l2_kernel_size, padding='same'))
     model.add(BatchNormalization())
     model.add(MaxPooling1D(pool_size=pool_size, strides=strides))
     model.add(Dropout(conv_dropout))
-    model.add(Activation('relu'))
+    model.add(Activation('Prelu'))
     model.add(Flatten())
     model.add(Dense(dense_f))
     model.add(Dropout(dense_dropout))
-    model.add(Activation('relu'))
+    model.add(Activation('Prelu'))
     model.add(Dense(1, activation='sigmoid'))
 
     opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -265,26 +264,30 @@ def main():
     #dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
     # Data For The Sequential 1D-CNN
-    data_local = np.loadtxt('neural_input_local_sovgol.csv', delimiter=',')
+    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
-    scaler_local = MinMaxScaler(feature_range=(0, 1))   # Scale Values
-    rescaled_local_X = scaler_local.fit_transform(local_X)
 
-    data_global = np.loadtxt('neural_input_global_sovgol.csv', delimiter=',')
+    data_global = np.loadtxt('neural_input_global.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
-    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    rescaled_global_X = scaler_global.fit_transform(global_X)
 
     # Separate Data
-    train_X_local, val_X_local, test_X_local = np.split(rescaled_local_X, [int(.8 * len(rescaled_local_X)), int(0.9 * len(rescaled_local_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_X_local, val_X_local, test_X_local = np.split(local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y_local, val_Y_local, test_Y_local = np.split(local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
     #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
+    scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    train_X_local = scaler_local.fit_transform(train_X_local)
+    val_X_local = scaler_local.transform(val_X_local)
+    test_X_local = scaler_local.transform(test_X_local)
 
-    train_X_global, val_X_global, test_X_global = np.split(rescaled_global_X, [int(.8 * len(rescaled_global_X)), int(0.9 * len(rescaled_global_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_X_global, val_X_global, test_X_global = np.split(global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y_global, val_Y_global, test_Y_global = np.split(global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
     #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    train_X_global = scaler_global.fit_transform(train_X_global)
+    val_X_global = scaler_global.transform(val_X_global)
+    test_X_global = scaler_global.transform(test_X_global)
 
     # Shape Data
     #print(train_X_local.shape)
@@ -302,12 +305,12 @@ def main():
     val_X_local = np.expand_dims(val_X_local, axis=2)
     test_X_local = np.expand_dims(test_X_local, axis=2)
 
-    #model = bothViewsCNN(train_X_global, train_X_local, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    #model.fit([train_X_global, train_X_local], train_Y_global, batch_size=64, epochs=50,
-    #          validation_data=([val_X_global, val_X_local], val_Y_global),
-    #          callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
-    #score = model.evaluate([test_X_global, test_X_local], test_Y_global, verbose=0)[1]
-    #print("Test Accuracy = {}".format(score))
+    model = bothViewsCNN(train_X_global, train_X_local, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    model.fit([train_X_global, train_X_local], train_Y_global, batch_size=32, epochs=50,
+              validation_data=([val_X_global, val_X_local], val_Y_global),
+              callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=2, verbose=1, mode='max')])
+    score = model.evaluate([test_X_global, test_X_local], test_Y_global, verbose=0)[1]
+    print("Test Accuracy = {}".format(score))
 '''
     batch_size = 128
     epochs = 20

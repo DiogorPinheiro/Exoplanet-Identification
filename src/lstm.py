@@ -3,9 +3,8 @@ from comet_ml import Experiment, Optimizer
 import tensorflow as tf
 from sklearn import preprocessing
 from keras.models import Sequential
-from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, LSTM
-from keras.layers.convolutional import Conv1D
-from keras.layers import MaxPooling1D
+from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, LSTM, CuDNNLSTM
+from keras.initializers import Ones, Orthogonal, VarianceScaling, Zeros
 from keras.callbacks import EarlyStopping
 from keras.models import Model
 from keras import optimizers
@@ -39,26 +38,38 @@ def auc_roc(y_true, y_pred):
 def model_creator(train_X_global,ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
     input = Input(shape=(train_X_global.shape[1], 1))
 
-    #model = LSTM(units=10,return_sequences=True)(input)
-    model = LSTM(units=ls_units)(input)
+    model = LSTM(units=ls_units,return_sequences=True)(input)
+    #model = LSTM(units=ls_units)(input)
+    #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform', seed=None)(model)
+    #model = Zeros()(model)
+    #model=Orthogonal(gain=1.0, seed=None)(model)
     model = BatchNormalization()(model)
+    #model=Ones()(model)
+    #model = Zeros()(model)
+    #model = Zeros()(model)
+    #model = Ones()(model)
     model = Dropout(dropout_l)(model)
-    model = Activation('relu')(model)
+    model =PReLU()(model)
+    #model = Zeros()(model)
+    #model=Flatten()(model)
 
     model = Dense(units=dense_units)(model)
-    model = BatchNormalization()(model)
+    #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
+    #model = Zeros()(model)
     model = Dropout(dropout_d)(model)
-    model = Activation('relu')(model)
+    model =PReLU()(model)
+    #model = Zeros()(model)
     model = Dense(units=dense_units)(model)
-    model = BatchNormalization()(model)
-    model = Dropout(dropout_d)(model)
-    model = Activation('relu')(model)
+    #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
+    #model = Zeros()(model)
+    model = PReLU()(model)
+    model = Flatten()(model)
 
     out = Dense(1, activation='sigmoid')(model)
 
     model = Model(inputs=input, outputs=out)
 
-    opt = optimizers.SGD(lr=learn_rate, decay=0.0001, momentum=momentum, nesterov=True)
+    opt = optimizers.SGD(lr=0.01*learn_rate, decay=0.0001, momentum=momentum, nesterov=True)
     model.compile(loss='binary_crossentropy', optimizer=opt,  metrics=['accuracy'])
     return model
 
@@ -68,7 +79,7 @@ def fits(train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_glob
     # Local or Global View
     model.fit(train_X_global, train_Y_global, batch_size=batch_size, epochs=epochs,
               validation_data=(val_X_global, val_Y_global),
-              callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=1, mode='auto')])
+              callbacks=[EarlyStopping(monitor='val_loss', min_delta=1, patience=10, verbose=1, mode='min')])
     score = model.evaluate(test_X_global, test_Y_global, verbose=1)[1]
 
     # Local and Global View
@@ -85,26 +96,32 @@ def main():
     experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
     # Data For The Sequential 1D-CNN
-    data_local = np.loadtxt('neural_input_local_sovgol.csv', delimiter=',')
+    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
     scaler_local = MinMaxScaler(feature_range=(0, 1))   # Scale Values
-    rescaled_local_X = scaler_local.fit_transform(local_X)
 
-    data_global = np.loadtxt('neural_input_global_sovgol.csv', delimiter=',')
+    data_global = np.loadtxt('neural_input_global.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
     scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    rescaled_global_X = scaler_global.fit_transform(global_X)
 
     # Separate Data
-    train_X_local, val_X_local, test_X_local = np.split(rescaled_local_X, [int(.8 * len(rescaled_local_X)), int(0.9 * len(rescaled_local_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_X_local, val_X_local, test_X_local = np.split(local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y_local, val_Y_local, test_Y_local = np.split(local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
-    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
+    # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
+    scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    train_X_local = scaler_local.fit_transform(train_X_local)
+    val_X_local = scaler_local.transform(val_X_local)
+    test_X_local = scaler_local.transform(test_X_local)
 
-    train_X_global, val_X_global, test_X_global = np.split(rescaled_global_X, [int(.8 * len(rescaled_global_X)), int(0.9 * len(rescaled_global_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_X_global, val_X_global, test_X_global = np.split(global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
     train_Y_global, val_Y_global, test_Y_global = np.split(global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
-    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+    # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    train_X_global = scaler_global.fit_transform(train_X_global)
+    val_X_global = scaler_global.transform(val_X_global)
+    test_X_global = scaler_global.transform(test_X_global)
 
     # Shape Data
     train_X_global = np.expand_dims(train_X_global, axis=2)
@@ -166,7 +183,7 @@ def main():
         acc = fits(train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global,
                   epochs, batch_size, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local )
         # Reverse the score for minimization
-        experiment.log_metric("accuracy", acc)
+        experiment.log_metric("loss", acc)
 
     experiment.log_parameters(params)
 
