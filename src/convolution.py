@@ -18,6 +18,7 @@ import csv
 
 from dataFunctions import dataInfo
 from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
+import provedModels as pm
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
@@ -247,10 +248,11 @@ def main():
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
-    # Separate local Data
+    # Separate Local Data
     X_train_local, X_test_local, y_train_local, y_test_local = train_test_split(
         local_X, local_Y, test_size=0.2, random_state=1)
-    # scale data
+
+    # Scale Data
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
     X_train_local = scaler_local.fit_transform(X_train_local)
     X_test_local = scaler_local.transform(X_test_local)
@@ -275,6 +277,10 @@ def main():
     model = bothViewsCNN(X_train_global, X_train_local,
                          0, 0, 0, 0, 0, 0, 0, 0, 0)
     #model = functionalCNN(X_train_global)
+
+    # Proved Models
+    #model, type = pm.vgg(X_train_global)
+    #model, type = pm.alexNet(X_train_global)
 
     # Evaluation
     split = 5

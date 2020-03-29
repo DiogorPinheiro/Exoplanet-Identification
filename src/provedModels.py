@@ -4,7 +4,7 @@ from keras.layers.convolutional import Convolution1D, MaxPooling1D
 from keras.layers.normalization import BatchNormalization, ZeroPadding1D
 
 
-def alexNet(x_train):   # Modified version of https://gist.github.com/JBed/c2fb3ce8ed299f197eff
+def alexNet(x_train):   # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
     model = Sequential()
     model.add(Convolution1D(64, 3, input_shape=(x_train.shape[1], 1)))
     model.add(BatchNormalization((64, 226, 226)))
@@ -40,7 +40,7 @@ def alexNet(x_train):   # Modified version of https://gist.github.com/JBed/c2fb3
     return model, 'sequential'
 
 
-def vgg(x_train):   # Modified version of https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
+def vgg(x_train):   # Adapted from https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
     model = Sequential()
     model.add(ZeroPadding1D(1, input_shape=(x_train.shape[1], 1)))
     model.add(Convolution1D(64, 3, 3, activation='relu'))

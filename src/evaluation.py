@@ -1,8 +1,10 @@
 import numpy as np
 import tensorflow as tf
+import keras
 from keras.callbacks import EarlyStopping, History
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
+from sklearn.model_selection import StratifiedKFold
 
 # ------------------------------ Utilities --------------------------------------------------
 
@@ -132,7 +134,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
         y_valid_fold = y[valid_index]
 
         #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
-        model.fit(X_train_fold, y_train_fold, batch_size=batch, epochs=epochs, validation_data=(X_valid_fold, y_valid_fold),
+        model.fit(X_train_fold, y_train_fold, batch_size=batch, epochs=epoch, validation_data=(X_valid_fold, y_valid_fold),
                   callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
         score = model.evaluate(
             X_valid_fold, y_valid_fold, verbose=0)[1]
