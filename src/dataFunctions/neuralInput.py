@@ -80,16 +80,16 @@ def main():
         drop=True)  # List of Kepids (Avoid Duplicates)
     # dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
-    #file = open("global.csv","w")
-    #file2=open("local.csv","w")
-    #file.close()
-    #file2.close()
+    file = open("global_movavg.csv","w")
+    file2=open("local_movavg.csv","w")
+    file.close()
+    file2.close()
 
     global_flux = []
     local_flux = []
     lc_raw_keeper = []
     #kepids = [2974858]
-    kepids = kepids[1153:] #462
+    #kepids = kepids[12536:] # parou no 11346-20102 (12254909), começou no 11073351
     count=0
     for kep in kepids:
         # filenames = dr.filenameWarehouse(kep, dir_mac)  # Get Full Path Of All Light Curves
@@ -141,6 +141,7 @@ def main():
         global_view = globaView(lc_fold)  # Global View
         gl_phase = global_view.phase
         gl_bri = global_view.flux
+        gl_bri = dc.movingAverage(gl_bri, 15)
         np.nan_to_num(gl_bri, nan=np.mean(gl_bri))
         global_info = []
         global_info.append(kep)
@@ -153,6 +154,7 @@ def main():
         else:
             lc_phase = local_view.phase
             lc_bri = local_view.flux
+            lc_bri = dc.movingAverage(lc_bri, 15)
             np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
             local_info = []
             local_info.append(kep)
@@ -162,9 +164,9 @@ def main():
         # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
         if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
             local_info.append(label)
-            writeFile("local.csv",local_info)
+            writeFile("local_movavg.csv",local_info)
             global_info.append(label)
-            writeFile("global.csv",global_info)
+            writeFile("global_movavg.csv",global_info)
 
     #with open(GLOBAL_CSV, 'w') as fd:
     #    for row in global_flux:

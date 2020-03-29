@@ -1,3 +1,13 @@
 src/concateneted_flux.p
 src/neural_input_global.csv
 src/neural_input_local.csv
+src/data/global_movavg.csv
+src/data/dataset_teste2.csv
+src/dataFunctions/global_sovgol.csv
+src/dataFunctions/local_sovgol.csv
+src/dataFunctions/local.csv
+src/data/neural_input_local.csv
+src/data/dataset.csv
+src/data/local_movavg.csv
+src/data/neural_input_global.csv
+src/dataFunctions/global.csv

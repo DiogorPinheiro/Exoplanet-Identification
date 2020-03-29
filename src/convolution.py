@@ -2,17 +2,21 @@ import numpy as np
 from comet_ml import Experiment, Optimizer
 import tensorflow as tf
 from sklearn import preprocessing
+from sklearn.model_selection import StratifiedKFold, train_test_split
+import keras
 from keras.models import Sequential
-from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation
+from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise
 from keras.layers.convolutional import Conv1D
 from keras.layers import MaxPooling1D
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping,History
 from keras.models import Model
 from keras import optimizers
 from sklearn.preprocessing import MinMaxScaler
 import time as t
-from sklearn.metrics import roc_auc_score, recall_score, precision_score
-
+from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
+import pandas as pd
+from keras import backend as K
+import csv
 
 from dataFunctions import dataInfo
 
@@ -55,6 +59,23 @@ def normalizeData(data):
 
     return normalized_results
 
+def recall_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+
+def precision_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
+
+def f1_m(y_true, y_pred):
+    precision = precision_m(y_true, y_pred)
+    recall = recall_m(y_true, y_pred)
+    return 2*((precision*recall)/(precision+recall+K.epsilon()))
+
 def bothViewsCNN(x_train_local, x_train_global,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout ):
     # CNN Model
     print(x_train_local.shape)
@@ -63,56 +84,65 @@ def bothViewsCNN(x_train_local, x_train_global,lay1_filters,l1_kernel_size,pool_
     inputLayer_global = Input(shape=(x_train_global.shape[1],1 ))
 
     conv_local = Conv1D(16, kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu')
+                        activation='relu',kernel_initializer='he_normal')
     conv_global = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                         activation='relu')
+                         activation='relu',kernel_initializer='he_normal')
 
     # Input1
     model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
     model1 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Dropout(0.20)(model1)
+    #model1 = Dropout(0.20)(model1)
+    #model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Dropout(0.20)(model1)
+    #model1 = Dropout(0.20)(model1)
+    #model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Dropout(0.20)(model1)
+    #model1 = Dropout(0.20)(model1)
+    #model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Dropout(0.20)(model1)
+    #model1 = Dropout(0.20)(model1)
+    #model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    model1 = Dropout(0.20)(model1)
+    #model1 = Dropout(0.20)(model1)
+    #model1 = GaussianNoise(0.1)(model1)
     model1 = Flatten()(model1)
 
     # Input2
     model2 = conv_local(inputLayer_local)
     model2 = Conv1D(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
-    model2 = Dropout(0.20)(model2)
+    #model2 = Dropout(0.20)(model2)
+    #model2 = GaussianNoise(0.1)(model2)
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same', dilation_rate=1, activation='relu')(model2)
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
-    model2 = Dropout(0.20)(model2)
+    #model2 = Dropout(0.20)(model2)
+    #model2 = GaussianNoise(0.1)(model2)
     model2 = Flatten()(model2)
     # Concatenation
-    concatLayerQ = concatenate([model1, model2], axis=1)  # Concatenate Layer
+    concatLayerQ = keras.layers.concatenate([model1, model2], axis=1)  # Concatenate Layer
     #flatLayerQ = Flatten()(concatLayerQ)
 
     # Fully-Connected Layers
     denseLayerQ = Dense(512, activation='relu')(concatLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = BatchNormalization()(denseLayerQ)
-    denseLayerQ = Dropout(0.10)(denseLayerQ)
+    #denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
+    #denseLayerQ = Dropout(0.20)(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = BatchNormalization()(denseLayerQ)
-    denseLayerQ = Dropout(0.10)(denseLayerQ)
+    #denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
+    #denseLayerQ = Dropout(0.20)(denseLayerQ)
 
     outputLayer = Dense(1, activation='sigmoid')(denseLayerQ)  # Output Layer
 
@@ -141,40 +171,66 @@ def auc_roc(y_true, y_pred):
         value = tf.identity(value)
         return value
 
-def training(model, X_train, y_train, X_val, y_val, nb_cv = 10, batch_size = 5, nb_epochs = 10):
-    # define 10-fold cross validation test harness
-    kfold = StratifiedKFold(n_splits=nb_cv, shuffle=True, random_state=7)
+def concatenate(gl, lo):
+    gl = gl.tolist()
+    lo = lo.tolist()
+    for index, a in enumerate(lo):
+        for b in a:
+            gl[index].append(b)
 
+    return np.array(gl)
+
+class LossHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
+def training(model, x_agg, y, nb_cv = 10, batch_size = 5, nb_epochs = 10):
+    kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=7)
+
+    #history = History()
+    history = LossHistory()
     cvscores = []
 
-    for train_index, valid_index in kfold.split(X_train, y_train):
-        X_train_fold = X_train[train_index]
-        X_valid_fold = X_train[valid_index]
-        y_train_fold = y_train[train_index]
-        y_valid_fold = y_train[valid_index]
+    for train_index, valid_index in kfold.split(x_agg, y):
 
-        # Reshape data to 3D input
-        #X_train_fold = np.expand_dims(X_train_fold, axis=2)
-        #X_valid_fold=np.expand_dims(X_valid_fold, axis=2)
+        X_train_fold = x_agg[train_index]
+        X_valid_fold = x_agg[valid_index]
+        y_train_fold = y[train_index]
+        y_valid_fold = y[valid_index]
 
-        model.fit(X_train_fold, y_train_fold, batch_size=batch_size, epochs=nb_epochs, verbose=2)
+        x_train_global = X_train_fold[0:, :2001]
+        x_train_local = X_train_fold[0:, 2001:]
+        x_valid_global = X_valid_fold[0:, :2001]
+        x_valid_local = X_valid_fold[0:, 2001:]
+        #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
+        model.fit([x_train_global, x_train_local], y_train_fold, batch_size=32, epochs=50,
+                  validation_data=([x_valid_global, x_valid_local], y_valid_fold),
+                 callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'),history])
+        score = model.evaluate([x_valid_global, x_valid_local], y_valid_fold, verbose=0)[1]
+        print(len(train_index))
+        print(history.losses)
+        print(len(history.losses))
+        print(len(x_agg))
 
-        score, acc = model.evaluate(X_valid_fold, y_valid_fold, batch_size, verbose=0)
-
-        Y_score = model.predict(X_valid_fold)
+        Y_score = model.predict([x_valid_global, x_valid_local])
+        Y_predict = model.predict_classes([x_valid_global, x_valid_local],)
 
         auc = roc_auc_score(y_valid_fold, Y_score)
-        #recall = recall_score(y_valid_fold, Y_predict)
-        #precision = precision_score(y_valid_fold, Y_predict)
+        recall = recall_score(y_valid_fold, Y_predict)
+        precision = precision_score(y_valid_fold, Y_predict)
+        f1 = f1_score(y_valid_fold, Y_predict)
 
         print('\n')
-        print('Acc: ', acc)
         print('ROC/AUC Score: ', auc)
-        #print('Precision: ', precision)
-        #print('Recall: ', recall)
-        print('\n')
+        print('Precision: ', precision)
+        print('Recall: ', recall)
+        print('F1: ', f1_score)
 
         cvscores.append(auc)
+    return np.mean(cvscores)
 
 def functionalCNN(x_train_global):
     var = Input(shape=(x_train_global.shape[1], 1))
@@ -194,6 +250,10 @@ def functionalCNN(x_train_global):
     model = Activation('relu')(model)
     out = Dense(1, activation='sigmoid')(model)
     model = Model(inputs=var, outputs=out)
+
+    opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy',f1_m,precision_m, recall_m])
+
     return model
 
 def fit(experiment, train_X_global,train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epoch, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global,train_X_local,train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local, x_train_local ):
@@ -229,29 +289,35 @@ def fit(experiment, train_X_global,train_Y_global, val_X_global, val_Y_global, t
 
     return score
 
-def seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global):
+def seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train):
     model = Sequential()
-    model.add(Conv1D(filters=lay1_filters, kernel_size=l1_kernel_size, input_shape=(x_train_global.shape[1], 1),
+    model.add(Conv1D(filters=128, kernel_size=3, input_shape=(x_train.shape[1], 1),
                      padding='same'))
     model.add(BatchNormalization())
-    model.add(MaxPooling1D(pool_size=pool_size, strides=strides))
-    model.add(Dropout(conv_dropout))
-    model.add(Activation('Prelu'))
-    model.add(Conv1D(filters=lay2_filters, kernel_size=l2_kernel_size, padding='same'))
+    model.add(MaxPooling1D(pool_size=2, strides=2))
+    model.add(Dropout(0.20))
+    model.add(PReLU())
+    model.add(Conv1D(filters=128, kernel_size=3, padding='same'))
     model.add(BatchNormalization())
-    model.add(MaxPooling1D(pool_size=pool_size, strides=strides))
-    model.add(Dropout(conv_dropout))
-    model.add(Activation('Prelu'))
+    model.add(MaxPooling1D(pool_size=2, strides=2))
+    model.add(Dropout(0.2))
+    model.add(PReLU())
     model.add(Flatten())
-    model.add(Dense(dense_f))
-    model.add(Dropout(dense_dropout))
-    model.add(Activation('Prelu'))
+    model.add(Dense(64))
+    model.add(Dropout(0.2))
+    model.add(PReLU())
     model.add(Dense(1, activation='sigmoid'))
 
     opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy',f1_m,precision_m, recall_m])
     
     return model
+
+def evaluation():
+    scores=[]
+    for i in range(10):
+        sco = training(model, train_X_global, train_X_local, train_Y_global, val_X_global, val_X_local, 10, 32, 50)
+        scores.append(sco)
 
 def main():
     start = t.time()
@@ -272,44 +338,50 @@ def main():
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
-    # Separate Data
-    train_X_local, val_X_local, test_X_local = np.split(local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_local, val_Y_local, test_Y_local = np.split(local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
-    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
+    # Separate local Data
+    X_train_local, X_test_local, y_train_local, y_test_local = train_test_split(
+        local_X, local_Y, test_size=0.2, random_state=1)
+    # scale data
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_X_local = scaler_local.fit_transform(train_X_local)
-    val_X_local = scaler_local.transform(val_X_local)
-    test_X_local = scaler_local.transform(test_X_local)
+    X_train_local = scaler_local.fit_transform(X_train_local)
+    X_test_local = scaler_local.transform(X_test_local)
 
-    train_X_global, val_X_global, test_X_global = np.split(global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_global, val_Y_global, test_Y_global = np.split(global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
-    #print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+    global_X = data_global[0:, 1:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
+    X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
+        global_X, global_Y, test_size=0.2, random_state=1)
+
     scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_X_global = scaler_global.fit_transform(train_X_global)
-    val_X_global = scaler_global.transform(val_X_global)
-    test_X_global = scaler_global.transform(test_X_global)
+    X_train_global = scaler_global.fit_transform(X_train_global)
+    X_test_global = scaler_global.transform(X_test_global)
 
     # Shape Data
-    #print(train_X_local.shape)
-    x_train_local = np.expand_dims(train_X_local, axis=2)
-    #print(x_train_local.shape)
+    agg = concatenate(X_train_global, X_train_local)
+    aggregate_X = np.expand_dims(agg, axis=2)
+    X_train_global = np.expand_dims(X_train_global, axis=2)
+    X_test_global = np.expand_dims(X_test_global, axis=2)
+    X_train_local = np.expand_dims(X_train_local, axis=2)
+    X_test_local = np.expand_dims(X_test_local, axis=2)
 
-    #print(train_X_global.shape)
-    #print(x_train_global.shape)
+    #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global)
+    model = bothViewsCNN(X_train_global, X_train_local, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    #model.fit([train_X_global, train_X_local], train_Y_global, batch_size=32, epochs=50,
+    #          validation_data=([val_X_global, val_X_local], val_Y_global),
+    #         callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max')])
+    #score = model.evaluate([test_X_global, test_X_local], test_Y_global, verbose=0)[1]
+    #model = functionalCNN(X_train_global)
 
-    x_train_global =  np.expand_dims(train_X_global, axis=2)
-    train_X_global = np.expand_dims(train_X_global, axis=2)
-    val_X_global = np.expand_dims(val_X_global, axis=2)
-    test_X_global = np.expand_dims(test_X_global, axis=2)
-    train_X_local = np.expand_dims(train_X_local, axis=2)
-    val_X_local = np.expand_dims(val_X_local, axis=2)
-    test_X_local = np.expand_dims(test_X_local, axis=2)
 
-    model = bothViewsCNN(train_X_global, train_X_local, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    model.fit([train_X_global, train_X_local], train_Y_global, batch_size=32, epochs=50,
-              validation_data=([val_X_global, val_X_local], val_Y_global),
-              callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=2, verbose=1, mode='max')])
-    score = model.evaluate([test_X_global, test_X_local], test_Y_global, verbose=0)[1]
+    score = training(model,aggregate_X,y_train_global,10,32,50)
+    #history = LossHistory()
+    #model.fit(X_train_global, y_train_global, batch_size=3, epochs=10,
+    #          validation_data=(X_test_global, y_test_global),
+    #          callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'),history])
+    #score = model.evaluate(X_test_global, y_test_global, verbose=0)[1]
+    #print(history.losses)
+    #print(len(history.losses))
+    #print(len(X_train_global))
+
     print("Test Accuracy = {}".format(score))
 '''
     batch_size = 128
