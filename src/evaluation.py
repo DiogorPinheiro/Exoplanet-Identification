@@ -155,6 +155,13 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
     return np.mean(cvscores), history.losses
 
 
+def evaluateSimple(model, X_train, y_train, X_test, y_test):
+    model.fit(X_test, y_train)
+    score = model.score(X_test, y_test)
+
+    return score
+
+
 def mainEvaluate(option, model, train_global, train_local, test_global, test_local, y_train, y_test, nb_cv, epoch, batch, splits, type):
     if(option == 'dual'):
         agg = concatenate(train_global, train_local)
@@ -167,3 +174,7 @@ def mainEvaluate(option, model, train_global, train_local, test_global, test_loc
     elif(option == 'single-local'):
         return evaluateSingle(model, train_global, y_train,
                               splits, batch, epoch, type)
+    elif(option == 'simple-global'):
+        return evaluateSimple(model, train_global, y_train, test_global, y_test)
+    elif(option == 'simple-local'):
+        return evaluateSimple(model, train_local, y_train, test_local, y_test)

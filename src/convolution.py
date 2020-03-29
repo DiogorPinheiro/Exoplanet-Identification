@@ -301,20 +301,18 @@ def main():
     # md, hist_lo = mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global, X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
     # Table Comparison
-    knnlist = []
-    svmlist = []
     ffnnlist = []
     cnnglobal = []
     cnndual = []
 
     model = knn()
-    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local, X_test_global,
-                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    knnlist.append(hist_lo)
+    score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+                         X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    print("KNN : {}".format(score))
     model = svmachine()
-    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local, X_test_global,
-                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    svmlist.append(hist_lo)
+    score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+                         X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    print("SVM : {}".format(score))
     model = feedForwardNN(X_train_global, X_train_local)
     md, hist_lo = mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global,
                                X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
@@ -329,10 +327,9 @@ def main():
                                X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
     cnnglobal.append(hist_lo)
 
-    l1 = joinLists(knnlist, svmlist)
-    l1 = joinLists(l1, ffnnlist)
-    l1 = joinLists(l1, cnnglobal)
+    l1 = joinLists(ffnnlist, cnnglobal)
     l1 = joinLists(l1, cnndual)
+    writeToFile(l1)
 
 
 '''
