@@ -21,12 +21,14 @@ from dataFunctions import dataInfo
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
+
 def auc_roc(y_true, y_pred):
     # any tensorflow metric
     value, update_op = tf.contrib.metrics.streaming_auc(y_pred, y_true)
 
     # find all variables created for this metric
-    metric_vars = [i for i in tf.local_variables() if 'auc_roc' in i.name.split('/')[1]]
+    metric_vars = [i for i in tf.local_variables(
+    ) if 'auc_roc' in i.name.split('/')[1]]
 
     # Add metric variables to GLOBAL_VARIABLES collection.
     # They will be initialized for new session.
@@ -38,11 +40,13 @@ def auc_roc(y_true, y_pred):
         value = tf.identity(value)
         return value
 
+
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
     recall = true_positives / (possible_positives + K.epsilon())
     return recall
+
 
 def precision_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -50,15 +54,17 @@ def precision_m(y_true, y_pred):
     precision = true_positives / (predicted_positives + K.epsilon())
     return precision
 
+
 def f1_m(y_true, y_pred):
     precision = precision_m(y_true, y_pred)
     recall = recall_m(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
-def training(model, train_global, train_local, yglobal,ylocal , nb_cv = 10, batch_size = 5, nb_epochs = 10):
+
+def training(model, train_global, train_local, yglobal, ylocal, nb_cv=10, batch_size=5, nb_epochs=10):
 
     kfold = StratifiedKFold(n_splits=nb_cv, shuffle=True, random_state=7)
-    #print(type(train_global))
+    # print(type(train_global))
     #d = {'a':pd.Series(train_global),'b':pd.Series(train_global)}
     #X = pd.DataFrame(data=d,index=[0])
 
@@ -99,29 +105,29 @@ def training(model, train_global, train_local, yglobal,ylocal , nb_cv = 10, batc
     return np.mean(cvscores)
 
 
-def model_creator(train_X_global,ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
+def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
     input = Input(shape=(train_X_global.shape[1], 1))
 
-    model = LSTM(units=ls_units,return_sequences=True)(input)
+    model = LSTM(units=ls_units, return_sequences=True)(input)
     #model = LSTM(units=ls_units)(input)
     #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform', seed=None)(model)
     #model = Zeros()(model)
     #model=Orthogonal(gain=1.0, seed=None)(model)
     model = BatchNormalization()(model)
-    #model=Ones()(model)
+    # model=Ones()(model)
     #model = Zeros()(model)
     #model = Zeros()(model)
     #model = Ones()(model)
     model = Dropout(dropout_l)(model)
-    model =PReLU()(model)
+    model = PReLU()(model)
     #model = Zeros()(model)
-    #model=Flatten()(model)
+    # model=Flatten()(model)
 
     model = Dense(units=dense_units)(model)
     #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
     #model = Zeros()(model)
     model = Dropout(dropout_d)(model)
-    model =PReLU()(model)
+    model = PReLU()(model)
     #model = Zeros()(model)
     model = Dense(units=dense_units)(model)
     #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
@@ -133,12 +139,16 @@ def model_creator(train_X_global,ls_units, dense_units, dropout_d, dropout_l, le
 
     model = Model(inputs=input, outputs=out)
 
-    opt = optimizers.SGD(lr=0.01*learn_rate, decay=0.0001, momentum=momentum, nesterov=True)
-    model.compile(loss='binary_crossentropy', optimizer=opt,  metrics=['accuracy',f1_m,precision_m, recall_m])
+    opt = optimizers.SGD(lr=0.01*learn_rate, decay=0.0001,
+                         momentum=momentum, nesterov=True)
+    model.compile(loss='binary_crossentropy', optimizer=opt,
+                  metrics=['accuracy', f1_m, precision_m, recall_m])
     return model
 
-def fits(train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size, ls_units, dense_units,dropout_d, dropout_l, learn_rate, momentum, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local ):
-    model = model_creator(train_X_global,ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum )
+
+def fits(train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local):
+    model = model_creator(train_X_global, ls_units, dense_units,
+                          dropout_d, dropout_l, learn_rate, momentum)
 
     # Local or Global View
     model.fit(train_X_global, train_Y_global, batch_size=batch_size, epochs=epochs,
@@ -153,32 +163,35 @@ def fits(train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_glob
     return score
 
 
-
 def main():
     start = t.time()
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
     # Data For The Sequential 1D-LSTM
-    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
+    data_local = np.loadtxt('data/neural_input_local.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
 
-    data_global = np.loadtxt('neural_input_global.csv', delimiter=',')
+    data_global = np.loadtxt('data/neural_input_global.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
     # Separate Data
-    train_X_local, val_X_local, test_X_local = np.split(local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_local, val_Y_local, test_Y_local = np.split(local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
+    train_X_local, val_X_local, test_X_local = np.split(
+        local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_Y_local, val_Y_local, test_Y_local = np.split(
+        local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
     # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
     train_X_local = scaler_local.fit_transform(train_X_local)
     val_X_local = scaler_local.transform(val_X_local)
     test_X_local = scaler_local.transform(test_X_local)
 
-    train_X_global, val_X_global, test_X_global = np.split(global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_global, val_Y_global, test_Y_global = np.split(global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
+    train_X_global, val_X_global, test_X_global = np.split(
+        global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
+    train_Y_global, val_Y_global, test_Y_global = np.split(
+        global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
     # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
     scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
     train_X_global = scaler_global.fit_transform(train_X_global)
@@ -249,13 +262,16 @@ def main():
 
     experiment.log_parameters(params)
     '''
-    model = model_creator(train_X_global,10, 64, 0.298, 0.298, 0.00643199565237, 0.25 )
-    score = training(model, train_X_global, train_X_local, train_Y_global, train_Y_local, 10, 32, 50)
+    model = model_creator(train_X_global, 10, 64, 0.298,
+                          0.298, 0.00643199565237, 0.25)
+    score = training(model, train_X_global, train_X_local,
+                     train_Y_global, train_Y_local, 10, 32, 50)
 
     # Train And Evaluate Model
     #model = model_creator(train_X_global)
     #model.fit(train_X_global, train_Y_global, batch_size=16, epochs=43, validation_data=(val_X_global, val_Y_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
     #score = model.evaluate(test_X_global, test_Y_global, verbose=0)[1]
     #print("Test Accuracy = {}".format(score))
+
 
 main()
