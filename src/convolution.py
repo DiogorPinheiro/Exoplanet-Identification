@@ -19,6 +19,8 @@ import csv
 from dataFunctions import dataInfo
 from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
 import provedModels as pm
+from utilities import writeToFile, joinLists
+from otherAlgorithms import *
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
@@ -272,13 +274,17 @@ def main():
     X_train_local = np.expand_dims(X_train_local, axis=2)
     X_test_local = np.expand_dims(X_test_local, axis=2)
 
-    # Models
+    # Machine Learning Algorithms
+    #model = knn()
+    #model = svmachine()
+    #model = feedForwardNN(X_train_global, X_train_local)
+
+    # Deep Learning Models
     #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global)
-    model = bothViewsCNN(X_train_global, X_train_local,
-                         0, 0, 0, 0, 0, 0, 0, 0, 0)
+    #model = bothViewsCNN(X_train_global, X_train_local,0, 0, 0, 0, 0, 0, 0, 0, 0)
     #model = functionalCNN(X_train_global)
 
-    # Proved Models
+    # Proved Deep Learning Models
     #model, type = pm.vgg(X_train_global)
     #model, type = pm.alexNet(X_train_global)
 
@@ -287,14 +293,46 @@ def main():
     epoch = 32
     batch = 50
     nb = 5
+    # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global, X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
-    # mainEvaluate('single-global',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # mainEvaluate('single-global',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # mainEvaluate('single-local',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # mainEvaluate('single-local',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # mainEvaluate('dual',model,X_train_global,X_train_local,X_test_global,X_test_local,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global, X_test_local,
-                 y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    # Table Comparison
+    knnlist = []
+    svmlist = []
+    ffnnlist = []
+    cnnglobal = []
+    cnndual = []
+
+    model = knn()
+    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local, X_test_global,
+                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    knnlist.append(hist_lo)
+    model = svmachine()
+    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local, X_test_global,
+                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    svmlist.append(hist_lo)
+    model = feedForwardNN(X_train_global, X_train_local)
+    md, hist_lo = mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global,
+                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    ffnnlist.append(hist_lo)
+    model = bothViewsCNN(X_train_global, X_train_local,
+                         0, 0, 0, 0, 0, 0, 0, 0, 0)
+    md, hist_lo = mainEvaluate('dual', model, X_train_global, X_train_local, X_test_global,
+                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    cnndual.append(hist_lo)
+    model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global)
+    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local, X_test_global,
+                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    cnnglobal.append(hist_lo)
+
+    l1 = joinLists(knnlist, svmlist)
+    l1 = joinLists(l1, ffnnlist)
+    l1 = joinLists(l1, cnnglobal)
+    l1 = joinLists(l1, cnndual)
 
 
 '''

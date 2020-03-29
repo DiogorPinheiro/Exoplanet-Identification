@@ -6,17 +6,8 @@ from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 
-# ------------------------------ Utilities --------------------------------------------------
+from utilities import concatenate
 
-
-def concatenate(gl, lo):
-    gl = gl.tolist()
-    lo = lo.tolist()
-    for index, a in enumerate(lo):
-        for b in a:
-            gl[index].append(b)
-
-    return np.array(gl)
 # ------------------------------ Evaluation Metrics ----------------------------------------
 
 
@@ -116,7 +107,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
         print('ROC/AUC Score: ', auc)
 
         cvscores.append(auc)
-    return np.mean(cvscores)
+    return np.mean(cvscores), history.losses
 
 
 def evaluateSingle(model, X, y, splits, batch, epoch, type):
@@ -161,18 +152,18 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
         print('ROC/AUC Score: ', auc)
 
         cvscores.append(auc)
-    return np.mean(cvscores)
+    return np.mean(cvscores), history.losses
 
 
 def mainEvaluate(option, model, train_global, train_local, test_global, test_local, y_train, y_test, nb_cv, epoch, batch, splits, type):
     if(option == 'dual'):
         agg = concatenate(train_global, train_local)
         aggregate_X = np.expand_dims(agg, axis=2)
-        evaluateDual(model, aggregate_X, y_train,
-                     splits, batch, epoch, type)
+        return evaluateDual(model, aggregate_X, y_train,
+                            splits, batch, epoch, type)
     elif(option == 'single-global'):
-        evaluateSingle(model, train_global, y_train,
-                       splits, batch, epoch, type)
+        return evaluateSingle(model, train_global, y_train,
+                              splits, batch, epoch, type)
     elif(option == 'single-local'):
-        evaluateSingle(model, train_global, y_train,
-                       splits, batch, epoch, type)
+        return evaluateSingle(model, train_global, y_train,
+                              splits, batch, epoch, type)
