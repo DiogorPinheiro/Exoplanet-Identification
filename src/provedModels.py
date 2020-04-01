@@ -1,30 +1,34 @@
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution1D, MaxPooling1D
-from keras.layers.normalization import BatchNormalization, ZeroPadding1D
+from keras.layers.normalization import BatchNormalization
+from keras.layers import  ZeroPadding1D
+from keras import optimizers
+
+from evaluation import auc_roc
 
 
 def alexNet(x_train):   # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
     model = Sequential()
     model.add(Convolution1D(64, 3, input_shape=(x_train.shape[1], 1)))
-    model.add(BatchNormalization((64, 226, 226)))
+    model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(MaxPooling1D(poolsize=3))
+    model.add(MaxPooling1D(pool_size=3))
 
-    model.add(Convolution1D(128, 64, 7, 7))
-    model.add(BatchNormalization((128, 115, 115)))
+    model.add(Convolution1D(128, 7))
+    model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(MaxPooling1D(poolsize=3))
+    model.add(MaxPooling1D(pool_size=3))
 
-    model.add(Convolution1D(192, 128, 3, 3))
-    model.add(BatchNormalization((128, 112, 112)))
+    model.add(Convolution1D(192, 3))
+    model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(MaxPooling1D(poolsize=3))
+    model.add(MaxPooling1D(pool_size=3))
 
-    model.add(Convolution1D(256, 192, 3, 3))
-    model.add(BatchNormalization((128, 108, 108)))
+    model.add(Convolution1D(256, 3))
+    model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(MaxPooling1D(poolsize=3))
+    model.add(MaxPooling1D(pool_size=3))
 
     model.add(Flatten())
     model.add(Dense(512, init='normal'))
@@ -37,6 +41,10 @@ def alexNet(x_train):   # Adapted from https://gist.github.com/JBed/c2fb3ce8ed29
     model.add(BatchNormalization())
     model.add(Activation('sigmoid'))
 
+    opt = optimizers.Adam(learning_rate=10e-5, beta_1=0.9,
+                          beta_2=0.999, amsgrad=False)
+    model.compile(loss='binary_crossentropy', optimizer=opt,
+                  metrics=['accuracy', auc_roc])
     return model, 'sequential'
 
 

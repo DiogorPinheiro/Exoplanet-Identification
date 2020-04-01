@@ -23,22 +23,18 @@ def svmachine():
 
 
 def feedForwardNN(x_train_global, x_train_local):
-    inputLayer_local = Input(shape=(x_train_local.shape[1], 1))
-    inputLayer_global = Input(shape=(x_train_global.shape[1], 1))
+    inputLayer_local = Input(shape=[x_train_local.shape[1], 1])
+    inputLayer_global = Input(shape=[x_train_global.shape[1],1 ])
 
-    conv_local = Dense(16, kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                       activation='relu', kernel_initializer='he_normal')
-    conv_global = Dense(16,  kernel_size=5, strides=1, padding='same', dilation_rate=1,
-                        activation='relu', kernel_initializer='he_normal')
+    conv_local = Dense(16, activation='relu')
+    conv_global = Dense(16, activation='relu')
 
     model1 = conv_global(inputLayer_global)
-    model1 = Dense(16,  kernel_size=5, strides=1, padding='same',
-                   dilation_rate=1, activation='relu')(model1)
+    model1 = Dense(16,activation='relu')(model1)
     model1 = Flatten()(model1)
 
     model2 = conv_local(inputLayer_local)
-    model2 = Dense(16,  kernel_size=5, strides=1, padding='same',
-                   dilation_rate=1, activation='relu')(model2)
+    model2 = Dense(16, activation='relu')(model2)
     model2 = Flatten()(model2)
 
     concatLayerQ = keras.layers.concatenate(

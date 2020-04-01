@@ -66,35 +66,35 @@ def bothViewsCNN(x_train_local, x_train_global, lay1_filters, l1_kernel_size, po
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
     #model1 = Dropout(0.20)(model1)
-    #model1 = GaussianNoise(0.1)(model1)
+    model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
     #model1 = Dropout(0.20)(model1)
-    #model1 = GaussianNoise(0.1)(model1)
+    model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
     #model1 = Dropout(0.20)(model1)
-    #model1 = GaussianNoise(0.1)(model1)
+    model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
     #model1 = Dropout(0.20)(model1)
-    #model1 = GaussianNoise(0.1)(model1)
+    model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
     #model1 = Dropout(0.20)(model1)
-    #model1 = GaussianNoise(0.1)(model1)
+    model1 = GaussianNoise(0.1)(model1)
     model1 = Flatten()(model1)
 
     # Input2
@@ -103,14 +103,14 @@ def bothViewsCNN(x_train_local, x_train_global, lay1_filters, l1_kernel_size, po
                     dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
     #model2 = Dropout(0.20)(model2)
-    #model2 = GaussianNoise(0.1)(model2)
+    model2 = GaussianNoise(0.1)(model2)
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model2)
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
     #model2 = Dropout(0.20)(model2)
-    #model2 = GaussianNoise(0.1)(model2)
+    model2 = GaussianNoise(0.1)(model2)
     model2 = Flatten()(model2)
     # Concatenation
     concatLayerQ = keras.layers.concatenate(
@@ -305,31 +305,39 @@ def main():
     cnnglobal = []
     cnndual = []
 
-    model = knn()
-    score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                         X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    print("KNN : {}".format(score))
-    model = svmachine()
-    score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                         X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    print("SVM : {}".format(score))
-    model = feedForwardNN(X_train_global, X_train_local_shaped)
-    md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    ffnnlist.append(hist_lo)
-    model = bothViewsCNN(X_train_global, X_train_local_shaped,
-                         0, 0, 0, 0, 0, 0, 0, 0, 0)
-    md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    cnndual.append(hist_lo)
-    model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
-    md, hist_lo = mainEvaluate('single-local', model, X_train_global, X_train_local_shaped, X_test_global_shaped,
-                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
-    cnnglobal.append(hist_lo)
+    #model = knn()
+    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #print("KNN : {}".format(score))
+    #model = svmachine()
+    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #print("SVM : {}".format(score))
 
-    l1 = joinLists(ffnnlist, cnnglobal)
-    l1 = joinLists(l1, cnndual)
-    writeToFile(l1)
+    #model = feedForwardNN(X_train_global, X_train_local)
+    #md, hist_lo = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #ffnnlist.append(hist_lo)
+
+    #model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
+    #                     0, 0, 0, 0, 0, 0, 0, 0, 0)
+    #md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #cnndual.append(hist_lo)
+
+
+    #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
+    #md, hist_lo = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    #cnnglobal.append(hist_lo)
+
+    #l1 = joinLists(ffnnlist, cnnglobal)
+    #l1 = joinLists(l1, cnndual)
+    #writeToFile(l1)
+
+    model, seq = pm.alexNet(X_train_local_shaped)
+    md, hist_lo = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq)
 
 
 '''
