@@ -15,94 +15,11 @@ from sklearn.model_selection import StratifiedKFold
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
 
-
+from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
 from dataFunctions import dataInfo
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
-
-
-def auc_roc(y_true, y_pred):
-    # any tensorflow metric
-    value, update_op = tf.contrib.metrics.streaming_auc(y_pred, y_true)
-
-    # find all variables created for this metric
-    metric_vars = [i for i in tf.local_variables(
-    ) if 'auc_roc' in i.name.split('/')[1]]
-
-    # Add metric variables to GLOBAL_VARIABLES collection.
-    # They will be initialized for new session.
-    for v in metric_vars:
-        tf.add_to_collection(tf.GraphKeys.GLOBAL_VARIABLES, v)
-
-    # force to update metric values
-    with tf.control_dependencies([update_op]):
-        value = tf.identity(value)
-        return value
-
-
-def recall_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    recall = true_positives / (possible_positives + K.epsilon())
-    return recall
-
-
-def precision_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    return precision
-
-
-def f1_m(y_true, y_pred):
-    precision = precision_m(y_true, y_pred)
-    recall = recall_m(y_true, y_pred)
-    return 2*((precision*recall)/(precision+recall+K.epsilon()))
-
-
-def training(model, train_global, train_local, yglobal, ylocal, nb_cv=10, batch_size=5, nb_epochs=10):
-
-    kfold = StratifiedKFold(n_splits=nb_cv, shuffle=True, random_state=7)
-    # print(type(train_global))
-    #d = {'a':pd.Series(train_global),'b':pd.Series(train_global)}
-    #X = pd.DataFrame(data=d,index=[0])
-
-    cvscores = []
-
-    for train_index, valid_index in kfold.split(train_global, ylocal):
-        X_train_fold = train_global[train_index]
-        X_valid_fold = train_global[valid_index]
-        y_train_fold = ylocal[train_index]
-        y_valid_fold = ylocal[valid_index]
-
-        # Reshape data to 3D input
-        #X_train_fold = np.expand_dims(X_train_fold, axis=2)
-        #X_valid_fold=np.expand_dims(X_valid_fold, axis=2)
-
-        model.fit(X_train_fold, y_train_fold, batch_size=32, epochs=50,
-                  validation_data=(X_valid_fold, y_valid_fold),
-                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=0, verbose=1, mode='max')])
-        score = model.evaluate(X_valid_fold, y_valid_fold, verbose=0)[1]
-
-        #score, acc = model.evaluate(X_valid_fold, y_valid_fold, batch_size, verbose=0)
-
-        Y_score = model.predict(X_valid_fold)
-        Y_predict = model.predict_classes(X_valid_fold)
-
-        auc = roc_auc_score(y_valid_fold, Y_score)
-        recall = recall_score(y_valid_fold, Y_predict)
-        precision = precision_score(y_valid_fold, Y_predict)
-        f1 = f1_score(y_valid_fold, Y_predict)
-
-        print('\n')
-        print('ROC/AUC Score: ', auc)
-        print('Precision: ', precision)
-        print('Recall: ', recall)
-        print('F1: ', f1_score)
-
-        cvscores.append(auc)
-    return np.mean(cvscores)
 
 
 def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
@@ -168,7 +85,6 @@ def main():
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
-    # Data For The Sequential 1D-LSTM
     data_local = np.loadtxt('data/neural_input_local.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
@@ -177,34 +93,48 @@ def main():
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
-    # Separate Data
-    train_X_local, val_X_local, test_X_local = np.split(
-        local_X, [int(.8 * len(local_X)), int(0.9 * len(local_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_local, val_Y_local, test_Y_local = np.split(
-        local_Y, [int(.8 * len(local_Y)), int(0.9 * len(local_Y))])
-    # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(local_X),len(train_X_local),len(val_X_local),len(test_X_local)))
-    scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_X_local = scaler_local.fit_transform(train_X_local)
-    val_X_local = scaler_local.transform(val_X_local)
-    test_X_local = scaler_local.transform(test_X_local)
+    # Separate Local Data
+    X_train_local, X_test_local, y_train_local, y_test_local = train_test_split(
+        local_X, local_Y, test_size=0.2, random_state=1)
 
-    train_X_global, val_X_global, test_X_global = np.split(
-        global_X, [int(.8 * len(global_X)), int(0.9 * len(global_X))])  # Training = 80%, Validation = 10%, Test = 10%
-    train_Y_global, val_Y_global, test_Y_global = np.split(
-        global_Y, [int(.8 * len(global_Y)), int(0.9 * len(global_Y))])
-    # print("Total: {} ; Training: {} ; Evaluation: {} ; Test: {}".format(len(global_X),len(train_X_global),len(val_X_global),len(test_X_global)))
+    # Scale Data
+    scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    X_train_local = scaler_local.fit_transform(X_train_local)
+    X_test_local = scaler_local.transform(X_test_local)
+
+    global_X = data_global[0:, 1:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
+    X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
+        global_X, global_Y, test_size=0.2, random_state=1)
+
     scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_X_global = scaler_global.fit_transform(train_X_global)
-    val_X_global = scaler_global.transform(val_X_global)
-    test_X_global = scaler_global.transform(test_X_global)
+    X_train_global = scaler_global.fit_transform(X_train_global)
+    X_test_global = scaler_global.transform(X_test_global)
 
     # Shape Data
-    train_X_global = np.expand_dims(train_X_global, axis=2)
-    val_X_global = np.expand_dims(val_X_global, axis=2)
-    test_X_global = np.expand_dims(test_X_global, axis=2)
-    train_X_local = np.expand_dims(train_X_local, axis=2)
-    val_X_local = np.expand_dims(val_X_local, axis=2)
-    test_X_local = np.expand_dims(test_X_local, axis=2)
+    X_train_global_shaped = np.expand_dims(X_train_global, axis=2)
+    X_test_global_shaped = np.expand_dims(X_test_global, axis=2)
+    X_train_local_shaped = np.expand_dims(X_train_local, axis=2)
+    X_test_local_shaped = np.expand_dims(X_test_local, axis=2)
+
+    # LSTM Neural Networks
+    model = model_creator(X_train_global_shaped, 10, 64, 0.298,
+                          0.298, 0.00643199565237, 0.25)
+
+    # Evaluation
+    split = 5
+    epoch = 32
+    batch = 50
+    nb = 5
+
+    md, hist_lo = mainEvaluate('single-global', model, X_train_global, X_train_local_shaped, X_test_global_shaped,
+                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+
     '''
     batch_size = 32
     epochs = 20
@@ -262,10 +192,6 @@ def main():
 
     experiment.log_parameters(params)
     '''
-    model = model_creator(train_X_global, 10, 64, 0.298,
-                          0.298, 0.00643199565237, 0.25)
-    score = training(model, train_X_global, train_X_local,
-                     train_Y_global, train_Y_local, 10, 32, 50)
 
     # Train And Evaluate Model
     #model = model_creator(train_X_global)
