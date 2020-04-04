@@ -11,7 +11,7 @@ from keras import optimizers
 from sklearn.preprocessing import MinMaxScaler
 import time as t
 from sklearn.metrics import roc_auc_score, recall_score, precision_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import train_test_split
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
 
@@ -127,13 +127,13 @@ def main():
     batch = 50
     nb = 5
 
-    md, hist_lo = mainEvaluate('single-global', model, X_train_global, X_train_local_shaped, X_test_global_shaped,
+    md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
                                X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    # md, hist_lo = mainEvaluate('single-global',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('dual',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
     '''
     batch_size = 32
