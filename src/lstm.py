@@ -8,6 +8,7 @@ from keras.initializers import Ones, Orthogonal, VarianceScaling, Zeros
 from keras.callbacks import EarlyStopping
 from keras.models import Model
 from keras import optimizers
+from keras.layers import MaxPooling1D
 from sklearn.preprocessing import MinMaxScaler
 import time as t
 from sklearn.metrics import roc_auc_score, recall_score, precision_score
@@ -21,36 +22,65 @@ from dataFunctions import dataInfo
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
+def singleLSTModel(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
+    model = Sequential()
+    model.add(LSTM(ls_units, input_shape = (train_X_global.shape[1], 1), return_sequences=True))
+    #model.add(LSTM(ls_units, input_shape = (train_X_global.shape[1], 1)))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout_l))
+    model.add(PReLU())
+    model.add(LSTM(ls_units))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout_l))
+    model.add(PReLU())
+
+    model.add(Dense(dense_units))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout_d))
+    model.add(PReLU())
+    model.add(Dense(dense_units))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout_d))
+    model.add(PReLU())
+
+    model.add(Dense(1,activation='sigmoid'))
+
+    opt = optimizers.SGD(lr=learn_rate, decay=0.0001,
+                         momentum=momentum, nesterov=True)
+    model.compile(loss='binary_crossentropy', optimizer=opt,
+                  metrics=['accuracy', f1_m, precision_m, recall_m])
+    return model
 
 def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
     input = Input(shape=(train_X_global.shape[1], 1))
 
-    model = LSTM(units=ls_units, return_sequences=True)(input)
+    model = LSTM(units=ls_units,return_sequences=True)(input)
     #model = LSTM(units=ls_units)(input)
-    #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform', seed=None)(model)
-    #model = Zeros()(model)
-    #model=Orthogonal(gain=1.0, seed=None)(model)
     model = BatchNormalization()(model)
-    # model=Ones()(model)
-    #model = Zeros()(model)
-    #model = Zeros()(model)
-    #model = Ones()(model)
     model = Dropout(dropout_l)(model)
     model = PReLU()(model)
-    #model = Zeros()(model)
-    # model=Flatten()(model)
+    model = LSTM(units=ls_units)(model)
+    model = BatchNormalization()(model)
+    model = Dropout(dropout_l)(model)
+    model = PReLU()(model)
+
+    #model=Flatten()(model)
 
     model = Dense(units=dense_units)(model)
     #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
     #model = Zeros()(model)
+    print(model.summary())
+    model = MaxPooling1D(pool_size=2, strides=2)(model)
     model = Dropout(dropout_d)(model)
     model = PReLU()(model)
     #model = Zeros()(model)
-    model = Dense(units=dense_units)(model)
+    #model = Dense(units=dense_units)(model)
+    #model = Dropout(dropout_d)(model)
+    #model = BatchNormalization()(model)
     #model = VarianceScaling(scale=1.0,mode='fan_avg', distribution='uniform')(model)
     #model = Zeros()(model)
-    model = PReLU()(model)
-    model = Flatten()(model)
+    #model = PReLU()(model)
+    #model = Flatten()(model)
 
     out = Dense(1, activation='sigmoid')(model)
 
@@ -118,22 +148,22 @@ def main():
     X_test_local_shaped = np.expand_dims(X_test_local, axis=2)
 
     # LSTM Neural Networks
-    model = model_creator(X_train_global_shaped, 10, 64, 0.298,
-                          0.298, 0.00643199565237, 0.25)
+    model = singleLSTModel(X_train_global_shaped, 10, 64, 0.298,
+                          0.298, 0.0016434, 0.25)
 
     # Evaluation
     split = 5
-    epoch = 32
-    batch = 50
+    epoch = 43
+    batch = 16
     nb = 5
 
     md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
                                X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    # md, hist_lo = mainEvaluate('single-global',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # md, hist_lo = mainEvaluate('single-local',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # md, hist_lo = mainEvaluate('single-local',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
-    # md, hist_lo = mainEvaluate('dual',model,X_train_global_shaped,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
-    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
+    # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
+    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
     '''
     batch_size = 32
