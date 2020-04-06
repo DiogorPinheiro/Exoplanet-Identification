@@ -4,12 +4,12 @@ import lightkurve as lk
 import csv
 from sklearn import preprocessing
 
-from dataFunctions import dataCleaner
-from dataFunctions import dataInfo
-from dataFunctions import dataAnalyzer
-from dataFunctions import dataReader
+#from dataFunctions import dataInfo
+#from dataFunctions import dataReader
+import dataInfo as di
+import dataReader as dr
 
-#CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 #DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 
@@ -19,7 +19,7 @@ def getCSVData():
 
         Output: Pandas Dataframe
     '''
-    return dataInfo.dataCSV(CSV_FILE)
+    return di.dataCSV(CSV_FILE)
 
 
 def getKepids(table):
@@ -28,7 +28,7 @@ def getKepids(table):
 
         Output: List of Kepids Numbers (List of Int)
     '''
-    return dataInfo.listKepids(table)
+    return di.listKepids(table)
 
 
 def getLabel(table, kepid):
@@ -39,7 +39,7 @@ def getLabel(table, kepid):
         Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive) 
                 or NTP (Nontransiting Phenomenon)
     '''
-    label = dataInfo.labelFinder(table, kepid)
+    label = di.labelFinder(table, kepid)
     if label == 'PC':
         return 1
     else:
@@ -52,7 +52,7 @@ def labelCatcher(table, kepid):
         Input: Table (Pandas Dataframe) and Kepid (int)
         Output: Label (String)
     '''
-    return dataInfo.labelFinder(table, kepid)
+    return di.labelFinder(table, kepid)
 
 
 # Label added in the second version
@@ -70,11 +70,11 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
     '''
     row = []
 
-    global_mean = dataInfo.getGlobalMean(normalized_flux)
-    global_median = dataInfo.getGlobalMedian(normalized_flux)
-    globa_std = dataInfo.getGlobalSTD(normalized_flux)
+    global_mean = di.getGlobalMean(normalized_flux)
+    global_median = di.getGlobalMedian(normalized_flux)
+    globa_std = di.getGlobalSTD(normalized_flux)
 
-    strongPeaks, indStrong, mediumPeaks, indMedium, weakPeaks, indWeak, nonPeaks, indNon = dataInfo.categorizedPoints(
+    strongPeaks, indStrong, mediumPeaks, indMedium, weakPeaks, indWeak, nonPeaks, indNon = di.categorizedPoints(
         normalized_flux)
 
     num_strongPeaks = len(strongPeaks)
@@ -82,7 +82,7 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
         max_strongPeaks = max(strongPeaks)
         mean_strongPeaks = np.mean(strongPeaks)
         std_strongPeaks = np.std(strongPeaks)
-        width_strongPeaks = dataInfo.getPeaksWidth(normalized_flux, indStrong)
+        width_strongPeaks = di.getPeaksWidth(normalized_flux, indStrong)
         mean_StrongWidth = np.mean(width_strongPeaks)
         std_StrongWidth = np.std(width_strongPeaks)
         max_strongPeaksPercentage = (
@@ -93,7 +93,7 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
         max_mediumPeaks = max(mediumPeaks)
         mean_mediumPeaks = np.mean(mediumPeaks)
         std_mediumPeaks = np.std(mediumPeaks)
-        width_mediumPeaks = dataInfo.getPeaksWidth(normalized_flux, indMedium)
+        width_mediumPeaks = di.getPeaksWidth(normalized_flux, indMedium)
         mean_MediumWidth = np.mean(width_mediumPeaks)
         std_MediumWidth = np.std(width_mediumPeaks)
 
@@ -102,7 +102,7 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
         max_weakPeaks = max(weakPeaks)
         mean_weakPeaks = np.mean(weakPeaks)
         std_weakPeaks = np.std(weakPeaks)
-        width_weakPeaks = dataInfo.getPeaksWidth(normalized_flux, indWeak)
+        width_weakPeaks = di.getPeaksWidth(normalized_flux, indWeak)
         mean_WeakWidth = np.mean(width_weakPeaks)
         std_WeakWidth = np.std(width_weakPeaks)
 
@@ -110,11 +110,11 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
         num_nonPeaks = len(nonPeaks)
         mean_nonPeaks = np.mean(nonPeaks)
         std_nonPeaks = np.std(nonPeaks)
-        width_nonPeaks = dataInfo.getPeaksWidth(normalized_flux, indNon)
+        width_nonPeaks = di.getPeaksWidth(normalized_flux, indNon)
         mean_NonPeaksW = np.mean(width_nonPeaks)
         std_NonPeaksW = np.std(width_nonPeaks)
 
-    overall_mean, overall_std = dataInfo.overallPeakData(
+    overall_mean, overall_std = di.overallPeakData(
         strongPeaks, mediumPeaks, weakPeaks)
 
     # label = getLabel(table, kepid) # Used in the first version
@@ -250,9 +250,9 @@ def main():
     # for id in kepids:
     #    lab = labelCatcher(table, id)
     #    if lab != 'UNK':    # Avoid Unknown Light Curves
-    #        filenames = dataReader.filenameWarehouse(id, DATA_DIRECTORY)    # Get Full Path Of All Light Curves
-    #        time, flux = dataReader.fitsConverter(filenames)        # Read Light Curves And Obtain Time And Flux
-    #        normalized_flux,out_time = dataReader.getConcatenatedLightCurve(flux,time) # Concatenate All Light Curves
+    #        filenames = dr.filenameWarehouse(id, DATA_DIRECTORY)    # Get Full Path Of All Light Curves
+    #        time, flux = dr.fitsConverter(filenames)        # Read Light Curves And Obtain Time And Flux
+    #        normalized_flux,out_time = dr.getConcatenatedLightCurve(flux,time) # Concatenate All Light Curves
     #        row = createFeaturesTable(table,id,normalized_flux) # Create Row Of Features
     #        appendToFile(row)   # Append Row To CSV File
 
