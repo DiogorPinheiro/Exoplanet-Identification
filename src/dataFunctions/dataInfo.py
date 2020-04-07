@@ -27,11 +27,12 @@ def getMaxPeakPerFile(data):
 
 def getStrongPeaks(data):
     # Use signal invertion for detection
-    indexes, prop = signal.find_peaks(-data, -np.mean(data)+(2*np.std(data)), distance=100 )
+    indexes, prop = signal.find_peaks(-data, -
+                                      np.mean(data)+(2*np.std(data)), distance=100)
     #print("std:{} ; 2*std:{} ".format( -np.std(data), -2*np.std(data)))
     #print("2+std:{} ; std:{} ; mean:{}".format( -np.mean(data)+(2*np.std(data)), -np.mean(data)+(np.std(data)), -np.mean(data) ))
-    #print(prop['peak_heights'])
-    #print(len(indexes))
+    # print(prop['peak_heights'])
+    # print(len(indexes))
     inv = []
     for i in prop['peak_heights']:  # Invert Signal to positive values
         inv.append(i)
@@ -66,9 +67,11 @@ def getNonPeaks(data):
     indexes, prop = signal.find_peaks(data, np.mean(data))
     return prop['peak_heights'], indexes
 
-def getPeaksWidth(data,indexes):
-    a = signal.peak_widths(data, indexes,rel_height=0.90)
+
+def getPeaksWidth(data, indexes):
+    a = signal.peak_widths(data, indexes, rel_height=0.90)
     return a[0]
+
 
 def categorizedPoints(data):
     strongPeaks, indStrong = getStrongPeaks(data)
@@ -79,20 +82,24 @@ def categorizedPoints(data):
 # Get kepid Label
 
 
-def labelFinder(table, kepid):
+def labelFinder(table, kepid, index):
     # print(findColumnNumber(table,kepid))
     for i, r in table.iterrows():
-        if r['kepid'] == kepid:
+        if (r['kepid'] == kepid) and (i == index):
             return r['av_training_set']
+        else:
+            continue
 # get CSV data
+
 
 def dataCSV(filename):
     return pd.read_csv(filename, skiprows=15, usecols=[0, 2, 4, 6, 8])
 # Listar Kepids
 
+
 def listKepids(file):
-    print(file.iloc[:,0])
-    return file.iloc[:,0]
+    print(file.iloc[:, 0])
+    return file.iloc[:, 0]
 # Overall Peak Points Data
 
 
@@ -101,20 +108,23 @@ def overallPeakData(strong, medium, weak):
     aux.append(strong)
     aux.append(medium)
     aux.append(weak)
-    aux= np.concatenate(aux)
+    aux = np.concatenate(aux)
     return np.mean(aux), np.std(aux)
 
-def getTCEPeriod(table,kepid):
+
+def getTCEPeriod(table, kepid, index):
     for i, r in table.iterrows():
-        if r['kepid'] == kepid:
+        if (r['kepid'] == kepid) and (i == index):
             return r['tce_period']
 
-def getTCEDuration(table,kepid):
+
+def getTCEDuration(table, kepid, index):
     for i, r in table.iterrows():
-        if r['kepid'] == kepid:
+        if (r['kepid'] == kepid) and (i == index):
             return r['tce_duration']
 
-def getTCETransitMidpoint(table,kepid):
+
+def getTCETransitMidpoint(table, kepid, index):
     for i, r in table.iterrows():
-        if r['kepid'] == kepid:
+        if (r['kepid'] == kepid) and (i == index):
             return r['tce_time0bk']

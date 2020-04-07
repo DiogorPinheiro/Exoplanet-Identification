@@ -61,7 +61,7 @@ def localView(curve, f_dur):
         return False
 
 
-def getLabel(table, kepid):
+def getLabel(table, kepid, index):
     '''
         Get The Kepid Label From The TCE Table
 
@@ -69,9 +69,11 @@ def getLabel(table, kepid):
         Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive)
                 or NTP (Nontransiting Phenomenon)
     '''
-    label = di.labelFinder(table, kepid)
+    label = di.labelFinder(table, kepid, index)
     if label == 'PC':
         return 1
+    elif label == 'UNK':
+        return 2
     else:
         return 0
 
@@ -85,22 +87,21 @@ def writeFile(file, row):
 def main():
     start = t.time()
     table = getCSVData().drop_duplicates()
-    kepids = (di.listKepids(table)).drop_duplicates().reset_index(
-        drop=True)  # List of Kepids (Avoid Duplicates)
+    kepids = di.listKepids(table)  # List of Kepids
     # dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
-    # file = open("global_movavg.csv","w")
-    # file2=open("local_movavg.csv","w")
-    # file.close()
-    # file2.close()
+    file = open("global_movavg_new.csv", "w")
+    file2 = open("local_movavg_new.csv", "w")
+    file.close()
+    file2.close()
 
     global_flux = []
     local_flux = []
     lc_raw_keeper = []
-    kepids = [757450]
-    # kepids = kepids[12536:] # parou no 11346-20102 (12254909), começou no 11073351
+    #kepids = [1162345, 1162345]
+    kepids = kepids[:10]
     count = 0
-    for kep in kepids:
+    for i, kep in enumerate(kepids):
         # filenames = dr.filenameWarehouse(kep, dir_mac)  # Get Full Path Of All Light Curves
         # Read Light Curves And Obtain Time And Flux
         # time, flux = dr.fitsConverter(filenames)
@@ -126,70 +127,72 @@ def main():
                 continue
 
             # Get Info About Host Star
-            period = di.getTCEPeriod(table, kep)    # Period
-            duration = di.getTCEDuration(table, kep)    # Transit Duration
-            tO = di.getTCETransitMidpoint(table, kep)   # Transit Epoch
-            label = getLabel(table, kep)
+            period = di.getTCEPeriod(table, kep, i)    # Period
+            duration = di.getTCEDuration(table, kep, i)    # Transit Duration
+            tO = di.getTCETransitMidpoint(table, kep, i)   # Transit Epoch
+            label = getLabel(table, kep, i)
 
         else:   # If lcfs == 'NoneType'
             continue
 
-        # Signal Pre-processing
-        # lc = lk.LightCurve(out_time, out_flux)0
-        # lc_clean = lc.remove_outliers( sigma=20, sigma_upper=4)    # Clean Outliers
-        temp_fold = lc_clean.fold(period, t0=tO)
-        fractional_duration = (duration / 24.0) / period
-        phase_mask = np.abs(temp_fold.phase) < (fractional_duration * 1.5)
-        # Mask The Transit To Avoid Self-subtraction When Flattening The Signal
-        transit_mask = np.in1d(
-            lc_clean.time, temp_fold.time_original[phase_mask])
+        if label != 2:
+            # Signal Pre-processing
+            # lc = lk.LightCurve(out_time, out_flux)0
+            # lc_clean = lc.remove_outliers( sigma=20, sigma_upper=4)    # Clean Outliers
+            temp_fold = lc_clean.fold(period, t0=tO)
+            fractional_duration = (duration / 24.0) / period
+            phase_mask = np.abs(temp_fold.phase) < (fractional_duration * 1.5)
+            # Mask The Transit To Avoid Self-subtraction When Flattening The Signal
+            transit_mask = np.in1d(
+                lc_clean.time, temp_fold.time_original[phase_mask])
 
-        # Flatten The Mask While While Interpolating The Signal Points
-        lc_flat, trend_lc = lc_clean.flatten(
-            return_trend=True, mask=transit_mask)
+            # Flatten The Mask While While Interpolating The Signal Points
+            lc_flat, trend_lc = lc_clean.flatten(
+                return_trend=True, mask=transit_mask)
 
-        lc_fold = lc_flat.fold(period,  t0=tO)   # Fold The Signal
-        global_view = globaView(lc_fold)  # Global View
-        gl_phase = global_view.phase
-        gl_bri = global_view.flux
-        gl_bri = dc.movingAverage(gl_bri, 15)
-        np.nan_to_num(gl_bri, nan=np.mean(gl_bri))
-        global_info = []
-        global_info.append(kep)
-        for i in gl_bri:
-            global_info.append(i)
+            lc_fold = lc_flat.fold(period,  t0=tO)   # Fold The Signal
+            global_view = globaView(lc_fold)  # Global View
+            gl_phase = global_view.phase
+            gl_bri = global_view.flux
+            gl_bri = dc.movingAverage(gl_bri, 15)
+            np.nan_to_num(gl_bri, nan=np.mean(gl_bri))
+            global_info = []
+            global_info.append(kep)
+            for i in gl_bri:
+                global_info.append(i)
 
-        local_view = localView(lc_fold, fractional_duration)  # Local View
-        if local_view == False:
-            continue
-        else:
-            lc_phase = local_view.phase
-            lc_bri = local_view.flux
-            lc_bri = dc.movingAverage(lc_bri, 15)
+            local_view = localView(lc_fold, fractional_duration)  # Local View
+            if local_view == False:
+                continue
+            else:
+                lc_phase = local_view.phase
+                lc_bri = local_view.flux
+                lc_bri = dc.movingAverage(lc_bri, 15)
 
-            np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
-            local_info = []
-            local_info.append(kep)
-            for j in lc_bri:
-                local_info.append(j)
+                np.nan_to_num(lc_bri, nan=np.mean(lc_bri))
+                local_info = []
+                local_info.append(kep)
+                for j in lc_bri:
+                    local_info.append(j)
 
         # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
-        if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
-            fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
-            ax.plot(lc_phase, lc_bri)
-            name = '../Images/Views/Local_' + str(kep) + ".png"
-            fig.savefig(name)   # save the figure to file
-            plt.close(fig)    # close the figure window
+            if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
+                # fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
+                #ax.plot(lc_phase, lc_bri)
+                #name = '../Images/Views/Local_' + str(kep) + ".png"
+                # fig.savefig(name)   # save the figure to file
+                # plt.close(fig)    # close the figure window
 
-            fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
-            ax.plot(gl_phase, gl_bri)
-            name = '../Images/Views/Global_' + str(kep) + ".png"
-            fig.savefig(name)   # save the figure to file
-            plt.close(fig)    # close the figure window
-        #    local_info.append(label)
-        #    writeFile("local_movavg.csv", local_info)
-        #    global_info.append(label)
-        #    writeFile("global_movavg.csv", global_info)
+                # fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
+                #ax.plot(gl_phase, gl_bri)
+                #name = '../Images/Views/Global_' + str(kep) + ".png"
+                # fig.savefig(name)   # save the figure to file
+                # plt.close(fig)    # close the figure window
+
+                local_info.append(label)
+                writeFile("local_movavg_new.csv", local_info)
+                global_info.append(label)
+                writeFile("global_movavg_new.csv", global_info)
 
     # with open(GLOBAL_CSV, 'w') as fd:
     #    for row in global_flux:
