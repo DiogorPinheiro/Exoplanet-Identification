@@ -16,15 +16,6 @@ def getCSVData():
     return di.dataCSV(csvmac)
 
 
-def labelFinder(table, kepid, index):
-    # print(findColumnNumber(table,kepid))
-    for i, r in table.iterrows():
-        if (r['kepid'] == kepid) and (i == index):
-            return r['av_training_set']
-        else:
-            continue
-
-
 def getLabel(table, kepid, index):
     '''
         Get The Kepid Label From The TCE Table
@@ -33,7 +24,7 @@ def getLabel(table, kepid, index):
         Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive) 
                 or NTP (Nontransiting Phenomenon)
     '''
-    label = labelFinder(table, kepid, index)
+    label = di.labelFinder(table, kepid, index)
     if label == 'PC':
         return 1
     elif label == "UNK":
@@ -50,18 +41,17 @@ def writeFile(file, row):
 
 def createImageNameLabelDataset():
     table = getCSVData()
-    file = open("KepidsWithoutDuplicates.csv", "w")
+    file = open("../data/KepidsWithoutDuplicates.csv", "w")
 
     kepids = di.listKepids(table)  # List of Kepids (Avoid Duplicates)
     i = 0
-    kepids = kepids[:10]
+    #kepids = kepids[:10]
     for i, k in enumerate(kepids):
         print("{}/{}".format(i, len(kepids)))
         label = getLabel(table, k, i)
-        period = di.getTCEPeriod(table, k, i)
         if label != 2:
-            aux = [k, label, period]
-            writeFile("KepidsWithoutDuplicates.csv", aux)
+            aux = [k, label]
+            writeFile("../data/KepidsWithoutDuplicates.csv", aux)
         i += 1
 
 
