@@ -3,7 +3,7 @@ import csv
 
 import dataInfo as di
 
-csvmac = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+csvmac = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 #CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 
 

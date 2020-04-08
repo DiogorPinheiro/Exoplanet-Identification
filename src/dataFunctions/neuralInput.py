@@ -10,8 +10,8 @@ import dataInfo as di
 import dataCleaner as dc
 
 # Directories
-#CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
-csvmac = "/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+#csvmac = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 # File Names
@@ -31,7 +31,7 @@ def getCSVData():
 
         Output: Pandas Dataframe
     '''
-    return di.dataCSV(csvmac)
+    return di.dataCSV(CSV_FILE)
 
 
 def globaView(curve):
