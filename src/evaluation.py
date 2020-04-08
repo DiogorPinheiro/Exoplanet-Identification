@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import keras
-from keras.callbacks import EarlyStopping, History
+from keras.callbacks import EarlyStopping, History, CSVLogger
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score, classification_report
 from sklearn.model_selection import StratifiedKFold
@@ -56,6 +56,10 @@ class LossHistory(keras.callbacks.Callback):
 
     def on_batch_end(self, batch, logs={}):
         self.losses.append(logs.get('loss'))
+
+def customLoss(ytrue, ypred):
+    x = objectives.binary_crossentropy(ytrue, ypred)
+    return print(K.print_tensor(x,message="losses = "))
 
 # -------------------------------- Evaluation Process --------------------------------------------
 
@@ -173,7 +177,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
     #history = History()
     history = LossHistory()
     cvscores = []
-
+    csv_logger = CSVLogger('log.csv',append=True,separator=',')
     for train_index, valid_index in kfold.split(X, y):
 
         X_train_fold = X[train_index]
@@ -183,7 +187,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
 
         #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
         model.fit(X_train_fold, y_train_fold, batch_size=batch, epochs=epoch, validation_data=(X_valid_fold, y_valid_fold),
-                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
+                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history, csv_logger])
         score = model.evaluate(
             X_valid_fold, y_valid_fold, verbose=0)[1]
 

@@ -72,8 +72,8 @@ def getLabel(table, kepid, index):
         Get The Kepid Label From The TCE Table
 
         Input: Table (Pandas Dataframe) and Kepid (int)
-        Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive)
-                or NTP (Nontransiting Phenomenon)
+        Output: 1 if Label Is PC (Confirmed Planet), 0 if AFP (Astrophysical False Positive)
+                or NTP (Nontransiting Phenomenon) or 2 if UNK (Unknown)
     '''
     label = di.labelFinder(table, kepid, index)
     if label == 'PC':

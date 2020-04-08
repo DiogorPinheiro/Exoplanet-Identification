@@ -22,7 +22,7 @@ import provedModels as pm
 from utilities import writeToFile, joinLists
 from otherAlgorithms import *
 
-CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+CSV_FILE = "data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 # -------------------------------- Utilities ------------------------------------------------
@@ -231,10 +231,24 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
     return model
 
 
+def writeFile(file, row):
+    '''
+        Append Row Of Values To File
+
+        Input: file (String) and row (Numpy Array) 
+    '''
+    with open(file, 'a') as fd:
+        writer = csv.writer(fd)
+        writer.writerow(row)
+
+
 def main():
     start = t.time()
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
+
+    #file = open("Data_Predictions.csv", "w")
+    # file.close()
 
     table = getCSVData().drop_duplicates()
     kepids = getKepids(table).drop_duplicates(
@@ -308,7 +322,7 @@ def main():
     #model = knn()
     # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    #print("KNN : {}".format(score))
+
     #model = svmachine()
     # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
