@@ -5,6 +5,7 @@ from keras.callbacks import EarlyStopping, History, CSVLogger
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score, classification_report
 from sklearn.model_selection import StratifiedKFold
+from keras import objectives
 
 from utilities import concatenate
 
@@ -57,9 +58,11 @@ class LossHistory(keras.callbacks.Callback):
     def on_batch_end(self, batch, logs={}):
         self.losses.append(logs.get('loss'))
 
+
 def customLoss(ytrue, ypred):
     x = objectives.binary_crossentropy(ytrue, ypred)
-    return print(K.print_tensor(x,message="losses = "))
+    print(K.print_tensor(x, message="losses = "))
+    return x
 
 # -------------------------------- Evaluation Process --------------------------------------------
 
@@ -82,7 +85,8 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
         x_train_local = X_train_fold[0:, 2001:]
         x_valid_global = X_valid_fold[0:, :2001]
         x_valid_local = X_valid_fold[0:, 2001:]
-        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
+        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(
+            x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
         model.fit([x_train_global, x_train_local], y_train_fold, batch_size=batch, epochs=epochs, validation_data=([x_valid_global, x_valid_local], y_valid_fold),
                   callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
         score = model.evaluate(
@@ -110,7 +114,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
             precision = precision_score(y_valid_fold, Y_classes)
             f1 = f1_score(y_valid_fold, Y_classes)
         '''
-        print(classification_report(y_valid_fold,Y_classes))
+        print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
@@ -118,6 +122,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
 
         cvscores.append(auc)
     return np.mean(cvscores), history.losses
+
 
 def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
@@ -137,7 +142,8 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
         x_train_local = X_train_fold[0:, 2001:]
         x_valid_global = X_valid_fold[0:, :2001]
         x_valid_local = X_valid_fold[0:, 2001:]
-        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
+        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(
+            x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
         model.fit([x_train_local, x_train_global], y_train_fold, batch_size=batch, epochs=epochs, validation_data=([x_valid_local, x_valid_global], y_valid_fold),
                   callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
         score = model.evaluate(
@@ -161,7 +167,7 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
             print('Recall: ', recall)
             print('F1: ', f1_score)
 
-        print(classification_report(y_valid_fold,Y_classes))
+        print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
@@ -177,7 +183,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
     #history = History()
     history = LossHistory()
     cvscores = []
-    csv_logger = CSVLogger('log.csv',append=True,separator=',')
+    csv_logger = CSVLogger('log.csv', append=True, separator=',')
     for train_index, valid_index in kfold.split(X, y):
 
         X_train_fold = X[train_index]
@@ -208,7 +214,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
             print('Recall: ', recall)
             print('F1: ', f1_score)
 
-        print(classification_report(y_valid_fold,Y_classes))
+        print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
@@ -237,7 +243,7 @@ def mainEvaluate(option, model, train_global, train_local, test_global, test_loc
         # agg = np.expand_dims(agg, axis=2)
         print(agg.shape)
         return evaluateDualfnn(model, agg, y_train,
-                            splits, batch, epoch, type)
+                               splits, batch, epoch, type)
     elif(option == 'single-global'):
         return evaluateSingle(model, train_global, y_train,
                               splits, batch, epoch, type)

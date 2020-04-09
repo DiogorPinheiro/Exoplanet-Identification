@@ -205,7 +205,7 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
 
 
 def main():
-    data = np.loadtxt('dataset_teste2.csv', delimiter=',', skiprows=1)
+    data = np.loadtxt('data/dataset_teste2.csv', delimiter=',', skiprows=1)
     X = data[0:, 0:-1]  # Input
     Y = data[0:, -1]  # Labels
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')

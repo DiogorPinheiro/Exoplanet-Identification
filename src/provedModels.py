@@ -9,7 +9,7 @@ from evaluation import auc_roc, customLoss
 
 
 # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
-def alexNetFunctional(x_train):
+def alexNet(x_train):
     model_input = Input(shape=(x_train.shape[1], 1))
 
     model = Convolution1D(filters=64, kernel_size=3)(model_input)
@@ -33,14 +33,14 @@ def alexNetFunctional(x_train):
     model = MaxPooling1D(pool_size=3)(model)
 
     model = Flatten()(model)
-    model = Dense(512, init='normal')
+    model = Dense(512, init='normal')(model)
     model = BatchNormalization()(model)
     model = Activation('relu')(model)
-    model = Dense(512, init='normal')
+    model = Dense(512, init='normal')(model)
     model = BatchNormalization()(model)
     model = Activation('relu')(model)
 
-    model = Dense(1, init='normal')
+    model = Dense(1, init='normal')(model)
     model = BatchNormalization()(model)
     model = Activation('sigmoid')(model)
 
@@ -50,47 +50,7 @@ def alexNetFunctional(x_train):
                           beta_2=0.999, amsgrad=False)
     model.compile(loss=customLoss, optimizer=opt,
                   metrics=['accuracy', auc_roc])
-    return model, 'sequential'
-
-
-def alexNet(x_train):   # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
-    model = Sequential()
-    model.add(Convolution1D(64, 3, input_shape=(x_train.shape[1], 1)))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(MaxPooling1D(pool_size=3))
-
-    model.add(Convolution1D(128, 7))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(MaxPooling1D(pool_size=3))
-
-    model.add(Convolution1D(192, 3))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(MaxPooling1D(pool_size=3))
-
-    model.add(Convolution1D(256, 3))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(MaxPooling1D(pool_size=3))
-
-    model.add(Flatten())
-    model.add(Dense(512, init='normal'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dense(512, init='normal'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dense(1, init='normal'))
-    model.add(BatchNormalization())
-    model.add(Activation('sigmoid'))
-
-    opt = optimizers.Adam(learning_rate=10e-5, beta_1=0.9,
-                          beta_2=0.999, amsgrad=False)
-    model.compile(loss='binary_crossentropy', optimizer=opt,
-                  metrics=['accuracy', auc_roc])
-    return model, 'sequential'
+    return model, 'functional'
 
 
 def vgg(x_train):   # Adapted from https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
