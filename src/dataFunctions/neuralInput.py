@@ -120,9 +120,10 @@ def main():
     '''
     start = t.time()
     table = getCSVData()
-    print(len(table))
+
     kepids = di.listKepids(table)  # List of Kepids
     # dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
+    lent = len(kepids)
 
     # Open Files For Global And Local View
     file = open(GLOBAL_CSV_MOVAVG, "w")
@@ -138,7 +139,7 @@ def main():
 
         name = 'KIC {}'.format(kep)  # Create Name (Ex: KIC 1162345)
         print(name)
-        print("{}/{}".format(count, len(kepids)))
+        print("{}/{}".format(count, lent))
 
         label = getLabel(table, kep, i)
         if label != 2:  # Avoid Light Curves With Label 'UNK'
