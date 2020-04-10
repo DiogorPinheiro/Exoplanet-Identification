@@ -2,11 +2,12 @@ from astropy.io import fits
 import numpy as np
 import os
 from pathlib import Path
-from dataFunctions import dataInfo
-from dataFunctions import dataCleaner
 import lightkurve as lk
-
 import pickle
+
+import dataInfo as di
+import dataCleaner as dc
+
 
 LONG_QUARTER_PREFIXES = {'0': ['2009131105131'],
                          '1': ['2009166043257'],
@@ -85,7 +86,8 @@ def fitsConverter(aggregate):
     #    f *= (-1)
     return time, brightness
 
-def getConcatenatedLightCurve(flux,time):
+
+def getConcatenatedLightCurve(flux, time):
     '''
         Concatenate all Light Curves associated with the kepid and normalize values
 
@@ -96,12 +98,13 @@ def getConcatenatedLightCurve(flux,time):
         i /= np.median(i)
     out_flux = np.concatenate(flux)
     out_time = np.concatenate(time)
-    normalized_flux = dataCleaner.movingAverage(out_flux, 15)
+    normalized_flux = dc.movingAverage(out_flux, 15)
     lc = lk.LightCurve(out_time, normalized_flux)
     ret = lc.normalize()
     return ret.flux, out_time
 
-def createFluxDatabase(table,kepids,DATA_DIRECTORY):
+
+def createFluxDatabase(table, kepids, DATA_DIRECTORY):
     '''
         Create A Pickle File That Saves All Flux Values Associated With Each KepID (Concatenated Light Curves)
 
@@ -111,16 +114,20 @@ def createFluxDatabase(table,kepids,DATA_DIRECTORY):
     '''
     flux_values = []
     for id in kepids:
-        lab = dataInfo.labelFinder(table, id)
+        lab = di.labelFinder(table, id)
         if lab != 'UNK':  # Avoid Unknown Light Curves
-            filenames = filenameWarehouse(id, DATA_DIRECTORY)  # Get Full Path Of All Light Curves
-            time, flux = fitsConverter(filenames)  # Read Light Curves And Obtain Time And Flux
-            normalized_flux, out_time = getConcatenatedLightCurve(flux, time)  # Concatenate All Light Curves
+            # Get Full Path Of All Light Curves
+            filenames = filenameWarehouse(id, DATA_DIRECTORY)
+            # Read Light Curves And Obtain Time And Flux
+            time, flux = fitsConverter(filenames)
+            normalized_flux, out_time = getConcatenatedLightCurve(
+                flux, time)  # Concatenate All Light Curves
             flux_values.append(normalized_flux)
 
     pickle.dump(flux_values, open("concateneted_flux.p", "wb"))
 
-def getConcatenatedLightCurve(flux,time):
+
+def getConcatenatedLightCurve(flux, time):
     '''
         Concatenate all Light Curves associated with the kepid and normalize values
 
@@ -131,7 +138,7 @@ def getConcatenatedLightCurve(flux,time):
         i /= np.median(i)
     out_flux = np.concatenate(flux)
     out_time = np.concatenate(time)
-    normalized_flux = dataCleaner.movingAverage(out_flux, 15)
+    normalized_flux = dc.movingAverage(out_flux, 15)
     lc = lk.LightCurve(out_time, normalized_flux)
     ret = lc.normalize()
     return ret.flux, out_time

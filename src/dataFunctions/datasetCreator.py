@@ -7,7 +7,7 @@ from sklearn import preprocessing
 #from dataFunctions import dataInfo
 #from dataFunctions import dataReader
 import dataInfo as di
-import dataReader as dr
+#import dataReader as dr
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 #DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
@@ -192,7 +192,7 @@ def appendToFile(row):
         Input: Row Of Values
         Output: None
     '''
-    with open('dataset_teste2.csv', 'a') as fd:
+    with open('dataset_teste3.csv', 'a') as fd:
         writer = csv.writer(fd)
         writer.writerow(row)
 
@@ -218,7 +218,7 @@ def normalizeTable():
             df.iloc[j, i] = val[0, j]
         i += 1
 
-    df.to_csv('dataset_teste2.csv', index=False)
+    df.to_csv('dataset_teste3.csv', index=False)
 
 
 def main():
@@ -237,7 +237,7 @@ def main():
     for i in range(120):    # Create Headers For Pairwise Values
         fields.append('Pairwise {}'.format(i+1))
     fields.append('label')
-    with open("dataset_teste2.csv", "w") as fd:  # Write Header
+    with open("dataset_teste3.csv", "w") as fd:  # Write Header
         writer = csv.writer(fd)
         writer.writerow(fields)
 
@@ -258,7 +258,7 @@ def main():
 
     # -------------------- NEW -------------------------
     # Também mudei o createFeatures e o appendFile
-    data_local = np.loadtxt('neural_input_local.csv', delimiter=',')
+    data_local = np.loadtxt('../data/local_movavg.csv', delimiter=',')
     ke = data_local[:, 0]
     labels = data_local[:, -1]
     data_local = data_local[:, 1:-1]

@@ -20,7 +20,7 @@ def joinLists(data1, data2):
     return np.array(data1)
 
 
-def writeToFile(data):
-    with open("comparison_table.csv", "w") as fd:  # Write Header
+def writeToFile(name, data):
+    with open(name, "w") as fd:  # Write Header
         writer = csv.writer(fd)
         writer.writerow(data)

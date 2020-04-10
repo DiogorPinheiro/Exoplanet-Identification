@@ -2,7 +2,7 @@ import numpy as np
 from comet_ml import Experiment, Optimizer
 import tensorflow as tf
 from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split, cross_val_predict
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise
@@ -16,13 +16,14 @@ import pandas as pd
 from keras import backend as K
 import csv
 
+
 from dataFunctions import dataInfo
 from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
 import provedModels as pm
 from utilities import writeToFile, joinLists
 from otherAlgorithms import *
 
-CSV_FILE = "data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 # -------------------------------- Utilities ------------------------------------------------
@@ -231,24 +232,10 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
     return model
 
 
-def writeFile(file, row):
-    '''
-        Append Row Of Values To File
-
-        Input: file (String) and row (Numpy Array) 
-    '''
-    with open(file, 'a') as fd:
-        writer = csv.writer(fd)
-        writer.writerow(row)
-
-
 def main():
     start = t.time()
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
-
-    #file = open("Data_Predictions.csv", "w")
-    # file.close()
 
     table = getCSVData().drop_duplicates()
     kepids = getKepids(table).drop_duplicates(
@@ -256,11 +243,11 @@ def main():
     # dataReader.createFluxDatabase(table,kepids,DATA_DIRECTORY)
 
     # Data For The Sequential 1D-CNN
-    data_local = np.loadtxt('data/neural_input_local.csv', delimiter=',')
+    data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
 
-    data_global = np.loadtxt('data/neural_input_global.csv', delimiter=',')
+    data_global = np.loadtxt('data/global_movavg.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
@@ -320,37 +307,37 @@ def main():
     cnndual = []
 
     #model = knn()
-    # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-
+    #print("KNN : {}".format(score))
     #model = svmachine()
-    # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
     #print("SVM : {}".format(score))
 
     #model = feedForwardNN(X_train_global, X_train_local)
-    # md, hist_lo = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #md, hist_lo = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    # ffnnlist.append(hist_lo)
+    #ffnnlist.append(hist_lo)
 
-    # model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
+    #model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
     #                     0, 0, 0, 0, 0, 0, 0, 0, 0)
-    # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    # cnndual.append(hist_lo)
+    #cnndual.append(hist_lo)
+
 
     #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
-    # md, hist_lo = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #md, hist_lo = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
-    # cnnglobal.append(hist_lo)
+    #cnnglobal.append(hist_lo)
 
     #l1 = joinLists(ffnnlist, cnnglobal)
     #l1 = joinLists(l1, cnndual)
-    # writeToFile(l1)
-
+    #writeToFile("comparison.csv",l1)
     model, seq = pm.alexNet(X_train_local_shaped)
-    md, hist_lo = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq)
+    md, hist_lo, tens = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                                        X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq)
 
 
 '''
