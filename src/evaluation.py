@@ -90,12 +90,14 @@ class customMetrics(keras.callbacks.Callback):
 
 def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
-    print(x_agg.shape)
+    #print(x_agg.shape)
     #history = History()
     history = LossHistory()
     cvscores = []
 
     for train_index, valid_index in kfold.split(x_agg, y):
+        print("Train index {}".format(train_index))
+        print("Valid index {}".format(valid_index))
 
         X_train_fold = x_agg[train_index]
         X_valid_fold = x_agg[valid_index]
@@ -119,6 +121,10 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
 
         Y_score = model.predict([x_valid_global, x_valid_local])
         Y_classes = Y_score.argmax(axis=-1)
+
+        print("Validation Length {}".format(len(valid_index)))
+        print("Prediction Score Length {}".format(len(Y_score)))
+        tens = K.eval(customLoss(K.variable(y_valid_fold), K.variable(Y_score)))
         '''
         if (type == 'sequential'):
             Y_predict = model.predict_classes([x_valid_global, x_valid_local],)
@@ -152,6 +158,9 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
 
     for train_index, valid_index in kfold.split(x_agg, y):
 
+        print("Train index {}".format(train_index))
+        print("Valid index {}".format(valid_index))
+
         X_train_fold = x_agg[train_index]
         X_valid_fold = x_agg[valid_index]
         y_train_fold = y[train_index]
@@ -174,6 +183,10 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
 
         Y_score = model.predict([x_valid_local, x_valid_global])
         Y_classes = Y_score.argmax(axis=-1)
+
+        print("Validation Length {}".format(len(valid_index)))
+        print("Prediction Score Length {}".format(len(Y_score)))
+        tens = K.eval(customLoss(K.variable(y_valid_fold), K.variable(Y_score)))
 
         if (type == 'sequential'):
             Y_predict = model.predict_classes([x_valid_global, x_valid_local],)
@@ -206,7 +219,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
         print("Train index {}".format(train_index))
         print("Valid index {}".format(valid_index))
 
-        writeToFile("test2.txt",train_index)
+        #writeToFile("test2.txt",train_index)
 
         X_train_fold = X[train_index]
         X_valid_fold = X[valid_index]
