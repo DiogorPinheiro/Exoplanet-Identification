@@ -307,37 +307,36 @@ def main():
     cnndual = []
 
     #model = knn()
-    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
     #print("KNN : {}".format(score))
     #model = svmachine()
-    #score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    # score = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
     #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
     #print("SVM : {}".format(score))
 
     #model = feedForwardNN(X_train_global, X_train_local)
-    #md, hist_lo = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    # md, hist_lo, tens = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    #ffnnlist.append(hist_lo)
+    # ffnnlist.append(hist_lo)
 
     model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
                          0, 0, 0, 0, 0, 0, 0, 0, 0)
-    md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                               X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
-    #cnndual.append(hist_lo)
-
+    md, hist_lo, tens = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                     X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    # cnndual.append(hist_lo)
 
     #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
-    #md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    # md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
-    #cnnglobal.append(hist_lo)
+    # cnnglobal.append(hist_lo)
 
     #l1 = joinLists(ffnnlist, cnnglobal)
     #l1 = joinLists(l1, cnndual)
-    #writeToFile("comparison.csv",l1)
+    # writeToFile("comparison.csv",l1)
 
     #model, seq = pm.alexNet(X_train_local_shaped)
-    #md, hist_lo, tens = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    # md, hist_lo, tens = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                                                    X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq)
 
 
