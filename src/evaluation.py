@@ -79,7 +79,7 @@ class customMetrics(keras.callbacks.Callback):
 # -------------------------------- Evaluation Process --------------------------------------------
 
 
-def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
+def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
     # print(x_agg.shape)
     #history = History()
@@ -106,6 +106,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
         score = model.evaluate(
             [x_valid_global, x_valid_local], y_valid_fold, verbose=0)[1]
 
+        # Print Results
         print(len(train_index))
         print(history.losses)
         print(len(history.losses))
@@ -140,10 +141,15 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type):
         print('ROC/AUC Score: ', auc)
 
         cvscores.append(auc)
+
+    # Save Model
+    model.save(filename)
+    print("Saved model to disk")
+
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
+def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
     print(x_agg.shape)
     #history = History()
@@ -201,10 +207,15 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type):
         print('ROC/AUC Score: ', auc)
 
         cvscores.append(auc)
+
+    # Save Model
+    model.save(filename)
+    print("Saved model to disk")
+
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateSingle(model, X, y, splits, batch, epoch, type):
+def evaluateSingle(model, X, y, splits, batch, epoch, type, filename):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
 
     #history = History()
@@ -257,10 +268,15 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type):
         print('ROC/AUC Score: ', auc)
 
         cvscores.append(auc)
+
+    # Save Model
+    model.save(filename)
+    print("Saved model to disk")
+
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):
+def evaluateSimple(model, X_train, y_train, X_test, y_test, splits, filename):
     #model.fit(X_train, y_train)
     #score = model.score(X_test, y_test)
     kfold = StratifiedKFold(n_splits=splits, shuffle=False, random_state=7)
@@ -298,29 +314,34 @@ def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):
         print('ROC/AUC Score: ', auc)
         print(type(tens))
         cvscores.append(auc)
+
+    # Save Model
+    model.save(filename)
+    print("Saved model to disk")
+
     return np.mean(cvscores), tens
 
 
-def mainEvaluate(option, model, train_global, train_local, test_global, test_local, y_train, y_test, nb_cv, epoch, batch, splits, type):
+def mainEvaluate(option, model, train_global, train_local, test_global, test_local, y_train, y_test, nb_cv, epoch, batch, splits, type, filename):
     if(option == 'dual'):
         agg = concatenate(train_global, train_local)
         #agg = np.expand_dims(agg, axis=2)
         print(agg.shape)
         return evaluateDual(model, agg, y_train,
-                            splits, batch, epoch, type)
+                            splits, batch, epoch, type, filename)
     elif (option == 'dual-fnn'):
         agg = concatenate(train_global, train_local)
         # agg = np.expand_dims(agg, axis=2)
         print(agg.shape)
         return evaluateDualfnn(model, agg, y_train,
-                               splits, batch, epoch, type)
+                               splits, batch, epoch, type, filename)
     elif(option == 'single-global'):
         return evaluateSingle(model, train_global, y_train,
-                              splits, batch, epoch, type)
+                              splits, batch, epoch, type, filename)
     elif(option == 'single-local'):
         return evaluateSingle(model, train_local, y_train,
-                              splits, batch, epoch, type)
+                              splits, batch, epoch, type, filename)
     elif(option == 'simple-global'):
-        return evaluateSimple(model, train_global, y_train, test_global, y_test, splits)
+        return evaluateSimple(model, train_global, y_train, test_global, y_test, splits, filename)
     elif(option == 'simple-local'):
-        return evaluateSimple(model, train_local, y_train, test_local, y_test, splits)
+        return evaluateSimple(model, train_local, y_train, test_local, y_test, splits, filename)

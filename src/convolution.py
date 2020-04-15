@@ -307,25 +307,25 @@ def main():
 
     #model = svmachine()
     # score,tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional','SVM.h5")
     #print("SVM : {}".format(score))
 
     #model = feedForwardNN(X_train_global, X_train_local)
     # md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"FNN.h5")
 
     # model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
     #                     0, 0, 0, 0, 0, 0, 0, 0, 0)
     # md, hist_lo, tens_DualCNN = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+    #                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"DualCNN.h5")
 
     #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
     # md, hist_lo,tens_CNN = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
+    #                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential',"CNN.h5")
 
     #model, seq = pm.alexNet(X_train_local_shaped)
     # md, hist_lo, tens_Alex = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                                                    X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq)
+    #                                                    X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq,"alexnet.h5")
 
     #l1 = []
     # for i in range(len(tens_Alex)):
