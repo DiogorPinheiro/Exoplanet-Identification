@@ -301,13 +301,13 @@ def main():
 
     model = knn()
     score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
+                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
     print("KNN : {}".format(score))
     print(tens_KNN)
 
     #model = svmachine()
     # score,tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional','SVM.h5")
+    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional','")
     #print("SVM : {}".format(score))
 
     #model = feedForwardNN(X_train_global, X_train_local)

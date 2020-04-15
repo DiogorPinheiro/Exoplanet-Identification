@@ -1,11 +1,13 @@
 import numpy as np
 import tensorflow as tf
 import keras
+from time import time
 from keras.callbacks import EarlyStopping, History, CSVLogger
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score, classification_report
 from sklearn.model_selection import StratifiedKFold
 from keras import objectives
+from tensorflow.python.keras.callbacks import Tensorboard
 
 from utilities import concatenate, writeToFile
 
@@ -79,16 +81,20 @@ class customMetrics(keras.callbacks.Callback):
 # -------------------------------- Evaluation Process --------------------------------------------
 
 
-def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
-    kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
-    # print(x_agg.shape)
+def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename, X_test_global, X_test_local, y_test):
+    kfold = StratifiedKFold(n_splits=splits, shuffle=True,
+                            random_state=7)  # Cross-Validation
+
+    tensorboard = Tensorboard(
+        log_dir="logs/{}".format(time()))  # Visualization
+
     #history = History()
     history = LossHistory()
     cvscores = []
 
     for train_index, valid_index in kfold.split(x_agg, y):
-        print("Train index {}".format(train_index))
-        print("Valid index {}".format(valid_index))
+        #print("Train index {}".format(train_index))
+        #print("Valid index {}".format(valid_index))
 
         X_train_fold = x_agg[train_index]
         X_valid_fold = x_agg[valid_index]
@@ -99,10 +105,11 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
         x_train_local = X_train_fold[0:, 2001:]
         x_valid_global = X_valid_fold[0:, :2001]
         x_valid_local = X_valid_fold[0:, 2001:]
-        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(
-            x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
+
+        #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
+
         model.fit([x_train_global, x_train_local], y_train_fold, batch_size=batch, epochs=epochs, validation_data=([x_valid_global, x_valid_local], y_valid_fold),
-                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
+                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history, tensorboard])
         score = model.evaluate(
             [x_valid_global, x_valid_local], y_valid_fold, verbose=0)[1]
 
@@ -115,10 +122,6 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
         Y_score = model.predict([x_valid_global, x_valid_local])
         Y_classes = Y_score.argmax(axis=-1)
 
-        print("Validation Length {}".format(len(valid_index)))
-        print("Prediction Score Length {}".format(len(Y_score)))
-        tens = K.eval(customLoss(K.variable(
-            y_valid_fold), K.variable(Y_score)))
         '''
         if (type == 'sequential'):
             Y_predict = model.predict_classes([x_valid_global, x_valid_local],)
@@ -142,6 +145,12 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
 
         cvscores.append(auc)
 
+    # Get Loss Log For Each Sample
+    Y_score_log = model.predict([X_test_global, X_test_local])
+    print("Test Length {}".format(len(y_test)))
+    print("Prediction Score Length {}".format(len(Y_score_log)))
+    tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
+
     # Save Model
     model.save(filename)
     print("Saved model to disk")
@@ -149,17 +158,19 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename):
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
+def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_test_global, X_test_local, y_test):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
-    print(x_agg.shape)
+
+    tensorboard = Tensorboard(
+        log_dir="logs/{}".format(time()))  # Visualization
+
     #history = History()
     history = LossHistory()
     cvscores = []
 
     for train_index, valid_index in kfold.split(x_agg, y):
-
-        print("Train index {}".format(train_index))
-        print("Valid index {}".format(valid_index))
+        #print("Train index {}".format(train_index))
+        #print("Valid index {}".format(valid_index))
 
         X_train_fold = x_agg[train_index]
         X_valid_fold = x_agg[valid_index]
@@ -170,10 +181,11 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
         x_train_local = X_train_fold[0:, 2001:]
         x_valid_global = X_valid_fold[0:, :2001]
         x_valid_local = X_valid_fold[0:, 2001:]
-        print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(
-            x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
+
+        #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape, x_valid_global.shape, x_train_local.shape, x_valid_local.shape))
+
         model.fit([x_train_local, x_train_global], y_train_fold, batch_size=batch, epochs=epochs, validation_data=([x_valid_local, x_valid_global], y_valid_fold),
-                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history])
+                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history, tensorboard])
         score = model.evaluate(
             [x_valid_local, x_valid_global], y_valid_fold, verbose=0)[1]
 
@@ -184,11 +196,6 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
 
         Y_score = model.predict([x_valid_local, x_valid_global])
         Y_classes = Y_score.argmax(axis=-1)
-
-        print("Validation Length {}".format(len(valid_index)))
-        print("Prediction Score Length {}".format(len(Y_score)))
-        tens = K.eval(customLoss(K.variable(
-            y_valid_fold), K.variable(Y_score)))
 
         if (type == 'sequential'):
             Y_predict = model.predict_classes([x_valid_global, x_valid_local],)
@@ -208,6 +215,12 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
 
         cvscores.append(auc)
 
+    # Get Loss Log For Each Sample
+    Y_score_log = model.predict([X_test_global, X_test_local])
+    print("Test Length {}".format(len(y_test)))
+    print("Prediction Score Length {}".format(len(Y_score_log)))
+    tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
+
     # Save Model
     model.save(filename)
     print("Saved model to disk")
@@ -215,18 +228,19 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename):
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateSingle(model, X, y, splits, batch, epoch, type, filename):
+def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_test):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
+
+    tensorboard = Tensorboard(
+        log_dir="logs/{}".format(time()))  # Visualization
 
     #history = History()
     history = LossHistory()
     cvscores = []
     csv_logger = CSVLogger('log.csv', append=True, separator=',')
     for train_index, valid_index in kfold.split(X, y):
-        print("Train index {}".format(train_index))
-        print("Valid index {}".format(valid_index))
-
-        # writeToFile("test2.txt",train_index)
+        #print("Train index {}".format(train_index))
+        #print("Valid index {}".format(valid_index))
 
         X_train_fold = X[train_index]
         X_valid_fold = X[valid_index]
@@ -235,7 +249,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename):
 
         #print(("x_train_gl {} ; x_val_gl {} ; x_train_l {} ; x_val_l {}").format(x_train_global.shape,x_valid_global.shape, x_train_local.shape,x_valid_local.shape))
         model.fit(X_train_fold, y_train_fold, batch_size=batch, epochs=epoch, validation_data=(X_valid_fold, y_valid_fold),
-                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history, csv_logger, customMetrics()])
+                  callbacks=[EarlyStopping(monitor='val_auc_roc', min_delta=0, patience=10, verbose=1, mode='max'), history, csv_logger, customMetrics(), tensorboard])
         score = model.evaluate(
             X_valid_fold, y_valid_fold, verbose=0)[1]
 
@@ -269,6 +283,12 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename):
 
         cvscores.append(auc)
 
+    # Get Loss Log For Each Sample
+    Y_score_log = model.predict(X_test)
+    print("Test Length {}".format(len(y_test)))
+    print("Prediction Score Length {}".format(len(Y_score_log)))
+    tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
+
     # Save Model
     model.save(filename)
     print("Saved model to disk")
@@ -276,7 +296,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename):
     return np.mean(cvscores), history.losses, tens
 
 
-def evaluateSimple(model, X_train, y_train, X_test, y_test, splits, filename):
+def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):
     #model.fit(X_train, y_train)
     #score = model.score(X_test, y_test)
     kfold = StratifiedKFold(n_splits=splits, shuffle=False, random_state=7)
@@ -285,8 +305,8 @@ def evaluateSimple(model, X_train, y_train, X_test, y_test, splits, filename):
     history = LossHistory()
     cvscores = []
     for train_index, valid_index in kfold.split(X_train, y_train):
-        print("Train index {}".format(train_index))
-        print("Valid index {}".format(valid_index))
+        #print("Train index {}".format(train_index))
+        #print("Valid index {}".format(valid_index))
 
         # writeToFile("test2.txt",train_index)
 
@@ -302,22 +322,24 @@ def evaluateSimple(model, X_train, y_train, X_test, y_test, splits, filename):
         Y_score = model.predict(X_valid_fold)
         Y_classes = Y_score.argmax(axis=-1)
 
-        print("Validation Length {}".format(len(valid_index)))
-        print("Prediction Score Length {}".format(len(Y_score)))
-        tens = K.eval(customLoss(K.variable(
-            y_valid_fold), K.variable(Y_score)))
+        #print("Validation Length {}".format(len(valid_index)))
+        #print("Prediction Score Length {}".format(len(Y_score)))
+        # tens = K.eval(customLoss(K.variable(
+        #    y_valid_fold), K.variable(Y_score)))
 
         #print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
         print('ROC/AUC Score: ', auc)
-        print(type(tens))
         cvscores.append(auc)
 
-    # Save Model
-    model.save(filename)
-    print("Saved model to disk")
+    # Get Loss Log For Each Sample
+    Y_score = model.predict(X_test)
+    Y_classes = Y_score.argmax(axis=-1)
+    print("Test Length {}".format(len(y_test)))
+    print("Prediction Score Length {}".format(len(Y_score)))
+    tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score)))
 
     return np.mean(cvscores), tens
 
@@ -328,7 +350,7 @@ def mainEvaluate(option, model, train_global, train_local, test_global, test_loc
         #agg = np.expand_dims(agg, axis=2)
         print(agg.shape)
         return evaluateDual(model, agg, y_train,
-                            splits, batch, epoch, type, filename)
+                            splits, batch, epoch, type, filename, test_global, test_local, y_test)
     elif (option == 'dual-fnn'):
         agg = concatenate(train_global, train_local)
         # agg = np.expand_dims(agg, axis=2)
@@ -342,6 +364,6 @@ def mainEvaluate(option, model, train_global, train_local, test_global, test_loc
         return evaluateSingle(model, train_local, y_train,
                               splits, batch, epoch, type, filename)
     elif(option == 'simple-global'):
-        return evaluateSimple(model, train_global, y_train, test_global, y_test, splits, filename)
+        return evaluateSimple(model, train_global, y_train, test_global, y_test, split)
     elif(option == 'simple-local'):
-        return evaluateSimple(model, train_local, y_train, test_local, y_test, splits, filename)
+        return evaluateSimple(model, train_local, y_train, test_local, y_test, splits)
