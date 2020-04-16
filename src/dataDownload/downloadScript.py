@@ -20,7 +20,7 @@ CSV_FILE = "/Users/diogopinheiro/Documents/q1_q17_dr24_tce_2020.01.28_08.52.13.c
 OUTPUT = "downloader.sh"
 
 
-def main():
+if __name__ == "__main__":
     # Get Kepler IDs
     kepids = set()
     with open(CSV_FILE) as file:
@@ -43,6 +43,3 @@ def main():
 
     # Make the download script executable.
     os.chmod(OUTPUT, 0o744)
-
-
-main()

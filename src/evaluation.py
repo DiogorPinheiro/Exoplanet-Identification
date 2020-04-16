@@ -2,12 +2,13 @@ import numpy as np
 import tensorflow as tf
 import keras
 from time import time
+from sklearn.metrics import log_loss
 from keras.callbacks import EarlyStopping, History, CSVLogger
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score, classification_report
 from sklearn.model_selection import StratifiedKFold
 from keras import objectives
-from tensorflow.python.keras.callbacks import Tensorboard
+from keras.callbacks import TensorBoard
 
 from utilities import concatenate, writeToFile
 
@@ -296,9 +297,17 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_
     return np.mean(cvscores), history.losses, tens
 
 
+def logloss(true_label, predicted, eps=1e-15):
+    p = np.clip(predicted, eps, 1 - eps)
+    if true_label == 1:
+        return -np.log(p)
+    else:
+        return -np.log(1 - p)
+
+
 def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):
-    #model.fit(X_train, y_train)
-    #score = model.score(X_test, y_test)
+        #model.fit(X_train, y_train)
+        #score = model.score(X_test, y_test)
     kfold = StratifiedKFold(n_splits=splits, shuffle=False, random_state=7)
 
     #history = History()
@@ -335,12 +344,21 @@ def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):
         cvscores.append(auc)
 
     # Get Loss Log For Each Sample
-    Y_score = model.predict(X_test)
+    Y_score_log = model.predict(X_test)
     Y_classes = Y_score.argmax(axis=-1)
-    print("Test Length {}".format(len(y_test)))
-    print("Prediction Score Length {}".format(len(Y_score)))
-    tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score)))
+    print(Y_score_log)
 
+    #tens = []
+    # for i in range(len(Y_score_log)):
+    #    tens.append(log_loss(y_test[i], Y_score_log[i]))
+    print(log_loss(y_test, Y_score_log))
+    tens = [logloss(x, y) for (x, y) in zip(y_test, Y_score_log)]
+    print(len(tens))
+    print(len(y_test))
+    print("Loss {}".format(np.mean(tens)))
+    #print("Test Length {}".format(len(y_test)))
+    #print("Prediction Score Length {}".format(len(Y_score)))
+    #tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score)))
     return np.mean(cvscores), tens
 
 
@@ -356,14 +374,14 @@ def mainEvaluate(option, model, train_global, train_local, test_global, test_loc
         # agg = np.expand_dims(agg, axis=2)
         print(agg.shape)
         return evaluateDualfnn(model, agg, y_train,
-                               splits, batch, epoch, type, filename)
+                               splits, batch, epoch, type, filename, test_global, test_local, y_test)
     elif(option == 'single-global'):
         return evaluateSingle(model, train_global, y_train,
-                              splits, batch, epoch, type, filename)
+                              splits, batch, epoch, type, filename, test_global, y_test)
     elif(option == 'single-local'):
         return evaluateSingle(model, train_local, y_train,
-                              splits, batch, epoch, type, filename)
+                              splits, batch, epoch, type, filename, test_local, y_test)
     elif(option == 'simple-global'):
-        return evaluateSimple(model, train_global, y_train, test_global, y_test, split)
+        return evaluateSimple(model, train_global, y_train, test_global, y_test, splits)
     elif(option == 'simple-local'):
         return evaluateSimple(model, train_local, y_train, test_local, y_test, splits)

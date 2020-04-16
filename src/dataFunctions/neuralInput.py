@@ -107,7 +107,7 @@ def createImage(name, phase, flux):
     plt.close(fig)    # close the figure window
 
 
-def main():
+if __name__ == "__main__":
     '''
         1. Read TCE Table And Extract Kepids
         2. Obtain Light Curve For Each Kepid
@@ -223,6 +223,3 @@ def main():
 
     end = t.time()
     print(end - start)
-
-
-main()

@@ -231,7 +231,7 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
     return model
 
 
-def main():
+if __name__ == "__main__":
     start = t.time()
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
@@ -426,4 +426,3 @@ def main():
     end = t.time()
     #print(end - start)
 '''
-main()

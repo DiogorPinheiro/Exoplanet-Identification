@@ -221,7 +221,7 @@ def normalizeTable():
     df.to_csv('dataset_teste3.csv', index=False)
 
 
-def main():
+if __name__ == "__main__":
     '''
         Main Controller Of This File
 
@@ -268,6 +268,3 @@ def main():
         appendToFile(row)
 
     # normalizeTable()    # Normalize All Columns In The CSV File
-
-
-main()

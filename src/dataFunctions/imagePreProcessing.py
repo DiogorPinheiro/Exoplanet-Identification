@@ -55,8 +55,5 @@ def createImageNameLabelDataset():
         i += 1
 
 
-def main():
+if __name__ == "__main__":
     createImageNameLabelDataset()
-
-
-main()

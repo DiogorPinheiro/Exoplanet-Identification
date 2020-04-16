@@ -22,27 +22,29 @@ from dataFunctions import dataInfo
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
+
 def singleLSTModel(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
     model = Sequential()
-    model.add(LSTM(ls_units,activation='relu',return_sequences=True,recurrent_dropout=dropout_l, unit_forget_bias=True,bias_initializer='zeros', input_shape = (train_X_global.shape[1], 1)))
+    model.add(LSTM(ls_units, activation='relu', return_sequences=True, recurrent_dropout=dropout_l,
+                   unit_forget_bias=True, bias_initializer='zeros', input_shape=(train_X_global.shape[1], 1)))
     #model.add(Bidirectional(LSTM(ls_units, input_shape = (train_X_global.shape[1], 1))))
-    model.add(BatchNormalization(center=False,scale=False))
-    #model.add(PReLU())
-    model.add(LSTM(ls_units,activation='relu',recurrent_dropout=dropout_l,return_sequences=False, unit_forget_bias=True,bias_initializer='zeros'))
     model.add(BatchNormalization(center=False, scale=False))
-    #model.add(PReLU())
-
+    # model.add(PReLU())
+    model.add(LSTM(ls_units, activation='relu', recurrent_dropout=dropout_l,
+                   return_sequences=False, unit_forget_bias=True, bias_initializer='zeros'))
+    model.add(BatchNormalization(center=False, scale=False))
+    # model.add(PReLU())
 
     model.add(Dense(dense_units))
     model.add(BatchNormalization())
     model.add(Dropout(dropout_d))
     model.add(PReLU())
-    #model.add(Dense(dense_units))
-    #model.add(BatchNormalization())
-    #model.add(Dropout(dropout_d))
-    #model.add(PReLU())
+    # model.add(Dense(dense_units))
+    # model.add(BatchNormalization())
+    # model.add(Dropout(dropout_d))
+    # model.add(PReLU())
 
-    model.add(Dense(1,activation='sigmoid'))
+    model.add(Dense(1, activation='sigmoid'))
 
     opt = optimizers.SGD(lr=0.001*learn_rate, decay=1e-6,
                          momentum=momentum, nesterov=True)
@@ -50,24 +52,28 @@ def singleLSTModel(train_X_global, ls_units, dense_units, dropout_d, dropout_l, 
                   metrics=['accuracy', f1_m, precision_m, recall_m, auc_roc])
     return model
 
+
 def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum):
     input = Input(shape=(train_X_global.shape[1], 1))
 
-    model = LSTM(units=ls_units,return_sequences=True,unit_forget_bias=True,bias_initializer='zeros')(input)
+    model = LSTM(units=ls_units, return_sequences=True,
+                 unit_forget_bias=True, bias_initializer='zeros')(input)
     #model = LSTM(units=ls_units)(input)
     #model = BatchNormalization(center=False,scale=False)(model)
     model = Dropout(dropout_l)(model)
     model = PReLU()(model)
-    model = LSTM(units=ls_units,unit_forget_bias=True,bias_initializer='zeros',return_sequences=True)(model)
+    model = LSTM(units=ls_units, unit_forget_bias=True,
+                 bias_initializer='zeros', return_sequences=True)(model)
     #model = BatchNormalization(center=False,scale=False)(model)
     model = Dropout(dropout_l)(model)
     model = PReLU()(model)
-    model = LSTM(units=ls_units,unit_forget_bias=True,bias_initializer='zeros',return_sequences=True)(model)
+    model = LSTM(units=ls_units, unit_forget_bias=True,
+                 bias_initializer='zeros', return_sequences=True)(model)
     #model = BatchNormalization(center=False,scale=False)(model)
     model = Dropout(dropout_l)(model)
     model = PReLU()(model)
 
-    model=Flatten()(model)
+    model = Flatten()(model)
 
     model = Dense(units=dense_units)(model)
     #model = BatchNormalization()(model)
@@ -82,7 +88,7 @@ def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, l
 
     model = Model(inputs=input, outputs=out)
 
-    #opt = optimizers.SGD(lr=0.001*learn_rate, decay=0.0001,
+    # opt = optimizers.SGD(lr=0.001*learn_rate, decay=0.0001,
     #                     momentum=momentum, nesterov=True)
     opt = optimizers.Adam(learning_rate=0.0001)
     model.compile(loss='binary_crossentropy', optimizer=opt,
@@ -91,7 +97,8 @@ def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, l
 
 
 def fits(train_X_global, train_Y_global, test_X_global, test_Y_global, epochs, batch_size, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum, train_X_local, train_Y_local,  test_X_local, test_Y_local):
-    model = model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum)
+    model = model_creator(train_X_global, ls_units, dense_units,
+                          dropout_d, dropout_l, learn_rate, momentum)
     #model = singleLSTModel(train_X_global, ls_units, dense_units, dropout_l, dropout_d, learn_rate, momentum)
     # Local or Global View
     model.fit(train_X_global, train_Y_global, batch_size=batch_size, epochs=epochs,
@@ -106,7 +113,7 @@ def fits(train_X_global, train_Y_global, test_X_global, test_Y_global, epochs, b
     return score
 
 
-def main():
+if __name__ == "__main__":
     start = t.time()
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
@@ -144,7 +151,7 @@ def main():
     X_test_local_shaped = np.expand_dims(X_test_local, axis=2)
 
     # LSTM Neural Networks
-    #model = singleLSTModel(X_train_global_shaped, 10, 64, 0.298,
+    # model = singleLSTModel(X_train_global_shaped, 10, 64, 0.298,
     #                      0.298, 0.0016434, 0.25)
 
     # Evaluation
@@ -153,7 +160,7 @@ def main():
     #batch = 32
     nb = 5
 
-    #md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    # md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional')
     # md, hist_lo = mainEvaluate('single-global',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
     # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
@@ -184,19 +191,20 @@ def main():
         "name": "Optimize LSTM Network",
         "spec": {"maxCombo": 0, "objective": "minimize", "metric": "loss"},
         "parameters": {
-            "batch_size": {"type": "discrete", "values":[16,32]},
+            "batch_size": {"type": "discrete", "values": [16, 32]},
             "epochs": {"type": "integer", "min": 10, "max": 50},
-            "ls_units": {"type": "discrete", "values":[2,5,10,15]},
-            "dense_units": {"type": "discrete","values": [32,64,128]},
-            "dropout_d": {"type": "float","scalingType":"uniform", "min": 0.0, "max": 0.5},
+            "ls_units": {"type": "discrete", "values": [2, 5, 10, 15]},
+            "dense_units": {"type": "discrete", "values": [32, 64, 128]},
+            "dropout_d": {"type": "float", "scalingType": "uniform", "min": 0.0, "max": 0.5},
             "dropout_l": {"type": "float", "scalingType": "uniform", "min": 0.0, "max": 0.5},
-            "learn_rate": {"type": "float","scalingType":"loguniform", "min": 0.01, "max": 0.5},
-            "momentum": {"type": "float","scalingType":"uniform", "min":0.0, "max": 0.5},
+            "learn_rate": {"type": "float", "scalingType": "loguniform", "min": 0.01, "max": 0.5},
+            "momentum": {"type": "float", "scalingType": "uniform", "min": 0.0, "max": 0.5},
         },
         "trials": 1,
     }
 
-    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL", project_name="lstm-draw1")
+    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL",
+                    project_name="lstm-draw1")
 
     for experiment in opt.get_experiments():
         epochs = experiment.get_parameter("epochs")
@@ -209,21 +217,18 @@ def main():
         momentum = experiment.get_parameter("momentum")
 
         #model = singleLSTModel(X_train_global_shaped, ls_units, dense_units, dropout_l, dropout_d, learn_rate, momentum)
-        #md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+        # md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
         #                       X_test_local_shaped, y_train_global, y_test_global, nb, epochs, batch_size, split, 'functional')
         acc = fits(X_train_global_shaped, y_train_global, X_test_global_shaped, y_test_global,
-                  epochs, batch_size, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum, X_train_local_shaped, y_train_local, X_test_local_shaped, y_test_local )
+                   epochs, batch_size, ls_units, dense_units, dropout_d, dropout_l, learn_rate, momentum, X_train_local_shaped, y_train_local, X_test_local_shaped, y_test_local)
         # Reverse the score for minimization
         experiment.log_metric("loss", acc)
 
     experiment.log_parameters(params)
 
-
     # Train And Evaluate Model
     #model = model_creator(X_train_global_shaped, 15, 128, 0.34, 0.09, 0.178, 0.49)
     #model.fit(X_train_global_shaped, y_train_global, batch_size=32, epochs=43, validation_data=(X_test_global_shaped, y_test_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
-    #md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    # md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                          X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional')    #print("Test Accuracy = {}".format(score))
 
-
-main()

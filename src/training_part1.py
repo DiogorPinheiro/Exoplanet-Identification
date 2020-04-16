@@ -204,7 +204,7 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
     showComparison(result_acc)
 
 
-def main():
+if __name__ == "__main__":
     data = np.loadtxt('data/dataset_teste2.csv', delimiter=',', skiprows=1)
     X = data[0:, 0:-1]  # Input
     Y = data[0:, -1]  # Labels
@@ -224,6 +224,3 @@ def main():
 
     callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y)
     #fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)
-
-
-main()
