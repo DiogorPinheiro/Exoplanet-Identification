@@ -94,7 +94,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename, X_test_
     kfold = StratifiedKFold(n_splits=splits, shuffle=True,
                             random_state=7)  # Cross-Validation
 
-    tensorboard = Tensorboard(
+    tensorboard = TensorBoard(
         log_dir="logs/{}".format(time()))  # Visualization
 
     #history = History()
@@ -146,7 +146,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename, X_test_
             precision = precision_score(y_valid_fold, Y_classes)
             f1 = f1_score(y_valid_fold, Y_classes)
         '''
-        print(classification_report(y_valid_fold, Y_classes))
+        #print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
@@ -170,7 +170,7 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename, X_test_
 def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_test_global, X_test_local, y_test):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
 
-    tensorboard = Tensorboard(
+    tensorboard = TensorBoard(
         log_dir="logs/{}".format(time()))  # Visualization
 
     #history = History()
@@ -216,7 +216,7 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_te
             print('Recall: ', recall)
             print('F1: ', f1_score)
 
-        print(classification_report(y_valid_fold, Y_classes))
+        #(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')
@@ -225,7 +225,7 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_te
         cvscores.append(auc)
 
     # Get Loss Log For Each Sample
-    Y_score_log = model.predict([X_test_global, X_test_local])
+    Y_score_log = model.predict([X_test_local, X_test_global])
     print("Test Length {}".format(len(y_test)))
     print("Prediction Score Length {}".format(len(Y_score_log)))
     tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
@@ -240,7 +240,7 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_te
 def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_test):
     kfold = StratifiedKFold(n_splits=splits, shuffle=True, random_state=7)
 
-    tensorboard = Tensorboard(
+    tensorboard = TensorBoard(
         log_dir="logs/{}".format(time()))  # Visualization
 
     #history = History()
@@ -284,7 +284,7 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_
             print('Recall: ', recall)
             print('F1: ', f1_score)
 
-        print(classification_report(y_valid_fold, Y_classes))
+        #print(classification_report(y_valid_fold, Y_classes))
         auc = roc_auc_score(y_valid_fold, Y_score)
 
         print('\n')

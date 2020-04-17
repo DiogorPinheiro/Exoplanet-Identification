@@ -298,51 +298,54 @@ if __name__ == "__main__":
     # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
     # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
-    # model = knn()
-    # score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
-    # print("KNN : {}".format(score))
+    print("KNN")
+    model = knn()
+    score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
+    print("KNN : {}".format(score))
     # print(tens_KNN)
 
     # model = svmachine()
-    model = svm.SVC(kernel='linear',
-                    gamma=177827.94100389228, C=1.0)
-    model.fit(X_train_global, y_train_global)
-    score = model.score(X_test_global, y_test_global)
-    print(score)
-    y_true, y_pred = y_test_global, model.predict(X_test_global)
-    print(classification_report(y_true, y_pred))
+    # model = svm.SVC(kernel='linear',
+    #                gamma=177827.94100389228, C=1.0)
+    #model.fit(X_train_global, y_train_global)
+    #score = model.score(X_test_global, y_test_global)
+    # print(score)
+    #y_true, y_pred = y_test_global, model.predict(X_test_global)
+    #print(classification_report(y_true, y_pred))
     # {'kernel': 'linear', 'gamma': 177827.94100389228, 'C': 1.0}
     # print(model.best_params_)
 
-    # score, tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "")
-    # print("SVM : {}".format(score))
-    # print(tens_SVM)
+    print("SVM")
+    score, tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "")
+    print("SVM : {}".format(score))
+    print(tens_SVM)
 
-    # model = feedForwardNN(X_train_global, X_train_local)
-    # md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"FNN.h5")
+    print("FNN")
+    model_fnn = feedForwardNN(X_train_global, X_train_local)
+    md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model_fnn, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "FNN.h5")
 
     # model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
     #                     0, 0, 0, 0, 0, 0, 0, 0, 0)
     # md, hist_lo, tens_DualCNN = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"DualCNN.h5")
 
-    # model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
-    # md, hist_lo,tens_CNN = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential',"CNN.h5")
+    print("Seq")
+    model_seq = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
+    md, hist_lo, tens_CNN = mainEvaluate('single-global', model_seq, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential', "CNN.h5")
+    print("AlexNet")
+    model_alex, seq = pm.alexNet(X_train_local_shaped)
+    md, hist_lo, tens_Alex = mainEvaluate('single-local', model_alex, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq, "alexnet.h5")
 
-    # model, seq = pm.alexNet(X_train_local_shaped)
-    # md, hist_lo, tens_Alex = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                                                    X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq,"alexnet.h5")
-
-    # l1 = []
-    # for i in range(len(tens_Alex)):
-    #    aux = [tens_KNN[i], tens_SVM[i], tens_FNN[i],
-    #           tens_DualCNN[i], tens_CNN[i], tens_Alex[i]]
-    #    l1.append(aux)
-    # writeToFile("comparison.csv", l1)
+    l1 = []
+    for i in range(len(tens_Alex)):
+        aux = [tens_KNN[i], tens_FNN[i], tens_CNN[i], tens_Alex[i]]
+        l1.append(aux)
+    writeToFile("comparison.csv", l1)
 
 
 '''

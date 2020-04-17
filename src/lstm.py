@@ -156,8 +156,8 @@ if __name__ == "__main__":
 
     # Evaluation
     split = 5
-    #epoch = 43
-    #batch = 32
+    epoch = 43
+    batch = 32
     nb = 5
 
     # md, hist_lo = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     # md, hist_lo = mainEvaluate('single-local',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'sequential')
     # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
     # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
-
+    '''
     batch_size = 32
     epochs = 20
     ls_units = 5
@@ -225,9 +225,11 @@ if __name__ == "__main__":
         experiment.log_metric("loss", acc)
 
     experiment.log_parameters(params)
-
+    '''
     # Train And Evaluate Model
-    #model = model_creator(X_train_global_shaped, 15, 128, 0.34, 0.09, 0.178, 0.49)
-    #model.fit(X_train_global_shaped, y_train_global, batch_size=32, epochs=43, validation_data=(X_test_global_shaped, y_test_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
-    # md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-    #                          X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional')    #print("Test Accuracy = {}".format(score))
+    model = model_creator(X_train_global_shaped, 15,
+                          128, 0.34, 0.09, 0.178, 0.49)
+    model.fit(X_train_global_shaped, y_train_global, batch_size=32, epochs=43, validation_data=(X_test_global_shaped,
+                                                                                                y_test_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
+    md, hist_lo, tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+                                     X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional')  # print("Test Accuracy = {}".format(score))
