@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.model_selection import RandomizedSearchCV
@@ -16,21 +17,22 @@ def knn():
 def svmachine():
     svr = svm.SVC(probability=False)
 
-    parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 5]}
-    model = RandomizedSearchCV(svr, parameters, n_jobs=4, verbose=5)
-
+    paramgrid = {"kernel": ["rbf", "sigmoid", "linear"],
+                 "C": np.logspace(-9, 9, num=25, base=10),
+                 "gamma": np.logspace(-9, 9, num=25, base=10)}
+    model = RandomizedSearchCV(svr, paramgrid, n_jobs=4, verbose=5)
     return model
 
 
 def feedForwardNN(x_train_global, x_train_local):
     inputLayer_local = Input(shape=[x_train_local.shape[1], 1])
-    inputLayer_global = Input(shape=[x_train_global.shape[1],1 ])
+    inputLayer_global = Input(shape=[x_train_global.shape[1], 1])
 
     conv_local = Dense(16, activation='relu')
     conv_global = Dense(16, activation='relu')
 
     model1 = conv_global(inputLayer_global)
-    model1 = Dense(16,activation='relu')(model1)
+    model1 = Dense(16, activation='relu')(model1)
     model1 = Flatten()(model1)
 
     model2 = conv_local(inputLayer_local)

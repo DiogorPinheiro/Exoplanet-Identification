@@ -60,18 +60,18 @@ def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, l
                  unit_forget_bias=True, bias_initializer='zeros')(input)
     #model = LSTM(units=ls_units)(input)
     #model = BatchNormalization(center=False,scale=False)(model)
-    model = Dropout(dropout_l)(model)
     model = PReLU()(model)
+    model = Dropout(dropout_l)(model)
     model = LSTM(units=ls_units, unit_forget_bias=True,
                  bias_initializer='zeros', return_sequences=True)(model)
     #model = BatchNormalization(center=False,scale=False)(model)
-    model = Dropout(dropout_l)(model)
     model = PReLU()(model)
+    model = Dropout(dropout_l)(model)
     model = LSTM(units=ls_units, unit_forget_bias=True,
                  bias_initializer='zeros', return_sequences=True)(model)
     #model = BatchNormalization(center=False,scale=False)(model)
-    model = Dropout(dropout_l)(model)
     model = PReLU()(model)
+    model = Dropout(dropout_l)(model)
 
     model = Flatten()(model)
 
@@ -231,4 +231,3 @@ if __name__ == "__main__":
     #model.fit(X_train_global_shaped, y_train_global, batch_size=32, epochs=43, validation_data=(X_test_global_shaped, y_test_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
     # md, hist_lo,tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                          X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional')    #print("Test Accuracy = {}".format(score))
-

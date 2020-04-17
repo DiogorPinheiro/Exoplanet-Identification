@@ -79,6 +79,14 @@ class customMetrics(keras.callbacks.Callback):
             if k.endswith('fn_loss'):
                 print("Valor {}".format(logs[k]))
 
+
+def logloss(true_label, predicted, eps=1e-15):
+    p = np.clip(predicted, eps, 1 - eps)
+    if true_label == 1:
+        return -np.log(p)
+    else:
+        return -np.log(1 - p)
+
 # -------------------------------- Evaluation Process --------------------------------------------
 
 
@@ -295,14 +303,6 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_
     print("Saved model to disk")
 
     return np.mean(cvscores), history.losses, tens
-
-
-def logloss(true_label, predicted, eps=1e-15):
-    p = np.clip(predicted, eps, 1 - eps)
-    if true_label == 1:
-        return -np.log(p)
-    else:
-        return -np.log(1 - p)
 
 
 def evaluateSimple(model, X_train, y_train, X_test, y_test, splits):

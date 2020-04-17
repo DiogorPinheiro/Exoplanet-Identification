@@ -4,21 +4,20 @@ import tensorflow as tf
 from sklearn import preprocessing
 from sklearn.model_selection import StratifiedKFold, train_test_split, cross_val_predict
 import keras
-from keras.models import Sequential
-from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise
+from keras.models import Sequential, Model
+from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise, MaxPooling1D
 from keras.layers.convolutional import Conv1D
-from keras.layers import MaxPooling1D
-from keras.models import Model
 from keras import optimizers
 from sklearn.preprocessing import MinMaxScaler
 import time as t
 import pandas as pd
 from keras import backend as K
 import csv
+from sklearn.metrics import classification_report
 
 
 from dataFunctions import dataInfo
-from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
+from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc, logloss, log_loss
 import provedModels as pm
 from utilities import writeToFile, joinLists
 from otherAlgorithms import *
@@ -65,35 +64,35 @@ def bothViewsCNN(x_train_local, x_train_global, lay1_filters, l1_kernel_size, po
     model1 = Conv1D(16,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    #model1 = Dropout(0.20)(model1)
+    # model1 = Dropout(0.20)(model1)
     model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    #model1 = Dropout(0.20)(model1)
+    # model1 = Dropout(0.20)(model1)
     model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(64,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    #model1 = Dropout(0.20)(model1)
+    # model1 = Dropout(0.20)(model1)
     model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(128,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    #model1 = Dropout(0.20)(model1)
+    # model1 = Dropout(0.20)(model1)
     model1 = GaussianNoise(0.1)(model1)
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)  # Disjoint Conv Layer
     model1 = Conv1D(256,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model1)
     model1 = MaxPooling1D(pool_size=5, strides=2, padding='valid')(model1)
-    #model1 = Dropout(0.20)(model1)
+    # model1 = Dropout(0.20)(model1)
     model1 = GaussianNoise(0.1)(model1)
     model1 = Flatten()(model1)
 
@@ -102,39 +101,39 @@ def bothViewsCNN(x_train_local, x_train_global, lay1_filters, l1_kernel_size, po
     model2 = Conv1D(16,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
-    #model2 = Dropout(0.20)(model2)
+    # model2 = Dropout(0.20)(model2)
     model2 = GaussianNoise(0.1)(model2)
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model2)  # Disjoint Conv Layer
     model2 = Conv1D(32,  kernel_size=5, strides=1, padding='same',
                     dilation_rate=1, activation='relu')(model2)
     model2 = MaxPooling1D(pool_size=7, strides=2, padding='valid')(model2)
-    #model2 = Dropout(0.20)(model2)
+    # model2 = Dropout(0.20)(model2)
     model2 = GaussianNoise(0.1)(model2)
     model2 = Flatten()(model2)
     # Concatenation
     concatLayerQ = keras.layers.concatenate(
         [model1, model2], axis=1)  # Concatenate Layer
-    #flatLayerQ = Flatten()(concatLayerQ)
+    # flatLayerQ = Flatten()(concatLayerQ)
 
     # Fully-Connected Layers
     denseLayerQ = Dense(512, activation='relu')(concatLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = BatchNormalization()(denseLayerQ)
-    #denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
-    #denseLayerQ = Dropout(0.20)(denseLayerQ)
+    # denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
+    # denseLayerQ = Dropout(0.20)(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = Dense(512, activation='relu')(denseLayerQ)
     denseLayerQ = BatchNormalization()(denseLayerQ)
-    #denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
-    #denseLayerQ = Dropout(0.20)(denseLayerQ)
+    # denseLayerQ = GaussianNoise(0.1)(denseLayerQ)
+    # denseLayerQ = Dropout(0.20)(denseLayerQ)
 
     outputLayer = Dense(1, activation='sigmoid')(denseLayerQ)  # Output Layer
 
     model = Model(inputs=[inputLayer_local,
                           inputLayer_global], outputs=outputLayer)
 
-    #opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    # opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     opt = optimizers.Adam(learning_rate=10e-5, beta_1=0.9,
                           beta_2=0.999, amsgrad=False)
     model.compile(loss='binary_crossentropy', optimizer=opt,
@@ -170,7 +169,7 @@ def functionalCNN(x_train_global):
 
 
 def triage(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epoch, batch_size, lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, lay2_filters, l2_kernel_size, dense_f, dense_dropout, x_train_global, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local, x_train_local):
-    #model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
+    # model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
     model = bothViewsCNN(train_X_global, train_X_local, lay1_filters, l1_kernel_size, pool_size,
                          strides, conv_dropout, lay2_filters, l2_kernel_size, dense_f, dense_dropout)
     '''   with experiment.train():
@@ -199,8 +198,8 @@ def triage(experiment, train_X_global, train_Y_global, val_X_global, val_Y_globa
     score = model.evaluate(test_X_global, test_Y_global, verbose=0)[1]
 
     # Local and Global View
-    #model.fit([train_X_global,train_X_local], train_Y_global, batch_size=batch_size, epochs=epoch,validation_data=([val_X_global,val_X_local], val_Y_global), callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto')])
-    #score = model.evaluate([test_X_global,test_X_local], test_Y_global, verbose=0)[1]
+    # model.fit([train_X_global,train_X_local], train_Y_global, batch_size=batch_size, epochs=epoch,validation_data=([val_X_global,val_X_local], val_Y_global), callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto')])
+    # score = model.evaluate([test_X_global,test_X_local], test_Y_global, verbose=0)[1]
 
     return score
 
@@ -234,7 +233,7 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
 if __name__ == "__main__":
     start = t.time()
 
-    #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
+    # experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
     table = getCSVData().drop_duplicates()
     kepids = getKepids(table).drop_duplicates(
@@ -274,18 +273,18 @@ if __name__ == "__main__":
     X_test_local_shaped = np.expand_dims(X_test_local, axis=2)
 
     # Machine Learning Algorithms
-    #model = knn()
-    #model = svmachine()
-    #model = feedForwardNN(X_train_global, X_train_local_shaped)
+    # model = knn()
+    # model = svmachine()
+    # model = feedForwardNN(X_train_global, X_train_local_shaped)
 
     # Deep Learning Models
-    #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
-    #model = bothViewsCNN(X_train_global, X_train_local_shaped,0, 0, 0, 0, 0, 0, 0, 0, 0)
-    #model = functionalCNN(X_train_global)
+    # model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
+    # model = bothViewsCNN(X_train_global, X_train_local_shaped,0, 0, 0, 0, 0, 0, 0, 0, 0)
+    # model = functionalCNN(X_train_global)
 
     # Proved Deep Learning Models
-    #model, type = pm.vgg(X_train_global)
-    #model, type = pm.alexNet(X_train_global)
+    # model, type = pm.vgg(X_train_global)
+    # model, type = pm.alexNet(X_train_global)
 
     # Evaluation
     split = 5
@@ -299,18 +298,29 @@ if __name__ == "__main__":
     # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
     # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
-    model = knn()
-    score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
-    print("KNN : {}".format(score))
-    print(tens_KNN)
+    # model = knn()
+    # score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
+    # print("KNN : {}".format(score))
+    # print(tens_KNN)
 
-    #model = svmachine()
-    # score,tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-    #                     X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional','")
-    #print("SVM : {}".format(score))
+    # model = svmachine()
+    model = svm.SVC(kernel='linear',
+                    gamma=177827.94100389228, C=1.0)
+    model.fit(X_train_global, y_train_global)
+    score = model.score(X_test_global, y_test_global)
+    print(score)
+    y_true, y_pred = y_test_global, model.predict(X_test_global)
+    print(classification_report(y_true, y_pred))
+    # {'kernel': 'linear', 'gamma': 177827.94100389228, 'C': 1.0}
+    # print(model.best_params_)
 
-    #model = feedForwardNN(X_train_global, X_train_local)
+    # score, tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "")
+    # print("SVM : {}".format(score))
+    # print(tens_SVM)
+
+    # model = feedForwardNN(X_train_global, X_train_local)
     # md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"FNN.h5")
 
@@ -319,20 +329,20 @@ if __name__ == "__main__":
     # md, hist_lo, tens_DualCNN = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional',"DualCNN.h5")
 
-    #model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
+    # model = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
     # md, hist_lo,tens_CNN = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential',"CNN.h5")
 
-    #model, seq = pm.alexNet(X_train_local_shaped)
+    # model, seq = pm.alexNet(X_train_local_shaped)
     # md, hist_lo, tens_Alex = mainEvaluate('single-local', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
     #                                                    X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq,"alexnet.h5")
 
-    #l1 = []
+    # l1 = []
     # for i in range(len(tens_Alex)):
     #    aux = [tens_KNN[i], tens_SVM[i], tens_FNN[i],
     #           tens_DualCNN[i], tens_CNN[i], tens_Alex[i]]
     #    l1.append(aux)
-    #writeToFile("comparison.csv", l1)
+    # writeToFile("comparison.csv", l1)
 
 
 '''
@@ -366,15 +376,15 @@ if __name__ == "__main__":
               }
 
 
-    #model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
+    # model = seqModelCNN(lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global)
 
-    #opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    #model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+    # opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    # model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
 
     train_X_global = np.expand_dims(train_X_global, axis=2)
     val_X_global = np.expand_dims(val_X_global, axis=2)
     test_X_global = np.expand_dims(test_X_global, axis=2)
-    #model.fit(train_X_global, train_Y_global)
+    # model.fit(train_X_global, train_Y_global)
     train_X_local = np.expand_dims(train_X_local, axis=2)
     val_X_local = np.expand_dims(val_X_local, axis=2)
     test_X_local = np.expand_dims(test_X_local, axis=2)
@@ -399,7 +409,8 @@ if __name__ == "__main__":
         "trials": 1,
     }
 
-    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL", project_name="cnn-doubleinput")
+    opt = Optimizer(config, api_key="hMRp4uInUqRHs0pHtHFTl6jUL",
+                    project_name="cnn-doubleinput")
 
     for experiment in opt.get_experiments():
         epochs = experiment.get_parameter("epochs")
@@ -414,15 +425,16 @@ if __name__ == "__main__":
         dense_f = experiment.get_parameter("dense_f")
         dense_dropout = experiment.get_parameter("dense_dropout")
 
-        acc = fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local,x_train_local )
+        acc = fit(experiment, train_X_global, train_Y_global, val_X_global, val_Y_global, test_X_global, test_Y_global, epochs, batch_size,lay1_filters,l1_kernel_size,pool_size,strides,
+                  conv_dropout,lay2_filters,l2_kernel_size,dense_f,dense_dropout,x_train_global, train_X_local, train_Y_local, val_X_local, val_Y_local, test_X_local, test_Y_local,x_train_local )
         # Reverse the score for minimization
         experiment.log_metric("accuracy", acc)
 
 
     experiment.log_parameters(params)
 
-    #training(model, train_X_global, train_Y_global, val_X_global, val_Y_global, nb_cv = 5, batch_size = 10, nb_epochs = 2)
+    # training(model, train_X_global, train_Y_global, val_X_global, val_Y_global, nb_cv = 5, batch_size = 10, nb_epochs = 2)
 
     end = t.time()
-    #print(end - start)
+    # print(end - start)
 '''
