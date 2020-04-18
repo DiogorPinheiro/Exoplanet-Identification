@@ -11,3 +11,7 @@ src/data/dataset.csv
 src/data/local_movavg.csv
 src/data/neural_input_global.csv
 src/dataFunctions/global.csv
+src/logs/1587148820.1642103/events.out.tfevents.1587149391.tftests
+src/models/CNN.h5
+src/models/FNN.h5
+src/models/alexnet.h5

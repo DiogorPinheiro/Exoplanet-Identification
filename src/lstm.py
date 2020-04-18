@@ -17,6 +17,7 @@ from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
 
 from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
+from utilities import writeToFile
 from dataFunctions import dataInfo
 
 CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
@@ -92,7 +93,7 @@ def model_creator(train_X_global, ls_units, dense_units, dropout_d, dropout_l, l
     #                     momentum=momentum, nesterov=True)
     opt = optimizers.Adam(learning_rate=0.0001)
     model.compile(loss='binary_crossentropy', optimizer=opt,
-                  metrics=['accuracy', f1_m, precision_m, recall_m])
+                  metrics=['accuracy', f1_m, precision_m, recall_m, auc_roc])
     return model
 
 
@@ -232,4 +233,5 @@ if __name__ == "__main__":
     model.fit(X_train_global_shaped, y_train_global, batch_size=32, epochs=43, validation_data=(X_test_global_shaped,
                                                                                                 y_test_global), callbacks=[EarlyStopping(monitor='roc_auc', min_delta=0, patience=2, verbose=1, mode='max')])
     md, hist_lo, tens = mainEvaluate('single-global', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                                     X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional')  # print("Test Accuracy = {}".format(score))
+                                     X_test_local_shaped, y_train_global, y_test_global, 5, 32, 16, 5, 'functional', 'lstm.h5')  # print("Test Accuracy = {}".format(score))
+    writeToFile("lstm_comp.csv", tens)
