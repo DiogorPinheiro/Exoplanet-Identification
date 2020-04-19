@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import random
 
 
 def chunks(data, n):
@@ -16,12 +17,19 @@ if __name__ == "__main__":
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
     local_X = scaler_local.fit_transform(local_X)
 
-    split_data = list(chunks(local_X[0], 5))
-    # print(split_data)
+    for lcurve in local_X:
+        # Split Data Into Chunks of 5 Samples
+        split_data = list(chunks(selected_curve, 5))
+    blocks = []
+    aux = []
+    for i in range(3):
+
+    print(random.choice(split_data))
     # Get loss values for all samples
 
     # For each input_length
     #       Choose three random chunks
-    #       Remove those three samples from data
-    #       Train Model
-    #       Compare result with reference - Se for maior que percentagem a analisar -> Append to list
+    #       Replace those three samples from data with average values array and save those samples into list
+    #       Predict value for light_curve and append to list
+
+    # Compare values and get those that are under 1 and 2 std below average
