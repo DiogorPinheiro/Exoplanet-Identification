@@ -343,7 +343,11 @@ if __name__ == "__main__":
 
     l1 = []
     for i in range(len(tens_Alex)):
-        aux = [tens_KNN[i], tens_FNN[i], tens_CNN[i], tens_Alex[i]]
+        aux = []
+        aux.append(tens_KNN[i])
+        aux.append(tens_FNN[i])
+        aux.append(tens_CNN[i])
+        aux.append(tens_Alex[i])
         l1.append(aux)
     writeToFile("comparison.csv", l1)
 

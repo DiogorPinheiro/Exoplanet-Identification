@@ -18,10 +18,12 @@ if __name__ == "__main__":
     local_X = scaler_local.fit_transform(local_X)
 
     for lcurve in local_X:
+        # Value Holders
+        blocks = []
+        aux = []
         # Split Data Into Chunks of 5 Samples
         split_data = list(chunks(selected_curve, 5))
-    blocks = []
-    aux = []
+
     for i in range(3):
 
     print(random.choice(split_data))
