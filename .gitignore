@@ -15,3 +15,4 @@ src/logs/1587148820.1642103/events.out.tfevents.1587149391.tftests
 src/models/CNN.h5
 src/models/FNN.h5
 src/models/alexnet.h5
+src/models/lstm.h5
