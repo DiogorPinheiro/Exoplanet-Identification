@@ -230,6 +230,18 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
     return model
 
 
+def appendToFile(file, row):
+    '''
+        Append Row Of Kepid Associated Values To The Table
+
+        Input: Row Of Values
+        Output: None
+    '''
+    with open(file, 'a') as fd:
+        writer = csv.writer(fd)
+        writer.writerow(row)
+
+
 if __name__ == "__main__":
     start = t.time()
 
@@ -341,15 +353,15 @@ if __name__ == "__main__":
     md, hist_lo, tens_Alex = mainEvaluate('single-local', model_alex, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
                                           X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq, "alexnet.h5")
 
-    l1 = []
+    file = open("comparison.csv", "w")
+    file.close()
     for i in range(len(tens_Alex)):
         aux = []
         aux.append(tens_KNN[i])
         aux.append(tens_FNN[i])
         aux.append(tens_CNN[i])
         aux.append(tens_Alex[i])
-        l1.append(aux)
-    writeToFile("comparison.csv", l1)
+        appendToFile("comparison.csv", aux)
 
 
 '''

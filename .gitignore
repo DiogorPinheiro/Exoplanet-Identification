@@ -16,3 +16,14 @@ src/models/CNN.h5
 src/models/FNN.h5
 src/models/alexnet.h5
 src/models/lstm.h5
+src/tfrecord/test-00000-of-00001
+src/tfrecord/train-00000-of-00008
+src/tfrecord/train-00001-of-00008
+src/tfrecord/train-00002-of-00008
+src/tfrecord/train-00003-of-00008
+src/tfrecord/train-00004-of-00008
+src/tfrecord/train-00005-of-00008
+src/tfrecord/train-00006-of-00008
+src/tfrecord/train-00007-of-00008
+src/tfrecord/val-00000-of-00001
+src/labels.csv
