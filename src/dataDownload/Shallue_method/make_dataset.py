@@ -124,10 +124,6 @@ if __name__ == '__main__':
     positive_folded_df.to_csv(OUTPUT_DIR + 'positives_folded.csv', na_rep='nan', index=False)
     positive_globalbinned_df.to_csv(OUTPUT_DIR + 'positives_globalbinned.csv', na_rep='nan', index=False)
     positive_localbinned_df.to_csv(OUTPUT_DIR + 'positives_localbinned.csv', na_rep='nan', index=False)
-    positive_flattened_df.to_pickle(OUTPUT_DIR + 'positives_flattened.pkl')
-    positive_folded_df.to_pickle(OUTPUT_DIR + 'positives_folded.pkl')
-    positive_globalbinned_df.to_pickle(OUTPUT_DIR + 'positives_globalbinned.pkl')
-    positive_localbinned_df.to_pickle(OUTPUT_DIR + 'positives_localbinned.pkl')
     #
     logger.info('Succesfully saved positive TCE samples.')
 
@@ -135,10 +131,6 @@ if __name__ == '__main__':
     negative_folded_df.to_csv(OUTPUT_DIR + 'negatives_folded.csv', na_rep='nan', index=False)
     negative_globalbinned_df.to_csv(OUTPUT_DIR + 'negatives_globalbinned.csv', na_rep='nan', index=False)
     negative_localbinned_df.to_csv(OUTPUT_DIR + 'negatives_localbinned.csv', na_rep='nan', index=False)
-    negative_flattened_df.to_pickle(OUTPUT_DIR + 'negatives_flattened.pkl')
-    negative_folded_df.to_pickle(OUTPUT_DIR + 'negatives_folded.pkl')
-    negative_globalbinned_df.to_pickle(OUTPUT_DIR + 'negatives_globalbinned.pkl')
-    negative_localbinned_df.to_pickle(OUTPUT_DIR + 'negatives_localbinned.pkl')
 
     logger.info('Succesfully saved negative TCE samples.')
 
