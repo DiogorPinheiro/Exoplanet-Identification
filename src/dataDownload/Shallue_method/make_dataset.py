@@ -10,8 +10,8 @@ OUTPUT_DIR = "/home/jcneves/Documents/"
 TCE_TABLE_DIR = "/home/jcneves/Documents/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 KEPLER_DATA_DIR = "/home/jcneves/Documents/keplerData"
 
-def generate_tce_data(tce_table):
 
+def generate_tce_data(tce_table):
 
     # Initialise dataframes to populate with processed data
     flattened_fluxes_df = pd.DataFrame()
@@ -24,22 +24,27 @@ def generate_tce_data(tce_table):
     processed_count = 0
     failed_count = 0
 
-
     # Iterate over every TCE in the table
     for _, tce in tce_table.iterrows():
 
         try:
             # Process the TCE and retrieve the processed data.
-            flattened_flux, folded_flux, global_view, local_view = process_tce(tce)
+            flattened_flux, folded_flux, global_view, local_view = process_tce(
+                tce)
 
             # Append processed flux light curves for each TCE to output dataframes.
-            flattened_fluxes_df = flattened_fluxes_df.append(pd.Series(flattened_flux), ignore_index=True)
-            folded_fluxes_df = folded_fluxes_df.append(pd.Series(folded_flux), ignore_index=True)
-            globalbinned_fluxes_df = globalbinned_fluxes_df.append(pd.Series(global_view), ignore_index=True)
-            localbinned_fluxes_df = localbinned_fluxes_df.append(pd.Series(local_view), ignore_index=True)
+            flattened_fluxes_df = flattened_fluxes_df.append(
+                pd.Series(flattened_flux), ignore_index=True)
+            folded_fluxes_df = folded_fluxes_df.append(
+                pd.Series(folded_flux), ignore_index=True)
+            globalbinned_fluxes_df = globalbinned_fluxes_df.append(
+                pd.Series(global_view), ignore_index=True)
+            localbinned_fluxes_df = localbinned_fluxes_df.append(
+                pd.Series(local_view), ignore_index=True)
 
             print('Kepler ID: {} processed'.format(tce.kepid))
-            print("Processed Percentage: ", ((processed_count + failed_count) / num_tces) * 100, "%")
+            print("Processed Percentage: ",
+                  ((processed_count + failed_count) / num_tces) * 100, "%")
             processed_count += 1
 
         except:
@@ -62,19 +67,23 @@ def process_tce(tce):
     IOError: If the light curve files for this Kepler ID cannot be found.
   """
   # Read and process the light curve.
-  time, flattened_flux = preprocess.read_and_process_light_curve(tce.kepid, KEPLER_DATA_DIR)
+  time, flattened_flux = preprocess.read_and_process_light_curve(
+      tce.kepid, KEPLER_DATA_DIR)
 
-  time, folded_flux = preprocess.phase_fold_and_sort_light_curve(time, flattened_flux, tce.tce_period, tce.tce_time0bk)
+  time, folded_flux = preprocess.phase_fold_and_sort_light_curve(
+      time, flattened_flux, tce.tce_period, tce.tce_time0bk)
 
   # Generate the local and global views.
-  local_view = preprocess.local_view(time, folded_flux, tce.tce_period, tce.tce_duration, num_bins=201, bin_width_factor=0.16, num_durations=4)
-  global_view = preprocess.global_view(time, folded_flux, tce.tce_period, num_bins=2001, bin_width_factor=1 / 2001)
+  local_view = preprocess.local_view(time, folded_flux, tce.tce_period,
+                                     tce.tce_duration, num_bins=201, bin_width_factor=0.16, num_durations=4)
+  global_view = preprocess.global_view(
+      time, folded_flux, tce.tce_period, num_bins=2001, bin_width_factor=1 / 2001)
 
   return flattened_flux, folded_flux, local_view, global_view
 
 
-def main():
-    """ Runs data processing scripts to turn raw data from (../raw) into
+if __name__ == '__main__':
+      """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
@@ -154,25 +163,4 @@ def main():
     final_localbinned_df.to_csv(OUTPUT_DIR + 'final_localbinned.csv', na_rep='nan', index=False)
     final_folded_df.to_csv(OUTPUT_DIR + 'final_folded.csv', na_rep='nan', index=False)
     final_flattened_df.to_csv(OUTPUT_DIR + 'final_flattened.csv', na_rep='nan', index=False)
-    #
-    # final_globalbinned_df.to_pickle(OUTPUT_DIR + 'final_globalbinned.pkl')
-    # final_localbinned_df.to_pickle(OUTPUT_DIR + 'final_localbinned.pkl')
-    # final_folded_df.to_pickle(OUTPUT_DIR + 'final_folded.pkl')
-    # final_flattened_df.to_pickle(OUTPUT_DIR + 'final_flattened.pkl')
-
-
-
-
-
-if __name__ == '__main__':
-    #log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    #logging.basicConfig(level=logging.INFO, format=log_fmt)
-
-    # not used in this stub but often useful for finding various files
-    #project_dir = Path(__file__).resolve().parents[2]
-
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    #load_dotenv(find_dotenv())
-
-  main()
+    
