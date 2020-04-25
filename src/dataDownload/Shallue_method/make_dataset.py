@@ -86,9 +86,6 @@ if __name__ == '__main__':
       """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
-
     # Load TCE Table
     tce_table = pd.read_csv(filepath_or_buffer=TCE_TABLE_DIR, comment='#')
 

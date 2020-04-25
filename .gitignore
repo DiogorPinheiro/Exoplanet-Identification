@@ -27,3 +27,6 @@ src/tfrecord/train-00006-of-00008
 src/tfrecord/train-00007-of-00008
 src/tfrecord/val-00000-of-00001
 src/labels.csv
+src/data/Shallue/shallue_global.csv
+src/data/Shallue/shallue_local.csv
+src/data/Shallue/read.py

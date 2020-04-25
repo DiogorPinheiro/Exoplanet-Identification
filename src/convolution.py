@@ -14,6 +14,7 @@ import pandas as pd
 from keras import backend as K
 import csv
 from sklearn.metrics import classification_report
+from sklearn.utils import shuffle
 
 
 from dataFunctions import dataInfo
@@ -252,13 +253,20 @@ if __name__ == "__main__":
     ).reset_index(drop=True)  # List of Kepids
 
     # Data For The Sequential 1D-CNN
-    data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
+    #data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
+    data_local = np.loadtxt(
+        'data/Shallue/shallue_local.csv', delimiter=',', skiprows=1)
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
+    # Suffle Data (Only For Shallue Datasets)
+    local_X, local_Y = shuffle(local_X, local_Y)
 
-    data_global = np.loadtxt('data/global_movavg.csv', delimiter=',')
+    #data_global = np.loadtxt('data/global_movavg.csv', delimiter=',')
+    data_global = np.loadtxt('data/Shallue/shallue_global.csv', delimiter=',')
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
+    # Suffle Data (Only For Shallue Datasets)
+    global_X, global_Y = shuffle(global_X, global_Y)
 
     # Separate Local Data
     X_train_local, X_test_local, y_train_local, y_test_local = train_test_split(
