@@ -1,6 +1,9 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import random
+import matplotlib.pyplot as plt
+
+from utilities import createChunkingPlot
 
 
 def chunks(data, n):
@@ -10,28 +13,15 @@ def chunks(data, n):
 
 
 if __name__ == "__main__":
-    data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
-    local_X = data_local[0:, 1:-1]  # Input
-    local_Y = data_local[0:, -1]  # Labels
+    data_global = np.loadtxt('../data/global_movavg.csv', delimiter=',')
+    global_X = data_global[0:, 1:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
     # Scale Data
-    scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    local_X = scaler_local.fit_transform(local_X)
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    global_X = scaler_global.fit_transform(global_X)
 
-    for lcurve in local_X:
-        # Value Holders
-        blocks = []
-        aux = []
-        # Split Data Into Chunks of 5 Samples
-        split_data = list(chunks(selected_curve, 5))
+    chuncked_data = list(chunks(global_X[0], 50))
 
-    for i in range(3):
+    #createChunkingPlot(global_X[0], 50)
 
-    print(random.choice(split_data))
-    # Get loss values for all samples
-
-    # For each input_length
-    #       Choose three random chunks
-    #       Replace those three samples from data with average values array and save those samples into list
-    #       Predict value for light_curve and append to list
-
-    # Compare values and get those that are under 1 and 2 std below average
+    plt.show()
