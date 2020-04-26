@@ -277,8 +277,6 @@ if __name__ == "__main__":
     X_train_local = scaler_local.fit_transform(X_train_local)
     X_test_local = scaler_local.transform(X_test_local)
 
-    global_X = data_global[0:, 1:-1]  # Input
-    global_Y = data_global[0:, -1]  # Labels
     X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
         global_X, global_Y, test_size=0.2, random_state=1)
 

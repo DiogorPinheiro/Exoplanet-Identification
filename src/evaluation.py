@@ -298,6 +298,9 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_
     print("Prediction Score Length {}".format(len(Y_score_log)))
     tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
 
+    score = model.evaluate(X_test, y_test, verbose=0)
+    print("Test -> %s: %.2f%%" % (model.metrics_names[1], score[1]*100))
+
     # Save Model
     # model.save(filename)
     # print("Saved model to disk")
