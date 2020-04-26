@@ -1,0 +1,81 @@
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
+import itertools
+from sklearn.model_selection import train_test_split
+from keras.models import load_model
+from sklearn.utils import shuffle
+
+from training import auc_roc, f1_m, precision_m, recall_m
+
+# Model Directories
+CNN_MODEL_DIRECTORY = 'models/CNN.h5'
+ALEXNET_MODEL_DIRECTORY = 'models/alexnet.h5'
+FNN_MODEL_DIRECTORY = 'models/FNN.h5'
+LSTM_MODEL_DIRECTORY = 'models/lstm.h5'
+
+
+def evaluate(model_name, data_X, data_y):
+    # Model Dependencies
+    dependencies = {
+        'f1_m': f1_m,
+        'precision_m': precision_m,
+        'recall_m': recall_m,
+        'auc_roc': auc_roc,
+    }
+
+    # Get Model
+    model = load_model(model_name, custom_objects=dependencies)
+
+    score_loss = []
+    score_acc = []
+    score_f1 = []
+    score_prec = []
+    score_rec = []
+    for i in range(50):
+        data_X, data_y = shuffle(data_X, data_y)
+
+        # Evaluate Model
+        score = model.evaluate(X_test_global, y_test_global, verbose=0)
+
+        score_loss.append(score[0])
+        score_acc.append(score[1])
+        score_f1.append(score[2])
+        score_prec.append(score[3])
+        score_rec.append(score[4])
+
+    # Print results
+    print("\n------------------ Model : {} ---------------------".format(model_name))
+    print("%s: %.2f%% " %
+          (model.metrics_names[0], np.mean(score_loss)))
+    print("%s: %.2f%% " %
+          (model.metrics_names[1], np.mean(score_acc)))
+    print("%s: %.2f%% " %
+          (model.metrics_names[2], np.mean(score_f1)))
+    print("%s: %.2f%% " %
+          (model.metrics_names[3], np.mean(score_prec)))
+    print("%s: %.2f%% " %
+          (model.metrics_names[4], np.mean(score_rec)))
+
+    print("---------------------------------------------------")
+
+
+if __name__ == "__main__":
+    data_global = np.loadtxt(
+        'data/Shallue/shallue_global.csv', delimiter=',', skiprows=1)
+    data_global = shuffle(data_global)
+    global_X = data_global[0:, 1:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
+
+    # Scale Data
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    global_X = scaler_global.fit_transform(global_X)
+
+    # Separate global Data
+    X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
+        global_X, global_Y, test_size=0.2, random_state=1)
+
+    X_test_global = np.expand_dims(
+        X_test_global, axis=2)    # Shape data
+
+    evaluate(CNN_MODEL_DIRECTORY, X_test_global, y_test_global)

@@ -226,7 +226,7 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
 
     opt = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='binary_crossentropy', optimizer=opt,
-                  metrics=['accuracy', f1_m, precision_m, recall_m])
+                  metrics=['accuracy', f1_m, precision_m, recall_m, auc_roc])
 
     return model
 
@@ -316,11 +316,11 @@ if __name__ == "__main__":
     # md, hist_lo = mainEvaluate('dual',model,X_train_global,X_train_local_shaped,X_test_global_shaped,X_test_local_shaped,y_train_global,y_test_global,nb,epoch,batch,split,'functional')
     # md, hist_lo = mainEvaluate('dual', model, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped, X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential')
 
-    print("KNN")
-    model = knn()
-    score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
-    print("KNN : {}".format(score))
+    # print("KNN")
+    #model = knn()
+    # score, tens_KNN = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', '')
+    #print("KNN : {}".format(score))
     # print(tens_KNN)
 
     # model = svmachine()
@@ -334,16 +334,16 @@ if __name__ == "__main__":
     # {'kernel': 'linear', 'gamma': 177827.94100389228, 'C': 1.0}
     # print(model.best_params_)
 
-    print("SVM")
-    score, tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
-                                   X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "")
-    print("SVM : {}".format(score))
-    print(tens_SVM)
+    # print("SVM")
+    # score, tens_SVM = mainEvaluate('simple-local', model, X_train_global, X_train_local, X_test_global,
+    #                               X_test_local, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "")
+    #print("SVM : {}".format(score))
+    # print(tens_SVM)
 
-    print("FNN")
-    model_fnn = feedForwardNN(X_train_global, X_train_local)
-    md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model_fnn, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                                         X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "FNN.h5")
+    # print("FNN")
+    #model_fnn = feedForwardNN(X_train_global, X_train_local)
+    # md, hist_lo, tens_FNN = mainEvaluate('dual-fnn', model_fnn, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #                                     X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'functional', "FNN.h5")
 
     # model = bothViewsCNN(X_train_global_shaped, X_train_local_shaped,
     #                     0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -354,20 +354,20 @@ if __name__ == "__main__":
     model_seq = seqModelCNN(0, 0, 0, 0, 0, 0, 0, 0, 0, X_train_global_shaped)
     md, hist_lo, tens_CNN = mainEvaluate('single-global', model_seq, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
                                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, 'sequential', "CNN.h5")
-    print("AlexNet")
-    model_alex, seq = pm.alexNet(X_train_local_shaped)
-    md, hist_lo, tens_Alex = mainEvaluate('single-local', model_alex, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
-                                          X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq, "alexnet.h5")
+    # print("AlexNet")
+    #model_alex, seq = pm.alexNet(X_train_local_shaped)
+    # md, hist_lo, tens_Alex = mainEvaluate('single-local', model_alex, X_train_global_shaped, X_train_local_shaped, X_test_global_shaped,
+    #                                      X_test_local_shaped, y_train_global, y_test_global, nb, epoch, batch, split, seq, "alexnet.h5")
 
-    file = open("comparison.csv", "w")
-    file.close()
-    for i in range(len(tens_Alex)):
-        aux = []
-        aux.append(tens_KNN[i])
-        aux.append(tens_FNN[i])
-        aux.append(tens_CNN[i])
-        aux.append(tens_Alex[i])
-        appendToFile("comparison.csv", aux)
+    #file = open("comparison.csv", "w")
+    # file.close()
+    # for i in range(len(tens_Alex)):
+    #    aux = []
+    #    aux.append(tens_KNN[i])
+    #    aux.append(tens_FNN[i])
+    #    aux.append(tens_CNN[i])
+    #    aux.append(tens_Alex[i])
+    #    appendToFile("comparison.csv", aux)
 
 
 '''

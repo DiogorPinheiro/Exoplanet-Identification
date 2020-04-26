@@ -8,11 +8,30 @@ from sklearn.utils import shuffle
 
 from utilities import chunkVisualization, recall_m, f1_m, precision_m, auc_roc
 
+# Model Directories
+CNN_MODEL_DIRECTORY = '../models/CNN.h5'
+ALEXNET_MODEL_DIRECTORY = '../models/alexnet.h5'
+FNN_MODEL_DIRECTORY = '../models/FNN.h5'
+LSTM_MODEL_DIRECTORY = '../models/lstm.h5'
+
 
 def chunks(data, n):
     """Yield successive n-sized chunks from lst"""
     for i in range(0, len(data), n):
         yield data[i:i + n]
+
+
+def getScore(model_name, data_X, data_y):
+    # Get Model
+    dependencies = {
+        'f1_m': f1_m,
+        'precision_m': precision_m,
+        'recall_m': recall_m,
+    }
+    model = load_model('../models/CNN.h5', custom_objects=dependencies)
+    score = model.evaluate(X_test_global, y_test_global, verbose=0)
+    print("%s: %.2f%% " %
+          (model.metrics_names[1], score[1]*100, model.metrics_names[2]))
 
 
 if __name__ == "__main__":
@@ -34,22 +53,12 @@ if __name__ == "__main__":
     X_test_global = np.expand_dims(
         X_test_global, axis=2)    # Shape data
 
-    # Get Model
-    dependencies = {
-        'f1_m': f1_m,
-        'precision_m': precision_m,
-        'recall_m': recall_m,
-    }
-    model = load_model('../models/CNN.h5', custom_objects=dependencies)
-    score = model.evaluate(X_test_global, y_test_global, verbose=0)
-    print("%s: %.2f%%" % (model.metrics_names[1], score[1]*100))
+    getScore(CNN_MODEL_DIRECTORY, X_test_global, y_test_global)
 
-    prediction = model.predict_classes(X_test_global)
-    for i in range(len(prediction)):
-        # if (prediction[i] == 1):
-        #    print(i)
-        print("X=%s, Predicted=%s" % (y_test_global[i], prediction[i]))
-    #print("X=%s, Predicted=%s" % (y_test_global[880], prediction[880]))
+    #prediction = model.predict_classes(X_test_global)
+    # for i in range(len(prediction)):
+    #    print("X=%s, Predicted=%s" % (y_test_global[i], prediction[i]))
+
     # chuncked_data = list(chunks(global_X[0], 50))
     # combinations = list(itertools.combinations(chuncked_data, 3))
 
