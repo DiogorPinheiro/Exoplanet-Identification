@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 from keras import backend as K
 from sklearn.metrics import roc_auc_score, recall_score, precision_score, f1_score
 
-from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
+from training import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
 from utilities import writeToFile
 from dataFunctions import dataInfo
 

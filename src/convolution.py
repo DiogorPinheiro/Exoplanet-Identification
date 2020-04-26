@@ -18,7 +18,7 @@ from sklearn.utils import shuffle
 
 
 from dataFunctions import dataInfo
-from evaluation import f1_m, precision_m, recall_m, mainEvaluate, auc_roc, logloss, log_loss
+from training import f1_m, precision_m, recall_m, mainEvaluate, auc_roc, logloss, log_loss
 import provedModels as pm
 from utilities import writeToFile, joinLists
 from otherAlgorithms import *
