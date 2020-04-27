@@ -30,11 +30,5 @@ src/labels.csv
 src/data/Shallue/shallue_global.csv
 src/data/Shallue/shallue_local.csv
 src/data/Shallue/read.py
-src/data/Shallue/separated/test_global.csv
-src/data/Shallue/separated/test_global2.csv
-src/data/Shallue/separated/train_global2.csv
-src/data/Shallue/separated/train_local2.csv
-src/data/Shallue/separated/test_local.csv
-src/data/Shallue/separated/train_global.csv
-src/data/Shallue/separated/train_local.csv
-src/data/Shallue/separated/test_local2.csv
+src/data/Shallue/separated/global_test.csv
+src/data/Shallue/separated/global_train.csv

@@ -243,12 +243,16 @@ def appendToFile(file, row):
         writer.writerow(row)
 
 
-def create_file(file_name, data):
+def create_file(file_name, datax, datay):
     file = open(file_name, "w")
     file.close()
 
-    for x in data:
-        appendToFile(file_name, x)
+    for index, (x, y) in enumerate(zip(datax, datay)):
+        aux = []
+        for i in range(len(x)):
+            aux.append(x[i])
+        aux.append(y)
+        appendToFile(file_name, aux)
 
 
 if __name__ == "__main__":
@@ -264,16 +268,18 @@ if __name__ == "__main__":
     #data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
     data_local = np.loadtxt(
         'data/Shallue/shallue_local.csv', delimiter=',', skiprows=1)
-    local_X = data_local[0:, 1:-1]  # Input
+    local_X = data_local[0:, 0:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
+
     # Suffle Data (Only For Shallue Datasets)
     local_X, local_Y = shuffle(local_X, local_Y)
 
     #data_global = np.loadtxt('data/global_movavg.csv', delimiter=',')
     data_global = np.loadtxt(
         'data/Shallue/shallue_global.csv', delimiter=',', skiprows=1)
-    global_X = data_global[0:, 1:-1]  # Input
+    global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
+
     # Suffle Data (Only For Shallue Datasets)
     global_X, global_Y = shuffle(global_X, global_Y)
 
@@ -293,8 +299,8 @@ if __name__ == "__main__":
     X_train_global = scaler_global.fit_transform(X_train_global)
     X_test_global = scaler_global.transform(X_test_global)
 
-    create_file('global_test.csv', X_test_global)
-    create_file('global_train.csv', X_train_global)
+    create_file('global_test.csv', X_test_global, y_test_global)
+    create_file('global_train.csv', X_train_global, y_train_global)
 
     # Shape Data
     X_train_global_shaped = np.expand_dims(X_train_global, axis=2)

@@ -23,38 +23,53 @@ def appendToFile(file, row):
         writer.writerow(row)
 
 
-def create_file(file_name, data):
+def create_file(file_name, datax, datay):
     file = open(file_name, "w")
     file.close()
 
-    for x in data:
-        appendToFile(file_name, x)
+    for index, (x, y) in enumerate(zip(datax, datay)):
+        aux = []
+        print(len(x))
+        for i in range(len(x)):
+            aux.append(x[i])
+        aux.append(y)
+        appendToFile(file_name, aux)
 
 
 if __name__ == "__main__":
 
     data_local = np.loadtxt('shallue_local.csv', delimiter=',', skiprows=1)
 
-    data_global = np.loadtxt('shallue_global.csv', delimiter=',', skiprows=1)
+    data_global = np.loadtxt(
+        'shallue_global.csv', delimiter=',')
 
-    data_local = shuffle(data_local)
-    data_global = shuffle(data_global)
+    local_X = data_local[0:, 0:-1]  # Input
+    local_Y = data_local[0:, -1]  # Labels
+    # Suffle Data (Only For Shallue Datasets)
+    local_X, local_Y = shuffle(local_X, local_Y)
 
-    train_global, test_global = train_test_split(
-        data_global, test_size=0.2, random_state=1)
-
-    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_global = scaler_global.fit_transform(train_global)
-    test_global = scaler_global.transform(test_global)
-
-    train_local, test_local = train_test_split(
-        data_local, test_size=0.2, random_state=1)
+    # Separate Local Data
+    X_train_local, X_test_local, y_train_local, y_test_local = train_test_split(
+        local_X, local_Y, test_size=0.2, random_state=1)
 
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    train_local = scaler_local.fit_transform(train_local)
-    test_local = scaler_local.transform(test_local)
+    train_local = scaler_local.fit_transform(X_train_local)
+    test_local = scaler_local.transform(X_test_local)
 
-    create_file(GLOBAL_TEST, test_global)
-    create_file(GLOBAL_TRAIN, train_global)
-    create_file(LOCAL_TEST, test_local)
-    create_file(LOCAL_TRAIN, train_local)
+    global_X = data_global[0:, 0:-1]  # Input
+    global_Y = data_global[0:, -1]  # Labels
+    # Suffle Data (Only For Shallue Datasets)
+    global_X, global_Y = shuffle(global_X, global_Y)
+
+    # Separate global Data
+    X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
+        global_X, global_Y, test_size=0.2, random_state=1)
+
+    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
+    train_global = scaler_global.fit_transform(X_train_global)
+    test_global = scaler_global.transform(X_test_global)
+
+    create_file(GLOBAL_TEST, test_global, y_test_global)
+    create_file(GLOBAL_TRAIN, train_global, y_train_global)
+    create_file(LOCAL_TEST, test_local, y_test_local)
+    create_file(LOCAL_TRAIN, train_local, y_train_local)

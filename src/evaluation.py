@@ -9,7 +9,7 @@ from sklearn.utils import shuffle
 from training import auc_roc, f1_m, precision_m, recall_m
 
 # Model Directories
-CNN_MODEL_DIRECTORY = 'models/CNN.h5'
+CNN_MODEL_DIRECTORY = 'models/CNN2.h5'
 ALEXNET_MODEL_DIRECTORY = 'models/alexnet.h5'
 FNN_MODEL_DIRECTORY = 'models/FNN.h5'
 LSTM_MODEL_DIRECTORY = 'models/lstm.h5'
@@ -62,7 +62,7 @@ def evaluate(model_name, data_X, data_y):
 
 if __name__ == "__main__":
     data_global = np.loadtxt(
-        'data/Shallue/separated/test_global2.csv', delimiter=',')
+        'data/Shallue/separated/global_test.csv', delimiter=',')
     #data_global = shuffle(data_global)
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
