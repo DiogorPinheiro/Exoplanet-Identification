@@ -32,6 +32,7 @@ def evaluate(model_name, data_X, data_y):
     score_f1 = []
     score_prec = []
     score_rec = []
+    score_auc = []
     for i in range(50):
         data_X_shuf, data_y_shuf = shuffle(data_X, data_y)
 
@@ -43,19 +44,22 @@ def evaluate(model_name, data_X, data_y):
         score_f1.append(score[2])
         score_prec.append(score[3])
         score_rec.append(score[4])
+        score_auc.append(score[5])
 
     # Print results
     print("\n------------------ Model : {} ---------------------".format(model_name))
-    print("%s: %.2f%% " %
+    print("%s: %.2f% " %
           (model.metrics_names[0], np.mean(score_loss)))
-    print("%s: %.2f%% " %
+    print("%s: %.2f% " %
           (model.metrics_names[1], np.mean(score_acc)))
-    print("%s: %.2f%% " %
+    print("%s: %.2f% " %
           (model.metrics_names[2], np.mean(score_f1)))
-    print("%s: %.2f%% " %
+    print("%s: %.2f% " %
           (model.metrics_names[3], np.mean(score_prec)))
-    print("%s: %.2f%% " %
+    print("%s: %.2f% " %
           (model.metrics_names[4], np.mean(score_rec)))
+    print("%s: %.2f% " %
+          (model.metrics_names[5], np.mean(score_auc)))
 
     print("---------------------------------------------------")
 

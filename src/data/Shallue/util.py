@@ -29,7 +29,6 @@ def create_file(file_name, datax, datay):
 
     for index, (x, y) in enumerate(zip(datax, datay)):
         aux = []
-        print(len(x))
         for i in range(len(x)):
             aux.append(x[i])
         aux.append(y)
