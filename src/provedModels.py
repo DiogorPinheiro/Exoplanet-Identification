@@ -5,7 +5,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers import ZeroPadding1D, Input
 from keras import optimizers
 
-from evaluation import auc_roc, customLoss
+from training import auc_roc, customLoss
 
 
 # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff

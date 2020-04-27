@@ -119,11 +119,13 @@ if __name__ == "__main__":
 
     #experiment = Experiment("hMRp4uInUqRHs0pHtHFTl6jUL")
 
-    data_local = np.loadtxt('data/local_movavg.csv', delimiter=',')
+    data_local = np.loadtxt(
+        'data/Shallue/shallue_local.csv', delimiter=',', skiprows=1)
     local_X = data_local[0:, 1:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
 
-    data_global = np.loadtxt('data/global_movavg.csv', delimiter=',')
+    data_global = np.loadtxt(
+        'data/Shallue/shallue_global.csv', delimiter=',', skiprows=1)
     global_X = data_global[0:, 1:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
