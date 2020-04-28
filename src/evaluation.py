@@ -46,29 +46,27 @@ def evaluate(model_name, data_X, data_y):
         score_rec.append(score[4])
         score_auc.append(score[5])
 
-    # Print results
-    print("\n------------------ Model : {} ---------------------".format(model_name))
-    print("%s: %.2f% " %
-          (model.metrics_names[0], np.mean(score_loss)))
-    print("%s: %.2f% " %
-          (model.metrics_names[1], np.mean(score_acc)))
-    print("%s: %.2f% " %
-          (model.metrics_names[2], np.mean(score_f1)))
-    print("%s: %.2f% " %
-          (model.metrics_names[3], np.mean(score_prec)))
-    print("%s: %.2f% " %
-          (model.metrics_names[4], np.mean(score_rec)))
-    print("%s: %.2f% " %
-          (model.metrics_names[5], np.mean(score_auc)))
-
-    print("---------------------------------------------------")
+        # Print results
+        print("\n------------------ Model : {} ---------------------".format(model_name))
+        print("{}: {:0.2f} ".format(
+            model.metrics_names[0], np.mean(score_loss)))
+        print("{}: {:0.2f} ".format(
+            model.metrics_names[1], np.mean(score_acc)))
+        print("{}: {:0.2f} ".format(model.metrics_names[2], np.mean(score_f1)))
+        print("{}: {:0.2f} ".format(
+            model.metrics_names[3], np.mean(score_prec)))
+        print("{}: {:0.2f} ".format(
+            model.metrics_names[4], np.mean(score_rec)))
+        print("{}: {:0.2f} ".format(
+            model.metrics_names[5], np.mean(score_auc)))
+        print("---------------------------------------------------")
 
 
 if __name__ == "__main__":
     data_global = np.loadtxt(
         'data/Shallue/separated/global_test.csv', delimiter=',')
     #data_global = shuffle(data_global)
-    global_X = data_global[0:, 1:-1]  # Input
+    global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
     # Scale Data

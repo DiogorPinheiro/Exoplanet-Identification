@@ -156,9 +156,18 @@ def evaluateDual(model, x_agg, y, splits, batch, epochs, type, filename, X_test_
 
     # Get Loss Log For Each Sample
     Y_score_log = model.predict([X_test_global, X_test_local])
-    print("Test Length {}".format(len(y_test)))
-    print("Prediction Score Length {}".format(len(Y_score_log)))
+    #print("Test Length {}".format(len(y_test)))
+    #print("Prediction Score Length {}".format(len(Y_score_log)))
     tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
+
+    score = model.evaluate([X_test_global, X_test_local], y_test, verbose=0)
+
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[0], score[0]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[1], score[1]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[2], score[2]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[3], score[3]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[4], score[4]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[5], score[5]))
 
     # Save Model
     model.save(filename)
@@ -226,9 +235,18 @@ def evaluateDualfnn(model, x_agg, y, splits, batch, epochs, type, filename, X_te
 
     # Get Loss Log For Each Sample
     Y_score_log = model.predict([X_test_local, X_test_global])
-    print("Test Length {}".format(len(y_test)))
-    print("Prediction Score Length {}".format(len(Y_score_log)))
+    #print("Test Length {}".format(len(y_test)))
+    #print("Prediction Score Length {}".format(len(Y_score_log)))
     tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
+
+    score = model.evaluate([X_test_global, X_test_local], y_test, verbose=0)
+
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[0], score[0]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[1], score[1]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[2], score[2]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[3], score[3]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[4], score[4]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[5], score[5]))
 
     # Save Model
     model.save(filename)
@@ -299,12 +317,12 @@ def evaluateSingle(model, X, y, splits, batch, epoch, type, filename, X_test, y_
     tens = K.eval(customLoss(K.variable(y_test), K.variable(Y_score_log)))
 
     score = model.evaluate(X_test, y_test, verbose=0)
-    print("Test -> %s: %.2f%" % (model.metrics_names[1], score[1]))
-    print("Test -> %s: %.2f%" % (model.metrics_names[0], score[0]))
-    print("Test -> %s: %.2f%" % (model.metrics_names[2], score[2]))
-    print("Test -> %s: %.2f%" % (model.metrics_names[3], score[3]))
-    print("Test -> %s: %.2f%" % (model.metrics_names[4], score[4]))
-    print("Test -> %s: %.2f%" % (model.metrics_names[5], score[5]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[0], score[0]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[1], score[1]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[2], score[2]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[3], score[3]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[4], score[4]))
+    print("Test -> {}: {:0.2f}".format(model.metrics_names[5], score[5]))
 
     # Save Model
     model.save(filename)
