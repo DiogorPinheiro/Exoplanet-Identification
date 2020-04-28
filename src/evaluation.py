@@ -9,7 +9,7 @@ from sklearn.utils import shuffle
 from training import auc_roc, f1_m, precision_m, recall_m
 
 # Model Directories
-CNN_MODEL_DIRECTORY = 'models/CNN2.h5'
+CNN_MODEL_DIRECTORY = 'models/CNN.h5'
 ALEXNET_MODEL_DIRECTORY = 'models/alexnet.h5'
 FNN_MODEL_DIRECTORY = 'models/FNN.h5'
 LSTM_MODEL_DIRECTORY = 'models/lstm.h5'

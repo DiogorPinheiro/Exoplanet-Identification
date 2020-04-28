@@ -15,53 +15,52 @@ FNN_MODEL_DIRECTORY = '../models/FNN.h5'
 LSTM_MODEL_DIRECTORY = '../models/lstm.h5'
 
 
-def chunks(data, n):
-    """Yield successive n-sized chunks from lst"""
-    for i in range(0, len(data), n):
-        yield data[i:i + n]
-
-
-def getScore(model_name, data_X, data_y):
-    # Get Model
+def getModel(model_name):
     dependencies = {
         'f1_m': f1_m,
         'precision_m': precision_m,
         'recall_m': recall_m,
+        'auc_roc': auc_roc
     }
-    model = load_model('../models/CNN.h5', custom_objects=dependencies)
-    score = model.evaluate(X_test_global, y_test_global, verbose=0)
+    return load_model(model_name, custom_objects=dependencies)
+
+
+def getScore(model, data_X, data_y):
+    score = model.evaluate(data_X, data_y, verbose=0)
     print("%s: %.2f%% " %
           (model.metrics_names[1], score[1]*100, model.metrics_names[2]))
+
+
+def checkPrediction(model, datax, datay, index):
+    # Useful Indexex: 0,5,17,21,23,29,42
+    prediction = model.predict_classes(datax)
+    for i in range(len(prediction)):
+        print("X=%s, Predicted=%s" % (datay[i], prediction[i]))
+    # print("X=%s, Predicted=%s" % (datay[index], prediction[index]))
 
 
 if __name__ == "__main__":
     # Get Data
     data_global = np.loadtxt(
-        '../data/Shallue/shallue_global.csv', delimiter=',', skiprows=1)
+        '../data/Shallue/separated/global_test.csv', delimiter=',')
     data_global = shuffle(data_global)
-    global_X = data_global[0:, 1:-1]  # Input
+    global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
-    # Scale Data
-    scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    global_X = scaler_global.fit_transform(global_X)
+    global_X = np.expand_dims(
+        global_X, axis=2)    # Shape data
 
-    # Separate global Data
-    X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
-        global_X, global_Y, test_size=0.2, random_state=1)
+    model = getModel(CNN_MODEL_DIRECTORY)
 
-    X_test_global = np.expand_dims(
-        X_test_global, axis=2)    # Shape data
+    chunked_points = np.array_split(global_X[0], 41)
 
-    getScore(CNN_MODEL_DIRECTORY, X_test_global, y_test_global)
+    divider_size = 5
+    chuncked_group = np.array_split(chunked_points, divider_size)
 
-    #prediction = model.predict_classes(X_test_global)
-    # for i in range(len(prediction)):
-    #    print("X=%s, Predicted=%s" % (y_test_global[i], prediction[i]))
+    # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
-    # chuncked_data = list(chunks(global_X[0], 50))
+    # checkPrediction(model, global_X, global_Y, 0)
+
     # combinations = list(itertools.combinations(chuncked_data, 3))
 
     # chunkVisualization(global_X[0], 50)
-
-    plt.show()

@@ -211,16 +211,16 @@ def seqModelCNN(lay1_filters, l1_kernel_size, pool_size, strides, conv_dropout, 
                      padding='same'))
     model.add(BatchNormalization())
     model.add(MaxPooling1D(pool_size=2, strides=2))
-    model.add(Dropout(0.20))
+    model.add(Dropout(0.086))
     model.add(PReLU())
     model.add(Conv1D(filters=128, kernel_size=3, padding='same'))
     model.add(BatchNormalization())
     model.add(MaxPooling1D(pool_size=2, strides=2))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.265))
     model.add(PReLU())
     model.add(Flatten())
     model.add(Dense(64))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.265))
     model.add(PReLU())
     model.add(Dense(1, activation='sigmoid'))
 
@@ -299,8 +299,8 @@ if __name__ == "__main__":
     X_train_global = scaler_global.fit_transform(X_train_global)
     X_test_global = scaler_global.transform(X_test_global)
 
-    create_file('global_test.csv', X_test_global, y_test_global)
-    create_file('global_train.csv', X_train_global, y_train_global)
+    create_file('local_test.csv', X_test_local, y_test_local)
+    create_file('local_train.csv', X_train_local, y_train_local)
 
     # Shape Data
     X_train_global_shaped = np.expand_dims(X_train_global, axis=2)
