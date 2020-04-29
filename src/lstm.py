@@ -3,7 +3,7 @@ from comet_ml import Experiment, Optimizer
 import tensorflow as tf
 from sklearn import preprocessing
 from keras.models import Sequential
-from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, LSTM, CuDNNLSTM
+from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, LSTM
 from keras.constraints import MaxNorm
 from keras.callbacks import EarlyStopping
 from keras.models import Model
