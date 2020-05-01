@@ -39,7 +39,52 @@ def checkPrediction(model, datax, datay, index):
     # print("X=%s, Predicted=%s" % (datay[index], prediction[index]))
 
 
+def buildArray(mean_value, array_size):
+    '''
+        Builds an array with the light curve mean value
+
+        input: mean_value (float) 
+               array_size (int )
+        output: array of floats
+    '''
+    aux = []
+    for i in range(array_size):
+        aux.append(mean_value)
+    return aux
+
+
+def replace_curve(indexes, data, mean_value):
+    aux = []
+    for i, d in enumerate(data):
+        if i not in indexes:
+            # Get array with the mean value
+            aux.append(buildArray(mean_value, len(d)))
+        else:
+            aux.append(d)
+    return aux
+
+
+def setIntersection(data):
+    '''
+        Find the common elements in a list
+
+        input: data (list of lists)
+        output: list
+    '''
+    print(type(data))
+    result = set(data[0])
+    for s in data[1:]:
+        result.intersection_update(s)
+    return list(result)
+
+
 if __name__ == "__main__":
+    '''
+        Access points -> data[0][0][0]
+        Access groups -> data[0][0]
+        Access chunks -> data[0]
+    '''
+
     # Get Data
     data_global = np.loadtxt(
         '../data/Shallue/separated/global_test.csv', delimiter=',')
@@ -52,15 +97,35 @@ if __name__ == "__main__":
 
     model = getModel(CNN_MODEL_DIRECTORY)
 
-    chunked_points = np.array_split(global_X[0], 41)
+    test_lightCurve = global_X[0]
 
-    divider_size = 5
-    chuncked_group = np.array_split(chunked_points, divider_size)
+    mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
+    print("Mean value = {}".format(mean_value))
+
+    # Divide Data Into 41 Chunks
+    chunks = np.array_split(test_lightCurve, 41)
+
+    # Group indexes that will be used for search
+    comb_values = [0, 1, 2, 3, 4]
+
+    for i in range(4):
+        # Control number of groups in light curve
+        divider_size = 5 * (i+1)
+
+        # divide light curve into groups
+        groups = np.array_split(chunks, divider_size)
+        combinations = list(itertools.combinations(comb_values, 3))
+
+        search_groups = []
+
+        for comb in combinations:
+            data = replace_curve(comb, chunks, mean_value)
+            # if predicition changes -> append to search_groups
+
+        comb_values = setIntersection(search_groups)
 
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
     # checkPrediction(model, global_X, global_Y, 0)
-
-    # combinations = list(itertools.combinations(chuncked_data, 3))
 
     # chunkVisualization(global_X[0], 50)
