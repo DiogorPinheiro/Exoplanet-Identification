@@ -34,9 +34,9 @@ def getScore(model, data_X, data_y):
 def checkPrediction(model, datax, datay, index):
     # Useful Indexex: 0,5,17,21,23,29,42
     prediction = model.predict_classes(datax)
-    for i in range(len(prediction)):
-        print("X=%s, Predicted=%s" % (datay[i], prediction[i]))
-    # print("X=%s, Predicted=%s" % (datay[index], prediction[index]))
+    # for i in range(len(prediction)):
+    #    print("X=%s, Predicted=%s" % (datay[i], prediction[i]))
+    return(prediction[index])
 
 
 def buildArray(mean_value, array_size):
@@ -78,6 +78,21 @@ def setIntersection(data):
     return list(result)
 
 
+def groupToPoints(data):
+    '''
+        Convert light curve divided by groups to a list of points
+
+        input: data (list of lists of lists)
+        output: list
+    '''
+    aux = []
+    for v1, x in enumerate(data):
+        for v2, y in enumerate(x):
+            for v3, z in enumerate(y):
+                aux.append(data[v1][v2][v3])
+    return aux
+
+
 if __name__ == "__main__":
     '''
         Access points -> data[0][0][0]
@@ -107,22 +122,30 @@ if __name__ == "__main__":
 
     # Group indexes that will be used for search
     comb_values = [0, 1, 2, 3, 4]
-
+    # Save the original prediction, it will serve as reference
+    reference_pred = checkPrediction(model, global_X, global_Y, 0)
     for i in range(4):
         # Control number of groups in light curve
         divider_size = 5 * (i+1)
 
-        # divide light curve into groups
-        groups = np.array_split(chunks, divider_size)
         combinations = list(itertools.combinations(comb_values, 3))
 
         search_groups = []
-
+        print(i)
         for comb in combinations:
             data = replace_curve(comb, chunks, mean_value)
-            # if predicition changes -> append to search_groups
+            # divide light curve into groups
+            groups = np.array_split(chunks, divider_size)
+            # Create light curve with new values
+            new_curve = groupToPoints(data)
+            global_X[0] = new_curve
+            # Falta passar de groups para ter dados como no test_lightcurve
+            pred = checkPrediction(model, global_X, global_Y, 0)
+            if pred != reference_pred:
+                search_groups.append(comb)
 
         comb_values = setIntersection(search_groups)
+        print(comb_values)
 
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
