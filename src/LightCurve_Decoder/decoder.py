@@ -39,17 +39,18 @@ def checkPrediction(model, datax, datay, index):
     return(prediction[index])
 
 
-def buildArray(mean_value, array_size):
+def buildArray(mean_value, array):
     '''
         Builds an array with the light curve mean value
 
         input: mean_value (float) 
-               array_size (int )
+               array (list of lists )
         output: array of floats
     '''
     aux = []
-    for i in range(array_size):
-        aux.append(mean_value)
+    for index, i in enumerate(array):
+        for index2, i2 in enumerate(i):
+            aux.append(mean_value)
     # Use numpy to reshape array
     aux = np.array(aux)
     aux = aux.reshape((aux.shape[0], 1))
@@ -61,10 +62,10 @@ def replace_curve(indexes, data, mean_value):
     aux = []
 
     for i, d in enumerate(data):
-        #print("Data : {} / {}".format(len(d), len(d[0])))
         if i not in indexes:
+            arr = buildArray(mean_value, d)
             # Get array with the mean value
-            aux.append(buildArray(mean_value, len(d)))
+            aux.append(arr)
         else:
             aux.append(d)
     return aux
@@ -77,7 +78,6 @@ def setIntersection(data):
         input: data (list of lists)
         output: list
     '''
-    print(data)
     result = set(data[0])
     for s in data[1:]:
         result.intersection_update(s)
@@ -93,9 +93,7 @@ def groupToPoints(data):
     '''
     aux = []
     for v1, x in enumerate(data):
-        print("x {}".format(len(x)))
         for v2, y in enumerate(x):
-            print("y {}".format(len(y)))
             for v3, z in enumerate(y):
                 aux.append(data[v1][v2][v3])
     return aux
@@ -150,18 +148,6 @@ if __name__ == "__main__":
     reference_pred = checkPrediction(model, global_X, global_Y, pos_index)
     print("Reference Prediction = {}".format(reference_pred))
 
-    print("len chunks {}".format(len(chunks)))
-    groups = np.array_split(chunks, 5)
-    print("len groups {}".format(len(groups)))
-
-    data = replace_curve([0], groups, mean_value)
-
-    new_curve = groupToPoints(data)
-    print("len new curve {}".format(len(new_curve)))
-    test_lightCurve = new_curve
-    chunkVisualization(test_lightCurve, 400)
-
-    '''
     divider_size = 5
     for i in range(4):
         # Control number of groups in light curve
@@ -172,13 +158,15 @@ if __name__ == "__main__":
         search_groups = []
         print("Iteration nº{}".format(i))
         for comb in combinations:
-            data = replace_curve(comb, chunks, 0)
             # divide light curve into groups
             groups = np.array_split(data, divider_size)
 
+            data = replace_curve(comb, chunks, mean_value)
+
             # Create light curve with new values
-            new_curve = groupToPoints(groups)
-            global_X_copy[0] = new_curve
+            new_curve = groupToPoints(data)
+            test_lightCurve = new_curve
+
             pred = checkPrediction(model, global_X_copy, global_Y, pos_index)
             print("Prediction = {}".format(pred))
             if pred != reference_pred:
@@ -195,7 +183,7 @@ if __name__ == "__main__":
                 divider_size = (divider_size*2)+1
             else:
                 divider_size = divider_size * 2
-    '''
+
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
     # checkPrediction(model, global_X, global_Y, 0)
