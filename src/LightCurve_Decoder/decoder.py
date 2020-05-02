@@ -32,10 +32,10 @@ def getScore(model, data_X, data_y):
 
 
 def checkPrediction(model, datax, datay, index):
-    # Useful Indexex: 0,5,17,21,23,29,42
     prediction = model.predict_classes(datax)
     # for i in range(len(prediction)):
-    #    print("X=%s, Predicted=%s" % (datay[i], prediction[i]))
+    #    print("i = {} ; X={} ; Predicted={}".format(
+    #        i, datay[i], prediction[i]))
     return(prediction[index])
 
 
@@ -50,12 +50,18 @@ def buildArray(mean_value, array_size):
     aux = []
     for i in range(array_size):
         aux.append(mean_value)
-    return aux
+    # Use numpy to reshape array
+    aux = np.array(aux)
+    aux = aux.reshape((aux.shape[0], 1))
+
+    return list(aux)
 
 
 def replace_curve(indexes, data, mean_value):
     aux = []
+
     for i, d in enumerate(data):
+        #print("Data : {} / {}".format(len(d), len(d[0])))
         if i not in indexes:
             # Get array with the mean value
             aux.append(buildArray(mean_value, len(d)))
@@ -71,7 +77,7 @@ def setIntersection(data):
         input: data (list of lists)
         output: list
     '''
-    print(type(data))
+    print(data)
     result = set(data[0])
     for s in data[1:]:
         result.intersection_update(s)
@@ -87,7 +93,9 @@ def groupToPoints(data):
     '''
     aux = []
     for v1, x in enumerate(data):
+        print("x {}".format(len(x)))
         for v2, y in enumerate(x):
+            print("y {}".format(len(y)))
             for v3, z in enumerate(y):
                 aux.append(data[v1][v2][v3])
     return aux
@@ -117,7 +125,7 @@ if __name__ == "__main__":
     # Get Data
     data_global = np.loadtxt(
         '../data/Shallue/separated/global_test.csv', delimiter=',')
-    data_global = shuffle(data_global)
+    #data_global = shuffle(data_global)
     global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
@@ -127,7 +135,8 @@ if __name__ == "__main__":
     model = getModel(CNN_MODEL_DIRECTORY)
 
     global_X_copy = global_X    # To avoid manipulating the original data
-    test_lightCurve = global_X[0]
+    pos_index = 3065    # 3070, 3065, 3077, 3088, 3021, 2939
+    test_lightCurve = global_X[pos_index]
 
     mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
     print("Mean value = {}".format(mean_value))
@@ -138,35 +147,55 @@ if __name__ == "__main__":
     # Group indexes that will be used for search
     comb_values = [0, 1, 2, 3, 4]
     # Save the original prediction, it will serve as reference
-    reference_pred = checkPrediction(model, global_X, global_Y, 0)
+    reference_pred = checkPrediction(model, global_X, global_Y, pos_index)
+    print("Reference Prediction = {}".format(reference_pred))
+
+    print("len chunks {}".format(len(chunks)))
+    groups = np.array_split(chunks, 5)
+    print("len groups {}".format(len(groups)))
+
+    data = replace_curve([0], groups, mean_value)
+
+    new_curve = groupToPoints(data)
+    print("len new curve {}".format(len(new_curve)))
+    test_lightCurve = new_curve
+    chunkVisualization(test_lightCurve, 400)
+
+    '''
     divider_size = 5
     for i in range(4):
         # Control number of groups in light curve
         # 0 -> 5 groups ; 1 -> 10 groups ; 2 -> 20 groups ; 3 -> 41 groups
-        if i == 3:
-            divider_size = (divider_size*2)+1
-        else:
-            divider_size = divider_size * 2
 
         combinations = list(itertools.combinations(comb_values, 3))
 
-        # Falta controlar quais os indexes que serão usados nas combinações (index_atual e index_atual+1)
-
         search_groups = []
-        print(i)
+        print("Iteration nº{}".format(i))
         for comb in combinations:
-            data = replace_curve(comb, chunks, mean_value)
+            data = replace_curve(comb, chunks, 0)
             # divide light curve into groups
-            groups = np.array_split(chunks, divider_size)
+            groups = np.array_split(data, divider_size)
+
             # Create light curve with new values
-            new_curve = groupToPoints(data)
+            new_curve = groupToPoints(groups)
             global_X_copy[0] = new_curve
-            pred = checkPrediction(model, global_X_copy, global_Y, 0)
+            pred = checkPrediction(model, global_X_copy, global_Y, pos_index)
+            print("Prediction = {}".format(pred))
             if pred != reference_pred:
                 search_groups.append(comb)
 
-        comb_values = defineWantedSet(setIntersection(search_groups))
-        print(comb_values)
+        # Define the indexes that will be searched next
+        if not search_groups:
+            print("No Search Groups Found!")
+            break
+        else:
+            comb_values = defineWantedSet(setIntersection(search_groups))
+            print(comb_values)
+            if i == 3:
+                divider_size = (divider_size*2)+1
+            else:
+                divider_size = divider_size * 2
+    '''
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
     # checkPrediction(model, global_X, global_Y, 0)
