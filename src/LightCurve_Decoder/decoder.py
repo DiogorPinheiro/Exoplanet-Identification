@@ -93,6 +93,20 @@ def groupToPoints(data):
     return aux
 
 
+def defineWantedSet(indexes):
+    '''
+        Define the groups where the program needs to search
+
+        input: indexes (list of int) -> indexes with possible target
+        output: list of int
+    '''
+    aux = []
+    for i in indexes:
+        aux.append(i*2)
+        aux.append((i*2)+1)
+    return aux
+
+
 if __name__ == "__main__":
     '''
         Access points -> data[0][0][0]
@@ -112,6 +126,7 @@ if __name__ == "__main__":
 
     model = getModel(CNN_MODEL_DIRECTORY)
 
+    global_X_copy = global_X    # To avoid manipulating the original data
     test_lightCurve = global_X[0]
 
     mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
@@ -124,11 +139,18 @@ if __name__ == "__main__":
     comb_values = [0, 1, 2, 3, 4]
     # Save the original prediction, it will serve as reference
     reference_pred = checkPrediction(model, global_X, global_Y, 0)
+    divider_size = 5
     for i in range(4):
         # Control number of groups in light curve
-        divider_size = 5 * (i+1)
+        # 0 -> 5 groups ; 1 -> 10 groups ; 2 -> 20 groups ; 3 -> 41 groups
+        if i == 3:
+            divider_size = (divider_size*2)+1
+        else:
+            divider_size = divider_size * 2
 
         combinations = list(itertools.combinations(comb_values, 3))
+
+        # Falta controlar quais os indexes que serão usados nas combinações (index_atual e index_atual+1)
 
         search_groups = []
         print(i)
@@ -138,15 +160,13 @@ if __name__ == "__main__":
             groups = np.array_split(chunks, divider_size)
             # Create light curve with new values
             new_curve = groupToPoints(data)
-            global_X[0] = new_curve
-            # Falta passar de groups para ter dados como no test_lightcurve
-            pred = checkPrediction(model, global_X, global_Y, 0)
+            global_X_copy[0] = new_curve
+            pred = checkPrediction(model, global_X_copy, global_Y, 0)
             if pred != reference_pred:
                 search_groups.append(comb)
 
-        comb_values = setIntersection(search_groups)
+        comb_values = defineWantedSet(setIntersection(search_groups))
         print(comb_values)
-
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
 
     # checkPrediction(model, global_X, global_Y, 0)
