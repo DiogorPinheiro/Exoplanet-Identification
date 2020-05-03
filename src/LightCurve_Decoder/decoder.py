@@ -5,8 +5,9 @@ import itertools
 from sklearn.model_selection import train_test_split
 from keras.models import load_model
 from sklearn.utils import shuffle
+from collections import Counter
 
-from utilities import chunkVisualization, recall_m, f1_m, precision_m, auc_roc
+from utilities import chunkVisualization, recall_m, f1_m, precision_m, auc_roc, saveChunkVisualization
 
 # Model Directories
 CNN_MODEL_DIRECTORY = '../models/CNN.h5'
@@ -43,7 +44,7 @@ def buildArray(mean_value, array):
     '''
         Builds an array with the light curve mean value
 
-        input: mean_value (float) 
+        input: mean_value (float)
                array (list of lists )
         output: array of floats
     '''
@@ -82,6 +83,12 @@ def setIntersection(data):
     for s in data[1:]:
         result.intersection_update(s)
     return list(result)
+
+
+def mostFrequentInSet(data):
+    flattened_list = [elem for sublist in data for elem in sublist]
+    print(flattened_list)
+    print(max(set(flattened_list), key=flattened_list.count))
 
 
 def groupToPoints(data):
@@ -123,7 +130,7 @@ if __name__ == "__main__":
     # Get Data
     data_global = np.loadtxt(
         '../data/Shallue/separated/global_test.csv', delimiter=',')
-    #data_global = shuffle(data_global)
+    # data_global = shuffle(data_global)
     global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
 
@@ -132,8 +139,7 @@ if __name__ == "__main__":
 
     model = getModel(CNN_MODEL_DIRECTORY)
 
-    global_X_copy = global_X    # To avoid manipulating the original data
-    pos_index = 3065    # 3070, 3065, 3077, 3088, 3021, 2939
+    pos_index = 3088    # 3070, 3065, 3077, 3088, 3021, 2939
     test_lightCurve = global_X[pos_index]
 
     mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
@@ -154,24 +160,37 @@ if __name__ == "__main__":
         # 0 -> 5 groups ; 1 -> 10 groups ; 2 -> 20 groups ; 3 -> 41 groups
 
         combinations = list(itertools.combinations(comb_values, 3))
-
+        # divide light curve into groups
+        groups = np.array_split(chunks, divider_size)
         search_groups = []
         print("Iteration nº{}".format(i))
-        for comb in combinations:
-            # divide light curve into groups
-            groups = np.array_split(data, divider_size)
+        for val, comb in enumerate(combinations):
+            global_X_copy = global_X.copy()    # To avoid manipulating the original data
 
-            data = replace_curve(comb, chunks, mean_value)
+            data = replace_curve(comb, groups, mean_value)
 
             # Create light curve with new values
             new_curve = groupToPoints(data)
-            test_lightCurve = new_curve
+            new_curve = np.array(new_curve)
+            global_X_copy[pos_index] = list(
+                new_curve.reshape((new_curve.shape[0], 1)))
 
+            #chunkVisualization(global_X_copy[pos_index], 400)
+            # Save graph to file
+            # save_filename = (
+            #    'Images/{}_iter{}_comb{}'.format(pos_index, i, val))
+            # Number of vertical lines in visualization (representing the groups)
+            #vert_lines = int((len(test_lightCurve)-1)/divider_size)
+            # saveChunkVisualization(
+            #    global_X_copy[pos_index], vert_lines, save_filename)
+
+            # Predict new light curve and compare with reference
             pred = checkPrediction(model, global_X_copy, global_Y, pos_index)
             print("Prediction = {}".format(pred))
+            print(comb)
             if pred != reference_pred:
-                search_groups.append(comb)
-
+                search_groups.append(list(comb))
+        mostFrequentInSet(search_groups)
         # Define the indexes that will be searched next
         if not search_groups:
             print("No Search Groups Found!")
@@ -185,7 +204,5 @@ if __name__ == "__main__":
                 divider_size = divider_size * 2
 
     # getScore(CNN_MODEL_DIRECTORY, global_X, global_Y)
-
-    # checkPrediction(model, global_X, global_Y, 0)
 
     # chunkVisualization(global_X[0], 50)
