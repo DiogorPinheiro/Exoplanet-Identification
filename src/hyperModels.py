@@ -85,7 +85,7 @@ class CNNHyperModel(HyperModel):
         model = keras.Sequential()
         model.add(
             Conv1D(
-                filters=hp.Choice("filters", [
+                filters=hp.Choice("filter1", [
                                   8, 16, 32, 64, 128, 254], default=64),
                 kernel_size=hp.Int(
                     'kernel_size', 1, 5, default=3),
@@ -154,7 +154,7 @@ class LSTMHyperModel(HyperModel):
     def build(self, hp):
         inputLayer = Input(shape=self.input_shape)
 
-        model = LSTM(units=hp.Int('LSTM_units1', 1, 15, default=5), return_sequences=True,
+        model = LSTM(units=hp.Int('LSTM1', 1, 15, default=5), return_sequences=True,
                      unit_forget_bias=True, bias_initializer='zeros')(inputLayer)
         model = PReLU()(model)
         model = Dropout(hp.Float("dropout1", min_value=0.0,
@@ -243,3 +243,80 @@ class DualCNNHyperModel(HyperModel):
     def build(self, hp):
         inputLayer_local = Input(shape=self.input_shape_local)
         inputLayer_global = Input(shape=self.input_shape_global)
+
+        conv_local = Conv1D(hp.Int("Conv_unis1", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel1", min_value=0, max_value=7, step=1, default=4),
+                            strides=hp.Int("strides1", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
+                            activation='relu', kernel_initializer='he_normal')
+        conv_global = Conv1D(hp.Int("Conv_unis2", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel2", min_value=0, max_value=7, step=1, default=4),
+                             strides=hp.Int("strides2", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
+                             activation='relu', kernel_initializer='he_normal')
+
+        model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
+        model1 = MaxPooling1D(pool_size=hp.Int(
+            "pool1", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri1", min_value=1, max_value=4, step=1, default=2), padding='valid')(model1)
+        model1 = Dropout(hp.Float("dropout1", min_value=0.0,
+                                  max_value=0.5, default=0.2, step=0.05))(model1)
+
+        for f in range(hp.Range('ConvGlobal_blocks', 0, 10, default=2)):
+            model1 = Conv1D(hp.Int("Conv_gl_"+str(f), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_gl_"+str(f), min_value=0, max_value=7, step=1, default=4),
+                            strides=hp.Int("stri_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), padding='same',
+                            dilation_rate=1, activation='relu')(model1)
+            model1 = MaxPooling1D(pool_size=hp.Int("pool_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_gl_"+str(f), min_value=1, max_value=4, step=1, default=2),
+                                  padding='valid')(model1)
+            model1 = Dropout(hp.Float("dropout_gl_"+str(f), min_value=0.0,
+                                      max_value=0.5, default=0.2, step=0.05))(model1)
+        model1 = Flatten()(model1)
+
+        model2 = conv_local(inputLayer_local)  # Disjoint Conv Layer
+        model2 = MaxPooling1D(pool_size=hp.Int(
+            "pool2", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri2", min_value=1, max_value=4, step=1, default=2), padding='valid')(model2)
+        model2 = Dropout(hp.Float("dropout2", min_value=0.0,
+                                  max_value=0.5, default=0.2, step=0.05))(model2)
+
+        for i in range(hp.Range('ConvLocal_blocks', 0, 10, default=2)):
+            model2 = Conv1D(hp.Int("Conv_lc_"+str(i), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_lc_"+str(i), min_value=0, max_value=7, step=1, default=4),
+                            strides=hp.Int("stri_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), padding='same',
+                            dilation_rate=1, activation='relu')(model2)
+            model2 = MaxPooling1D(pool_size=hp.Int("pool_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_lc_"+str(i), min_value=1, max_value=4, step=1, default=2),
+                                  padding='valid')(model2)
+            model2 = Dropout(hp.Float("dropout_lc_"+str(i), min_value=0.0,
+                                      max_value=0.5, default=0.2, step=0.05))(model2)
+        model2 = Flatten()(model2)
+
+        concatLayerQ = keras.layers.concatenate([model1, model2], axis=1)
+
+        model = Dense(units=hp.Int("uni1", min_value=32,
+                                   max_value=512, step=32, default=128))(concatLayerQ)
+        model = BatchNormalization()(model)
+        model = Dropout(hp.Float("drop1", min_value=0.0,
+                                 max_value=0.5, default=0.2, step=0.05))(model)
+
+        for j in range(hp.Range('dense_blocks', 0, 7, default=2)):
+            model = Dense(units=hp.Int("units_ds_"+str(j), min_value=32,
+                                       max_value=512, step=32, default=128))(model)
+            model = BatchNormalization()(model)
+            model = Dropout(hp.Float("dropout_ds_"+str(j), min_value=0.0,
+                                     max_value=0.5, default=0.2, step=0.05))(model)
+
+        model.add(Dense(self.num_classes, activation="sigmoid"))
+
+        model.compile(
+            optimizer=keras.optimizers.Adam(
+                hp.Float(
+                    "learning_rate",
+                    min_value=1e-4,
+                    max_value=1e-2,
+                    default=1e-3,
+                ), beta_1=hp.Float(
+                    "beta_1",
+                    min_value=0.7,
+                    max_value=0.95,
+                    default=1e-3,
+                ),
+                beta_2=0.999, amsgrad=False
+            ),
+            loss="binary_crossentropy",
+            metrics=['accuracy', f1_m, precision_m,
+                     recall_m, tf.keras.metrics.AUC()],
+        )
+        return model
