@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print("Mean value = {}".format(mean_value))
 
     # Divide Data Into 41 Chunks
-    chunks = np.array_split(test_lightCurve, 41)
+    chunks = np.array_split(test_lightCurve, 40)
 
     # Group indexes that will be used for search
     comb_values = [0, 1, 2, 3, 4]

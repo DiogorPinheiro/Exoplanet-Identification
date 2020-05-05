@@ -5,7 +5,7 @@ from kerastuner import Hyperband
 from sklearn.model_selection import train_test_split
 from keras.callbacks import EarlyStopping
 from kerastuner.engine.hyperparameters import HyperParameters
-
+import random
 
 from hyperModels import CNNHyperModel, CNNTrial, FNNHyperModel, CNNTrial2, LSTMHyperModel, DualCNNHyperModel
 
@@ -44,12 +44,12 @@ if __name__ == "__main__":
 
     #build_model = CNNHyperModel(input_shape_global, 1)
     #build_model = LSTMHyperModel(input_shape_global,1)
-    build_model = DualCNNHyperModel(input_shape_local, input_shape_global, 1)
+    #build_model = DualCNNHyperModel(input_shape_local, input_shape_global, 1)
     #build_model = CNNTrial(input_shape, 1)
     build_model = CNNTrial2(1)
 
     tuner = Hyperband(build_model, objective='val_loss',
-                      max_epochs=40, project_name='num4', seed=4)
+                      max_epochs=40, project_name='num'+random.randint(0, 9), seed=random.randint(0, 30))
     tuner.search(X_train_global_shaped, y_train_global,
                  epochs=40, validation_data=(X_test_global_shaped, y_test_global), callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')])
 
