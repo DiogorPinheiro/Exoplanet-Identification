@@ -1,4 +1,5 @@
 from kerastuner import HyperModel
+from kerastuner.engine.hyperparameters import HyperParameters
 import tensorflow as tf
 from tensorflow import keras
 from keras import optimizers
@@ -49,7 +50,7 @@ class CNNTrial(HyperModel):
     def build_model(self, hp):
         inputs = tf.keras.Input(shape=self.input_shape)
         x = inputs
-        for i in range(hp.Range('conv_blocks', 0, 5, default=3)):
+        for i in range(hp.Int('conv_blocks', 0, 5, default=3)):
             filters = hp.Int('filters_' + str(i), 32, 256, step=32)
             x = tf.keras.layers.Conv1D(
                 filters, kernel_size=hp.Int(
@@ -60,7 +61,7 @@ class CNNTrial(HyperModel):
                 x = tf.keras.layers.MaxPool1D()(x)
             else:
                 x = tf.keras.layers.AvgPool1D()(x)
-        for j in range(hp.Range('dense_blocks', 0, 5, default=3)):
+        for j in range(hp.Int('dense_blocks', 0, 5, default=3)):
             x = tf.keras.layers.Dense(
                 hp.Int('hidden_size_'+str(j), 30, 100, step=10, default=50),
                 activation='relu')(x)
@@ -84,7 +85,7 @@ class CNNHyperModel(HyperModel):
     def build(self, hp):
         model = keras.Sequential()
         model.add(
-            Conv1D(
+            tf.keras.layers.Conv1D(
                 filters=hp.Choice("filter1", [
                                   8, 16, 32, 64, 128, 254], default=64),
                 kernel_size=hp.Int(
@@ -93,24 +94,24 @@ class CNNHyperModel(HyperModel):
                 input_shape=self.input_shape,
             )
         )
-        for i in range(hp.Range('conv_blocks', 1, 7, default=3)):
-            model.add(Conv1D(filters=hp.Choice("filters_"+str(i), [
+        for i in range(hp.Int('conv_blocks', 1, 7, default=3)):
+            model.add(tf.keras.layers.Conv1D(filters=hp.Choice("filters_"+str(i), [
                 8, 16, 32, 64, 128, 254], default=64), activation="relu", kernel_size=hp.Int(
                     'kernel_size_'+str(i), 1, 5, default=3)))
-            model.add(MaxPooling1D(pool_size=hp.Int(
+            model.add(tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
                 'pool_size_'+str(i), 1, 5, default=3)))
             model.add(
-                Dropout(
+                tf.keras.layers.Dropout(
                     rate=hp.Float(
                         "dropout_"+str(i), min_value=0.0, max_value=0.5, default=0.25, step=0.05,
                     )
                 )
             )
 
-        model.add(Flatten())
-        for f in range(hp.Range('dense_blocks', 0, 5, default=2)):
+        model.add(tf.keras.layers.Flatten())
+        for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
             model.add(
-                Dense(
+                tf.keras.layers.Dense(
                     units=hp.Int(
                         "units_"+str(f), min_value=32, max_value=512, step=32, default=128
                     ),
@@ -122,13 +123,14 @@ class CNNHyperModel(HyperModel):
                 )
             )
             model.add(
-                Dropout(
+                tf.keras.layers.Dropout(
                     rate=hp.Float(
-                        "dropout_"+str(f), min_value=0.0, max_value=0.5, default=0.25, step=0.05
+                        "dropout2_"+str(f), min_value=0.0, max_value=0.5, default=0.25, step=0.05
                     )
                 )
             )
-        model.add(Dense(self.num_classes, activation="sigmoid"))
+        model.add(tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid"))
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -154,29 +156,30 @@ class LSTMHyperModel(HyperModel):
     def build(self, hp):
         inputLayer = Input(shape=self.input_shape)
 
-        model = LSTM(units=hp.Int('LSTM1', 1, 15, default=5), return_sequences=True,
-                     unit_forget_bias=True, bias_initializer='zeros')(inputLayer)
-        model = PReLU()(model)
-        model = Dropout(hp.Float("dropout1", min_value=0.0,
-                                 max_value=0.5, default=0.2, step=0.05))(model)
+        model = tf.keras.layers.LSTM(units=hp.Int('LSTM1', 1, 15, default=5), return_sequences=True,
+                                     unit_forget_bias=True, bias_initializer='zeros')(inputLayer)
+        model = tf.keras.layers.PReLU()(model)
+        model = tf.keras.layers.Dropout(hp.Float("dropout1", min_value=0.0,
+                                                 max_value=0.5, default=0.2, step=0.05))(model)
 
-        for i in range(hp.Range('lstm_blocks', 0, 7, default=3)):
-            model = LSTM(units=hp.Int('LSTM_units_'+str(i), 1, 15, default=5), unit_forget_bias=True,
-                         bias_initializer='zeros', return_sequences=True)(model)
-            model = PReLU()(model)
-            model = Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
-                                     max_value=0.5, default=0.2, step=0.05))(model)
+        for i in range(hp.Int('lstm_blocks', 0, 7, default=3)):
+            model = tf.keras.layers.LSTM(units=hp.Int('LSTM_units_'+str(i), 1, 15, default=5), unit_forget_bias=True,
+                                         bias_initializer='zeros', return_sequences=True)(model)
+            model = tf.keras.layers.PReLU()(model)
+            model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
+                                                     max_value=0.5, default=0.2, step=0.05))(model)
 
-        model = Flatten()(model)
+        model = tf.keras.layers.Flatten()(model)
 
-        for f in range(hp.Range('dense_blocks', 0, 7, default=2)):
-            model = Dense(units=hp.Int("units_"+str(f), min_value=32,
-                                       max_value=512, step=32, default=128))(model)
-            model = PReLU()(model)
-            model = Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
-                                     max_value=0.5, default=0.2, step=0.05))(model)
+        for f in range(hp.Int('dense_blocks', 0, 7, default=2)):
+            model = tf.keras.layers.Dense(units=hp.Int("units_"+str(f), min_value=32,
+                                                       max_value=512, step=32, default=128))(model)
+            model = tf.keras.layers.PReLU()(model)
+            model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
+                                                     max_value=0.5, default=0.2, step=0.05))(model)
 
-        model.add(Dense(self.num_classes, activation="sigmoid"))
+        model.add(tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid"))
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -202,21 +205,23 @@ class FNNHyperModel(HyperModel):
     def build(self, hp):
         inputLayer = Input(shape=self.input_shape)
 
-        model = Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
-                      activation=hp.Choice("dense_activation",
-                                           values=["relu", "tanh", "sigmoid"],
-                                           default="relu",
-                                           ),)(inputLayer)
+        model = tf.keras.layers.Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
+                                      activation=hp.Choice("dense_activation",
+                                                           values=[
+                                                               "relu", "tanh", "sigmoid"],
+                                                           default="relu",
+                                                           ),)(inputLayer)
 
-        for f in range(hp.Range('dense_blocks', 0, 5, default=2)):
-            model = Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
-                          activation=hp.Choice("dense_activation",
-                                               values=[
-                                                   "relu", "tanh", "sigmoid"],
-                                               default="relu",
-                                               ),)(model)
+        for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
+            model = tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
+                                          activation=hp.Choice("dense_activation",
+                                                               values=[
+                                                                   "relu", "tanh", "sigmoid"],
+                                                               default="relu",
+                                                               ),)(model)
 
-        model.add(Dense(self.num_classes, activation="sigmoid"))
+        model.add(tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid"))
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -244,61 +249,62 @@ class DualCNNHyperModel(HyperModel):
         inputLayer_local = Input(shape=self.input_shape_local)
         inputLayer_global = Input(shape=self.input_shape_global)
 
-        conv_local = Conv1D(hp.Int("Conv_unis1", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel1", min_value=0, max_value=7, step=1, default=4),
-                            strides=hp.Int("strides1", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
-                            activation='relu', kernel_initializer='he_normal')
-        conv_global = Conv1D(hp.Int("Conv_unis2", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel2", min_value=0, max_value=7, step=1, default=4),
-                             strides=hp.Int("strides2", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
-                             activation='relu', kernel_initializer='he_normal')
+        conv_local = tf.keras.layers.Conv1D(hp.Int("Conv_unis1", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel1", min_value=0, max_value=7, step=1, default=4),
+                                            strides=hp.Int("strides1", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
+                                            activation='relu', kernel_initializer='he_normal')
+        conv_global = tf.keras.layers.Conv1D(hp.Int("Conv_unis2", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel2", min_value=0, max_value=7, step=1, default=4),
+                                             strides=hp.Int("strides2", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
+                                             activation='relu', kernel_initializer='he_normal')
 
         model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
-        model1 = MaxPooling1D(pool_size=hp.Int(
+        model1 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
             "pool1", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri1", min_value=1, max_value=4, step=1, default=2), padding='valid')(model1)
-        model1 = Dropout(hp.Float("dropout1", min_value=0.0,
-                                  max_value=0.5, default=0.2, step=0.05))(model1)
+        model1 = tf.keras.layers.Dropout(hp.Float("dropout1", min_value=0.0,
+                                                  max_value=0.5, default=0.2, step=0.05))(model1)
 
-        for f in range(hp.Range('ConvGlobal_blocks', 0, 10, default=2)):
-            model1 = Conv1D(hp.Int("Conv_gl_"+str(f), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_gl_"+str(f), min_value=0, max_value=7, step=1, default=4),
-                            strides=hp.Int("stri_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), padding='same',
-                            dilation_rate=1, activation='relu')(model1)
-            model1 = MaxPooling1D(pool_size=hp.Int("pool_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_gl_"+str(f), min_value=1, max_value=4, step=1, default=2),
-                                  padding='valid')(model1)
-            model1 = Dropout(hp.Float("dropout_gl_"+str(f), min_value=0.0,
-                                      max_value=0.5, default=0.2, step=0.05))(model1)
-        model1 = Flatten()(model1)
+        for f in range(hp.Int('ConvGlobal_blocks', 0, 10, default=2)):
+            model1 = tf.keras.layers.Conv1D(hp.Int("Conv_gl_"+str(f), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_gl_"+str(f), min_value=0, max_value=7, step=1, default=4),
+                                            strides=hp.Int("stri_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), padding='same',
+                                            dilation_rate=1, activation='relu')(model1)
+            model1 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int("pool_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_gl_"+str(f), min_value=1, max_value=4, step=1, default=2),
+                                                  padding='valid')(model1)
+            model1 = tf.keras.layers.Dropout(hp.Float("dropout_gl_"+str(f), min_value=0.0,
+                                                      max_value=0.5, default=0.2, step=0.05))(model1)
+        model1 = tf.keras.layers.Flatten()(model1)
 
         model2 = conv_local(inputLayer_local)  # Disjoint Conv Layer
-        model2 = MaxPooling1D(pool_size=hp.Int(
+        model2 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
             "pool2", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri2", min_value=1, max_value=4, step=1, default=2), padding='valid')(model2)
-        model2 = Dropout(hp.Float("dropout2", min_value=0.0,
-                                  max_value=0.5, default=0.2, step=0.05))(model2)
+        model2 = tf.keras.layers.Dropout(hp.Float("dropout2", min_value=0.0,
+                                                  max_value=0.5, default=0.2, step=0.05))(model2)
 
-        for i in range(hp.Range('ConvLocal_blocks', 0, 10, default=2)):
-            model2 = Conv1D(hp.Int("Conv_lc_"+str(i), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_lc_"+str(i), min_value=0, max_value=7, step=1, default=4),
-                            strides=hp.Int("stri_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), padding='same',
-                            dilation_rate=1, activation='relu')(model2)
-            model2 = MaxPooling1D(pool_size=hp.Int("pool_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_lc_"+str(i), min_value=1, max_value=4, step=1, default=2),
-                                  padding='valid')(model2)
-            model2 = Dropout(hp.Float("dropout_lc_"+str(i), min_value=0.0,
-                                      max_value=0.5, default=0.2, step=0.05))(model2)
-        model2 = Flatten()(model2)
+        for i in range(hp.Int('ConvLocal_blocks', 0, 10, default=2)):
+            model2 = tf.keras.layers.Conv1D(hp.Int("Conv_lc_"+str(i), min_value=8, max_value=254, step=32, default=128),  kernel_size=hp.Int("kern_lc_"+str(i), min_value=0, max_value=7, step=1, default=4),
+                                            strides=hp.Int("stri_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), padding='same',
+                                            dilation_rate=1, activation='relu')(model2)
+            model2 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int("pool_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_lc_"+str(i), min_value=1, max_value=4, step=1, default=2),
+                                                  padding='valid')(model2)
+            model2 = tf.keras.layers.Dropout(hp.Float("dropout_lc_"+str(i), min_value=0.0,
+                                                      max_value=0.5, default=0.2, step=0.05))(model2)
+        model2 = tf.keras.layers.Flatten()(model2)
 
         concatLayerQ = keras.layers.concatenate([model1, model2], axis=1)
 
-        model = Dense(units=hp.Int("uni1", min_value=32,
-                                   max_value=512, step=32, default=128))(concatLayerQ)
-        model = BatchNormalization()(model)
-        model = Dropout(hp.Float("drop1", min_value=0.0,
-                                 max_value=0.5, default=0.2, step=0.05))(model)
+        model = tf.keras.layers.Dense(units=hp.Int("uni1", min_value=32,
+                                                   max_value=512, step=32, default=128))(concatLayerQ)
+        model = tf.keras.layers.BatchNormalization()(model)
+        model = tf.keras.layers.Dropout(hp.Float("drop1", min_value=0.0,
+                                                 max_value=0.5, default=0.2, step=0.05))(model)
 
-        for j in range(hp.Range('dense_blocks', 0, 7, default=2)):
-            model = Dense(units=hp.Int("units_ds_"+str(j), min_value=32,
-                                       max_value=512, step=32, default=128))(model)
-            model = BatchNormalization()(model)
-            model = Dropout(hp.Float("dropout_ds_"+str(j), min_value=0.0,
-                                     max_value=0.5, default=0.2, step=0.05))(model)
+        for j in range(hp.Int('dense_blocks', 0, 7, default=2)):
+            model = tf.keras.layers.Dense(units=hp.Int("units_ds_"+str(j), min_value=32,
+                                                       max_value=512, step=32, default=128))(model)
+            model = tf.keras.layers.BatchNormalization()(model)
+            model = tf.keras.layers.Dropout(hp.Float("dropout_ds_"+str(j), min_value=0.0,
+                                                     max_value=0.5, default=0.2, step=0.05))(model)
 
-        model.add(Dense(self.num_classes, activation="sigmoid"))
+        model.add(tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid"))
 
         model.compile(
             optimizer=keras.optimizers.Adam(

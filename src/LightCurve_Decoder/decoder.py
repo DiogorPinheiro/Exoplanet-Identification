@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     model = getModel(CNN_MODEL_DIRECTORY)
 
-    pos_index = 3088    # 3070, 3065, 3077, 3088, 3021, 2939
+    pos_index = 3077    # 3070, 3065, 3077, 3088, 3021, 2939
     test_lightCurve = global_X[pos_index]
 
     mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
