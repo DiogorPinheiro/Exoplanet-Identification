@@ -7,7 +7,7 @@ from keras.callbacks import EarlyStopping
 from kerastuner.engine.hyperparameters import HyperParameters
 import random
 
-from hyperModels import CNNHyperModel, CNNTrial, FNNHyperModel, CNNTrial2, LSTMHyperModel, DualCNNHyperModel
+from hyperModels import CNNHyperModel, FNNHyperModel, LSTMHyperModel, DualCNNHyperModel
 
 if __name__ == "__main__":
 

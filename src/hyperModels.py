@@ -9,74 +9,6 @@ from keras.layers.convolutional import Conv1D
 from training import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
 
 
-class CNNTrial2(HyperModel):
-
-    def __init__(self, num_classes):
-        self.num_classes = num_classes
-
-    def build(self, hp):
-
-        # Specify model
-        model = keras.Sequential()
-
-        # Range of models to build
-        for i in range(hp.Int('num_layers', 2, 20)):
-
-            model.add(keras.layers.Dense(units=hp.Int('units_' + str(i),
-                                                      min_value=32,
-                                                      max_value=512,
-                                                      step=32),
-                                         activation='relu'))
-
-        # Output layer
-        model.add(keras.layers.Dense(self.num_classes, activation='sigmoid'))
-
-        # Compile the constructed model and return it
-        model.compile(
-            optimizer=keras.optimizers.Adam(
-                hp.Choice('learning_rate',
-                          values=[1e-2, 1e-3, 1e-4])),
-            loss='binary_crossentropy',
-            metrics=['accuracy'])
-
-        return model
-
-
-class CNNTrial(HyperModel):
-    def __init__(self, input_shape, num_classes):
-        self.input_shape = input_shape
-        self.num_classes = num_classes
-
-    def build_model(self, hp):
-        inputs = tf.keras.Input(shape=self.input_shape)
-        x = inputs
-        for i in range(hp.Int('conv_blocks', 0, 5, default=3)):
-            filters = hp.Int('filters_' + str(i), 32, 256, step=32)
-            x = tf.keras.layers.Conv1D(
-                filters, kernel_size=hp.Int(
-                    'kernel_size_'+str(i), 1, 5, default=3), padding='same')(x)
-            x = tf.keras.layers.BatchNormalization()(x)
-            x = tf.keras.layers.ReLU()(x)
-            if hp.Choice('pooling_' + str(i), ['avg', 'max']) == 'max':
-                x = tf.keras.layers.MaxPool1D()(x)
-            else:
-                x = tf.keras.layers.AvgPool1D()(x)
-        for j in range(hp.Int('dense_blocks', 0, 5, default=3)):
-            x = tf.keras.layers.Dense(
-                hp.Int('hidden_size_'+str(j), 30, 100, step=10, default=50),
-                activation='relu')(x)
-            x = tf.keras.layers.Dropout(
-                hp.Float('dropout_'+str(j), 0, 0.5, step=0.1, default=0.5))(x)
-        outputs = tf.keras.layers.Dense(
-            self.num_classes, activation='sigmoid')(x)
-
-        model = tf.keras.Model(inputs, outputs)
-        model.compile(optimizer=tf.keras.optimizers.SGD(hp.Float('lr', 0, 0.1, step=0.001, default=0.01), hp.Float('momentum', 0, 0.5, step=0.01, default=0.1)),
-                      loss='binary_crossentropy',
-                      metrics=['accuracy', f1_m, precision_m, recall_m, tf.keras.metrics.AUC()])
-        return model
-
-
 class CNNHyperModel(HyperModel):
     def __init__(self, input_shape, num_classes):
         self.input_shape = input_shape
@@ -166,15 +98,17 @@ class LSTMHyperModel(HyperModel):
     def build(self, hp):
         inputLayer = tf.keras.layers.Input(shape=self.input_shape)
 
-        model = tf.keras.layers.LSTM(units=hp.Int('LSTM1', 1, 15, default=5), return_sequences=True,
-                                     unit_forget_bias=True, bias_initializer='zeros')(inputLayer)
+        model = tf.keras.layers.LSTM(units=hp.Choice('LSTM1', [
+            2, 5, 10, 15], default=5), return_sequences=True,
+            unit_forget_bias=True, bias_initializer='zeros')(inputLayer)
         model = tf.keras.layers.PReLU()(model)
         model = tf.keras.layers.Dropout(hp.Float("dropout1", min_value=0.0,
                                                  max_value=0.5, default=0.2, step=0.05))(model)
 
-        for i in range(hp.Int('lstm_blocks', 0, 7, default=3)):
-            model = tf.keras.layers.LSTM(units=hp.Int('LSTM_units_'+str(i), 1, 15, default=5), unit_forget_bias=True,
-                                         bias_initializer='zeros', return_sequences=True)(model)
+        for i in range(hp.Int('lstm_blocks', 0, 3, default=3)):
+            model = tf.keras.layers.LSTM(units=hp.Choice('LSTM_units_'+str(i), [
+                2, 5, 10, 15], default=5), unit_forget_bias=True,
+                bias_initializer='zeros', return_sequences=True)(model)
             model = tf.keras.layers.PReLU()(model)
             model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
@@ -182,8 +116,8 @@ class LSTMHyperModel(HyperModel):
         model = tf.keras.layers.Flatten()(model)
 
         for f in range(hp.Int('dense_blocks', 0, 7, default=2)):
-            model = tf.keras.layers.Dense(units=hp.Int("units_"+str(f), min_value=32,
-                                                       max_value=512, step=32, default=128))(model)
+            model = tf.keras.layers.Dense(units=hp.Choice("units_"+str(f), [
+                32, 64, 128], default=64))(model)
             model = tf.keras.layers.PReLU()(model)
             model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
