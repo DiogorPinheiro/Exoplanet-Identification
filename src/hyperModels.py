@@ -206,6 +206,12 @@ class LSTMHyperModel(HyperModel):
         )
         return model
 
+    def get_config(self):
+        return {
+            'input_shape': self.input_shape,
+            'num_classes': self.num_classes
+        }
+
 
 class FNNHyperModel(HyperModel):
     def __init__(self, input_shape, num_classes):
@@ -247,6 +253,12 @@ class FNNHyperModel(HyperModel):
                      recall_m, tf.keras.metrics.AUC()],
         )
         return model
+
+    def get_config(self):
+        return {
+            'input_shape': self.input_shape,
+            'num_classes': self.num_classes
+        }
 
 
 class DualCNNHyperModel(HyperModel):
@@ -336,3 +348,9 @@ class DualCNNHyperModel(HyperModel):
                      recall_m, tf.keras.metrics.AUC()],
         )
         return model
+
+    def get_config(self):
+        return {
+            'input_shape': self.input_shape,
+            'num_classes': self.num_classes
+        }
