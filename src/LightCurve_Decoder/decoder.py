@@ -190,7 +190,9 @@ if __name__ == "__main__":
             print(comb)
             if pred != reference_pred:
                 search_groups.append(list(comb))
-        mostFrequentInSet(search_groups)
+
+        # mostFrequentInSet(search_groups)
+
         # Define the indexes that will be searched next
         if not search_groups:
             print("No Search Groups Found!")
