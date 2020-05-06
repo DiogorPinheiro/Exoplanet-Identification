@@ -111,16 +111,16 @@ class LSTMHyperModel(HyperModel):
                 2, 5, 10, 15], default=5), unit_forget_bias=True,
                 bias_initializer='zeros', return_sequences=True)(model)
             model = tf.keras.layers.PReLU()(model)
-            model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
+            model = tf.keras.layers.Dropout(hp.Float("dropout_lstm_"+str(i), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
 
         model = tf.keras.layers.Flatten()(model)
 
         for f in range(hp.Int('dense_blocks', 0, 7, default=2)):
-            model = tf.keras.layers.Dense(units=hp.Choice("units_"+str(f), [
+            model = tf.keras.layers.Dense(units=hp.Choice("dense_units_"+str(f), [
                 32, 64, 128], default=64))(model)
             model = tf.keras.layers.PReLU()(model)
-            model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
+            model = tf.keras.layers.Dropout(hp.Float("dropout_dense_"+str(f), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
 
         out = tf.keras.layers.Dense(
@@ -158,7 +158,7 @@ class FNNHyperModel(HyperModel):
         inputLayer = Input(shape=self.input_shape)
 
         model = tf.keras.layers.Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
-                                      activation=hp.Choice("dense_activation",
+                                      activation=hp.Choice("dense_act1",
                                                            values=[
                                                                "relu", "tanh", "sigmoid"],
                                                            default="relu",
@@ -166,7 +166,7 @@ class FNNHyperModel(HyperModel):
 
         for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
             model = tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
-                                          activation=hp.Choice("dense_activation",
+                                          activation=hp.Choice("dense_activation_"+str(f),
                                                                values=[
                                                                    "relu", "tanh", "sigmoid"],
                                                                default="relu",
