@@ -3,6 +3,7 @@ from kerastuner.engine.hyperparameters import HyperParameters
 import tensorflow as tf
 from tensorflow import keras
 from keras import optimizers
+from keras.models import Model
 from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise, MaxPooling1D, LSTM
 from keras.layers.convolutional import Conv1D
@@ -122,8 +123,9 @@ class LSTMHyperModel(HyperModel):
             model = tf.keras.layers.Dropout(hp.Float("dropout_"+str(i), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
 
-        model.add(tf.keras.layers.Dense(
-            self.num_classes, activation="sigmoid"))
+        out = tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid")(model)
+        model = tf.keras.models.Model(inputs=inputLayer, outputs=out)
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -170,8 +172,9 @@ class FNNHyperModel(HyperModel):
                                                                default="relu",
                                                                ),)(model)
 
-        model.add(tf.keras.layers.Dense(
-            self.num_classes, activation="sigmoid"))
+        out = tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid")(model)
+        model = tf.keras.models.Model(inputs=inputLayer, outputs=out)
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -259,8 +262,10 @@ class DualCNNHyperModel(HyperModel):
             model = tf.keras.layers.Dropout(hp.Float("dropout_ds_"+str(j), min_value=0.0,
                                                      max_value=0.5, default=0.2, step=0.05))(model)
 
-        model.add(tf.keras.layers.Dense(
-            self.num_classes, activation="sigmoid"))
+        out = tf.keras.layers.Dense(
+            self.num_classes, activation="sigmoid")(model)
+        model = Model(inputs=[inputLayer_local,
+                              inputLayer_global], outputs=out)
 
         model.compile(
             optimizer=keras.optimizers.Adam(
