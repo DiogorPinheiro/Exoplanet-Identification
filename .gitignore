@@ -33,3 +33,4 @@ src/data/Shallue/read.py
 src/data/Shallue/separated/global_test.csv
 src/data/Shallue/separated/global_train.csv
 src/LightCurve_Decoder/Images
+src/models/model5.hdf5

@@ -88,18 +88,21 @@ class CNNHyperModel(HyperModel):
             tf.keras.layers.Conv1D(
                 filters=hp.Choice("filter1", [
                                   8, 16, 32, 64, 128, 254], default=64),
-                kernel_size=hp.Int(
-                    'kernel_size', 1, 5, default=3),
+                kernel_size=hp.Choice(
+                    'kernel1',  [
+                        3, 5, 7, 9], default=5),
                 activation="relu",
                 input_shape=self.input_shape,
             )
         )
-        for i in range(hp.Int('conv_blocks', 1, 7, default=3)):
+        for i in range(hp.Int('conv_blocks', 0, 3, default=3)):
             model.add(tf.keras.layers.Conv1D(filters=hp.Choice("filters_"+str(i), [
-                8, 16, 32, 64, 128, 254], default=64), activation="relu", kernel_size=hp.Int(
-                    'kernel_size_'+str(i), 1, 5, default=3)))
-            model.add(tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
-                'pool_size_'+str(i), 1, 5, default=3)))
+                8, 16, 32, 64, 128, 254], default=64), activation="relu", kernel_size=hp.Choice(
+                    'kernel_size_'+str(i), [
+                        3, 5, 7, 9], default=5)))
+            model.add(tf.keras.layers.MaxPooling1D(pool_size=hp.Choice(
+                'pool_size_'+str(i),  [
+                    2, 3, 4], default=3)))
             model.add(
                 tf.keras.layers.Dropout(
                     rate=hp.Float(
@@ -112,8 +115,9 @@ class CNNHyperModel(HyperModel):
         for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
             model.add(
                 tf.keras.layers.Dense(
-                    units=hp.Int(
-                        "units_"+str(f), min_value=32, max_value=512, step=32, default=128
+                    units=hp.Choice(
+                        "units_"+str(f),  [
+                            32, 64, 128, 254], default=64
                     ),
                     activation=hp.Choice(
                         "dense_activation_"+str(f),
@@ -147,6 +151,12 @@ class CNNHyperModel(HyperModel):
         )
         return model
 
+    def get_config(self):
+        return {
+            'input_shape': self.input_shape,
+            'num_classes': self.num_classes
+        }
+
 
 class LSTMHyperModel(HyperModel):
     def __init__(self, input_shape, num_classes):
@@ -154,7 +164,7 @@ class LSTMHyperModel(HyperModel):
         self.num_classes = num_classes
 
     def build(self, hp):
-        inputLayer = Input(shape=self.input_shape)
+        inputLayer = tf.keras.layers.Input(shape=self.input_shape)
 
         model = tf.keras.layers.LSTM(units=hp.Int('LSTM1', 1, 15, default=5), return_sequences=True,
                                      unit_forget_bias=True, bias_initializer='zeros')(inputLayer)

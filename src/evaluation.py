@@ -3,8 +3,9 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import itertools
 from sklearn.model_selection import train_test_split
-from keras.models import load_model
+#from keras.models import load_model
 from sklearn.utils import shuffle
+from tensorflow import keras
 
 from training import auc_roc, f1_m, precision_m, recall_m
 
@@ -22,10 +23,12 @@ def evaluate(model_name, data_X, data_y):
         'precision_m': precision_m,
         'recall_m': recall_m,
         'auc_roc': auc_roc,
+        'num_classes': 1,
+        'input_shape': (data_X.shape[1], 1)
     }
 
     # Get Model
-    model = load_model(model_name, custom_objects=dependencies)
+    model = keras.models.load_model(model_name, custom_objects=dependencies)
 
     score_loss = []
     score_acc = []
@@ -83,4 +86,4 @@ if __name__ == "__main__":
     global_X = np.expand_dims(
         global_X, axis=2)
 
-    evaluate(CNN_MODEL_DIRECTORY, global_X, global_Y)
+    evaluate('models/model5.hdf5', global_X, global_Y)
