@@ -68,20 +68,9 @@ def evaluate(model_name, data_X, data_y):
 if __name__ == "__main__":
     data_global = np.loadtxt(
         'data/Shallue/separated/global_test.csv', delimiter=',')
-    #data_global = shuffle(data_global)
+
     global_X = data_global[0:, 0:-1]  # Input
     global_Y = data_global[0:, -1]  # Labels
-
-    # Scale Data
-    # scaler_global = MinMaxScaler(feature_range=(0, 1))  # Scale Values
-    #global_X = scaler_global.fit_transform(global_X)
-
-    # Separate global Data
-    # X_train_global, X_test_global, y_train_global, y_test_global = train_test_split(
-    #    global_X, global_Y, test_size=0.2, random_state=1)
-
-    # X_test_global = np.expand_dims(
-    #    X_test_global, axis=2)    # Shape data
 
     global_X = np.expand_dims(
         global_X, axis=2)
