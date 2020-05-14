@@ -7,6 +7,7 @@ from keras.callbacks import EarlyStopping
 from kerastuner.engine.hyperparameters import HyperParameters
 import random
 
+
 from hyperModels import CNNHyperModel, FNNHyperModel, LSTMHyperModel, DualCNNHyperModel
 
 if __name__ == "__main__":
@@ -42,14 +43,13 @@ if __name__ == "__main__":
     input_shape_global = (X_test_global_shaped.shape[1], 1)
     input_shape_local = (X_test_local_shaped.shape[1], 1)
 
-    build_model = CNNHyperModel(input_shape=input_shape_global, num_classes=1)
-    #build_model = LSTMHyperModel(input_shape_global,1)
+    #build_model = CNNHyperModel(input_shape=input_shape_local, num_classes=1)
+    #build_model = LSTMHyperModel(input_shape=input_shape_global,num_classes=1)
     #build_model = DualCNNHyperModel(input_shape_local, input_shape_global, 1)
-    #build_model = CNNTrial(input_shape, 1)
-    #build_model = CNNTrial2(1)
+    build_model = FNNHyperModel(num_classes=1)
 
     tuner = Hyperband(build_model, objective='val_loss',
-                      max_epochs=40, project_name='num_'+str(random.randint(0, 9)), seed=random.randint(0, 30))
+                      max_epochs=40, project_name='num_'+str(random.randint(0, 29)), seed=random.randint(0, 30))
     tuner.search(X_train_global_shaped, y_train_global,
                  epochs=40, validation_data=(X_test_global_shaped, y_test_global), callbacks=[EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')])
 
@@ -62,4 +62,4 @@ if __name__ == "__main__":
     best_param = tuner.get_best_hyperparameters(1)[0]
     print(best_param.values)
 
-    best_model.save('model2.hdf5')
+    best_model.save('FNN.hdf5')

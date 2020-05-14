@@ -150,31 +150,28 @@ class LSTMHyperModel(HyperModel):
 
 
 class FNNHyperModel(HyperModel):
-    def __init__(self, input_shape, num_classes):
-        self.input_shape = input_shape
+    def __init__(self, num_classes):
         self.num_classes = num_classes
 
     def build(self, hp):
-        inputLayer = Input(shape=self.input_shape)
+        model = tf.keras.Sequential()
 
-        model = tf.keras.layers.Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
-                                      activation=hp.Choice("dense_act1",
-                                                           values=[
-                                                               "relu", "tanh", "sigmoid"],
-                                                           default="relu",
-                                                           ),)(inputLayer)
+        model.add(tf.keras.layers.Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
+                                        activation=hp.Choice("dense_act1",
+                                                             values=[
+                                                                 "relu", "tanh", "sigmoid"],
+                                                             default="relu",
+                                                             ),))
 
         for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
-            model = tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
-                                          activation=hp.Choice("dense_activation_"+str(f),
-                                                               values=[
-                                                                   "relu", "tanh", "sigmoid"],
-                                                               default="relu",
-                                                               ),)(model)
+            model.add(tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
+                                            activation=hp.Choice("dense_activation_"+str(f),
+                                                                 values=[
+                                                "relu", "tanh", "sigmoid"],
+                default="relu",
+            ),))
 
-        out = tf.keras.layers.Dense(
-            self.num_classes, activation="sigmoid")(model)
-        model = tf.keras.models.Model(inputs=inputLayer, outputs=out)
+        model.add(keras.layers.Dense(self.num_classes, activation='sigmoid'))
 
         model.compile(
             optimizer=keras.optimizers.Adam(
@@ -193,7 +190,6 @@ class FNNHyperModel(HyperModel):
 
     def get_config(self):
         return {
-            'input_shape': self.input_shape,
             'num_classes': self.num_classes
         }
 

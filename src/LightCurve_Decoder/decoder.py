@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     model = getModel(CNN_MODEL_DIRECTORY)
 
-    pos_index = 3077    # 3070, 3065, 3077, 3088, 3021, 2939
+    pos_index = 3070    # 3070, 3065, 3077, 3088, 3021, 2939
     test_lightCurve = global_X[pos_index]
 
     mean_value = np.mean(test_lightCurve)   # Light Curve Mean Value
@@ -152,7 +152,8 @@ if __name__ == "__main__":
     comb_values = [0, 1, 2, 3, 4]
     # Save the original prediction, it will serve as reference
     reference_pred = checkPrediction(model, global_X, global_Y, pos_index)
-    print("Reference Prediction = {}".format(reference_pred))
+    print("Index: {} ; Reference Prediction = {}".format(
+        pos_index, reference_pred))
 
     divider_size = 5
     for i in range(4):
