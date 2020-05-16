@@ -201,7 +201,7 @@ class DualCNNHyperModel(HyperModel):
         self.num_classes = num_classes
 
     def build(self, hp):
-        inputLayer_local = Input(shape=self.input_shape_local)
+        inputLayer_local = tf.keras.Input(shape=self.input_shape_local)
         inputLayer_global = Input(shape=self.input_shape_global)
 
         conv_local = tf.keras.layers.Conv1D(hp.Int("Conv_unis1", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel1", min_value=0, max_value=7, step=1, default=4),
@@ -213,7 +213,7 @@ class DualCNNHyperModel(HyperModel):
 
         model1 = conv_global(inputLayer_global)  # Disjoint Conv Layer
         model1 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
-            "pool1", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri1", min_value=1, max_value=4, step=1, default=2), padding='valid')(model1)
+            "pool1", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri1", min_value=1, max_value=4, step=1, default=2), padding='same')(model1)
         model1 = tf.keras.layers.Dropout(hp.Float("dropout1", min_value=0.0,
                                                   max_value=0.5, default=0.2, step=0.05))(model1)
 
@@ -222,14 +222,14 @@ class DualCNNHyperModel(HyperModel):
                                             strides=hp.Int("stri_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), padding='same',
                                             dilation_rate=1, activation='relu')(model1)
             model1 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int("pool_gl_"+str(f), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_gl_"+str(f), min_value=1, max_value=4, step=1, default=2),
-                                                  padding='valid')(model1)
+                                                  padding='same')(model1)
             model1 = tf.keras.layers.Dropout(hp.Float("dropout_gl_"+str(f), min_value=0.0,
                                                       max_value=0.5, default=0.2, step=0.05))(model1)
         model1 = tf.keras.layers.Flatten()(model1)
 
         model2 = conv_local(inputLayer_local)  # Disjoint Conv Layer
         model2 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int(
-            "pool2", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri2", min_value=1, max_value=4, step=1, default=2), padding='valid')(model2)
+            "pool2", min_value=1, max_value=4, step=1, default=2), strides=hp.Int("stri2", min_value=1, max_value=4, step=1, default=2), padding='same')(model2)
         model2 = tf.keras.layers.Dropout(hp.Float("dropout2", min_value=0.0,
                                                   max_value=0.5, default=0.2, step=0.05))(model2)
 
@@ -238,7 +238,7 @@ class DualCNNHyperModel(HyperModel):
                                             strides=hp.Int("stri_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), padding='same',
                                             dilation_rate=1, activation='relu')(model2)
             model2 = tf.keras.layers.MaxPooling1D(pool_size=hp.Int("pool_lc_"+str(i), min_value=1, max_value=4, step=1, default=2), strides=hp.Int("max_str_lc_"+str(i), min_value=1, max_value=4, step=1, default=2),
-                                                  padding='valid')(model2)
+                                                  padding='same')(model2)
             model2 = tf.keras.layers.Dropout(hp.Float("dropout_lc_"+str(i), min_value=0.0,
                                                       max_value=0.5, default=0.2, step=0.05))(model2)
         model2 = tf.keras.layers.Flatten()(model2)
