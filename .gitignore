@@ -35,3 +35,4 @@ src/data/Shallue/separated/global_train.csv
 src/LightCurve_Decoder/Images
 src/models/model5.hdf5
 src/models/Approved/model_LSTM1.hdf5
+src/data

@@ -5,10 +5,10 @@ import csv
 from sklearn.preprocessing import MinMaxScaler
 
 # File Directories
-GLOBAL_TEST = "separated/test_global2.csv"
-LOCAL_TEST = "separated/test_local2.csv"
-GLOBAL_TRAIN = "separated/train_global2.csv"
-LOCAL_TRAIN = "separated/train_local2.csv"
+GLOBAL_TEST = "separated/test_global_sovgol.csv"
+LOCAL_TEST = "separated/test_local_sovgol.csv"
+GLOBAL_TRAIN = "separated/train_global_sovgol.csv"
+LOCAL_TRAIN = "separated/train_local_sovgol.csv"
 
 
 def appendToFile(file, row):
@@ -37,10 +37,10 @@ def create_file(file_name, datax, datay):
 
 if __name__ == "__main__":
 
-    data_local = np.loadtxt('shallue_local.csv', delimiter=',', skiprows=1)
+    data_local = np.loadtxt('Local_sovgol.csv', delimiter=',', skiprows=1)
 
     data_global = np.loadtxt(
-        'shallue_global.csv', delimiter=',')
+        'Global_sovgol.csv', delimiter=',', skiprows=1)
 
     local_X = data_local[0:, 0:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels

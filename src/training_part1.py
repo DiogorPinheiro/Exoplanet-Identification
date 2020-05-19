@@ -1,7 +1,7 @@
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import log_loss, auc, precision_score, recall_score, f1_score, roc_curve
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import numpy as np
 import matplotlib.pyplot as plt
@@ -94,7 +94,7 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
         Output: Prints The Prediction Results
     '''
     if algorithm == 'KNN':
-        #knnParametersTuning(train_X, train_Y, val_X, val_Y)
+        knnParametersTuning(train_X, train_Y, val_X, val_Y)
         model = KNeighborsClassifier(n_neighbors=3)
     if algorithm == 'SVM':
         parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 5]}
@@ -105,13 +105,31 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
         print("Accuracy :", model.best_score_)
     if algorithm == 'LogReg':
         # Find Optimal Parameters
-        logRegParameterTuning(train_X, train_Y, val_X, val_Y)
-        model = LogisticRegression(C=0.001, penalty="l2")
+        #logRegParameterTuning(train_X, train_Y, val_X, val_Y)
+        model = LogisticRegression(C=1000, penalty="l2")
 
     # Evaluate Final Model
     model.fit(train_X, train_Y)
     accuracyVal = model.score(val_X, val_Y)
     print("Algorithm: {} -> Validation Accuracy: {}".format(algorithm, accuracyVal))
+    Y_score = model.predict(val_X)
+    Y_classes = Y_score.argmax(axis=-1)
+
+    loss = log_loss(val_Y, Y_score)
+    #curve = auc(val_X, val_Y)
+    precision = precision_score(val_Y, Y_score)
+    recall = recall_score(val_Y, Y_score)
+    f1 = f1_score(val_Y, Y_score)
+
+    print("Algorithm: {} -> Validation Loss: {}".format(algorithm, loss))
+    #print("Algorithm: {} -> Validation AUC: {}".format(algorithm, curve))
+    print("Algorithm: {} -> Validation Precision: {}".format(algorithm, precision))
+    print("Algorithm: {} -> Validation Recall: {}".format(algorithm, recall))
+    print("Algorithm: {} -> Validation F1: {}".format(algorithm, f1))
+
+    # tens = []
+    # for i in range(len(Y_score_log)):
+    #    tens.append(log_loss(y_test[i], Y_score_log[i]))
 
     #prob = model.predict_proba(test_X)
     accuracyTest = model.score(test_X, test_Y)
@@ -195,7 +213,7 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
     result_accuracy = []
     result_acc = []
     #algorithms = ['KNN', 'SVM', 'LogReg']
-    algorithms = ['KNN', 'LogReg']
+    algorithms = ['KNN']
     for algo in algorithms:
         ra, rac = models(algo, train_X, train_Y, val_X, val_Y, test_X, test_Y)
         result_accuracy.append(ra)
@@ -205,7 +223,8 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
 
 
 if __name__ == "__main__":
-    data = np.loadtxt('data/dataset_teste2.csv', delimiter=',', skiprows=1)
+    data = np.loadtxt('data/Shallue/separated/global_train.csv',
+                      delimiter=',', skiprows=1)
     X = data[0:, 0:-1]  # Input
     Y = data[0:, -1]  # Labels
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')
