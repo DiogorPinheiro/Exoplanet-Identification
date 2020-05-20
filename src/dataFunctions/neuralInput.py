@@ -10,8 +10,8 @@ import dataInfo as di
 import dataCleaner as dc
 
 # Directories
-CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
-#csvmac = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+#CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+csvmac = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
 
 # File Names
@@ -31,7 +31,7 @@ def getCSVData():
 
         Output: Pandas Dataframe
     '''
-    return di.dataCSV(CSV_FILE)
+    return di.dataCSV(csvmac)
 
 
 def globaView(curve):
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     global_flux = []
     local_flux = []
-
+    kepids = [757450, 1026957]
     count = 0
     for i, kep in enumerate(kepids):
 
@@ -167,6 +167,7 @@ if __name__ == "__main__":
                 continue
 
             # Signal Pre-processing
+            print(tO)
             temp_fold = lc_clean.fold(period, t0=tO)
             fractional_duration = (duration / 24.0) / period
             phase_mask = np.abs(temp_fold.phase) < (fractional_duration * 1.5)
@@ -208,16 +209,16 @@ if __name__ == "__main__":
         # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
             if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
                 # Save Global And Local Views Plots
-                #name_1ocal = '../Images/Views/Local_' + str(kep) + ".png"
-                #createImage(name_local, lc_phase, lc_bri)
-                #name_global = '../Images/Views/Global_' + str(kep) + ".png"
-                #createImage(name_global, gl_phase, gl_bri)
+                name_1ocal = '../Images/Views/Local_' + str(kep) + ".png"
+                createImage(name_local, lc_phase, lc_bri)
+                name_global = '../Images/Views/Global_' + str(kep) + ".png"
+                createImage(name_global, gl_phase, gl_bri)
 
                 # Write Local And Global View Flux Values To File
-                local_info.append(label)
-                writeFile(LOCAL_CSV_MOVAVG, local_info)
-                global_info.append(label)
-                writeFile(GLOBAL_CSV_MOVAVG, global_info)
+                # local_info.append(label)
+                #writeFile(LOCAL_CSV_MOVAVG, local_info)
+                # global_info.append(label)
+                #writeFile(GLOBAL_CSV_MOVAVG, global_info)
 
         count += 1
 
