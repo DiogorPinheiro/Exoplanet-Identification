@@ -108,6 +108,7 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
         #logRegParameterTuning(train_X, train_Y, val_X, val_Y)
         model = LogisticRegression(C=1000, penalty="l2")
 
+    print("Chegou")
     # Evaluate Final Model
     model.fit(train_X, train_Y)
     accuracyVal = model.score(val_X, val_Y)
@@ -227,9 +228,9 @@ if __name__ == "__main__":
                       delimiter=',', skiprows=1)
     X = data[0:, 0:-1]  # Input
     Y = data[0:, -1]  # Labels
-    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-    imp.fit(X)
-    X = imp.transform(X)
+    #imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+    # imp.fit(X)
+    #X = imp.transform(X)
     # Training = 80%, Validation = 10%, Test = 10%
     train_X, val_X, test_X = np.split(X, [int(.8*len(X)), int(0.9*len(X))])
     train_Y, val_Y, test_Y = np.split(Y, [int(.8*len(Y)), int(0.9*len(Y))])

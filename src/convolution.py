@@ -299,8 +299,8 @@ if __name__ == "__main__":
     X_train_global = scaler_global.fit_transform(X_train_global)
     X_test_global = scaler_global.transform(X_test_global)
 
-    create_file('local_test.csv', X_test_local, y_test_local)
-    create_file('local_train.csv', X_train_local, y_train_local)
+    #create_file('local_test.csv', X_test_local, y_test_local)
+    #create_file('local_train.csv', X_train_local, y_train_local)
 
     # Shape Data
     X_train_global_shaped = np.expand_dims(X_train_global, axis=2)
