@@ -28,6 +28,16 @@ class CNNHyperModel(HyperModel):
                 input_shape=self.input_shape,
             )
         )
+        model.add(tf.keras.layers.MaxPooling1D(pool_size=hp.Choice(
+            'pool_s', [
+                2, 3, 4], default=3)))
+        model.add(
+            tf.keras.layers.Dropout(
+                rate=hp.Float(
+                    "drop", min_value=0.0, max_value=0.5, default=0.25, step=0.05,
+                )
+            )
+        )
         for i in range(hp.Int('conv_blocks', 0, 3, default=3)):
             model.add(tf.keras.layers.Conv1D(filters=hp.Choice("filters_"+str(i), [
                 8, 16, 32, 64, 128, 254], default=64), activation="relu", kernel_size=hp.Choice(
@@ -68,7 +78,7 @@ class CNNHyperModel(HyperModel):
             )
         model.add(tf.keras.layers.Dense(
             self.num_classes, activation="sigmoid"))
-
+        '''
         model.compile(
             optimizer=keras.optimizers.Adam(
                 hp.Float(
@@ -82,6 +92,27 @@ class CNNHyperModel(HyperModel):
             metrics=['accuracy', f1_m, precision_m,
                      recall_m, tf.keras.metrics.AUC()],
         )
+        '''
+        model.compile(
+            optimizer=keras.optimizers.SGD(
+                lr=hp.Float(
+                    "lr",
+                    min_value=1e-4,
+                    max_value=1e-2,
+                    default=1e-3,
+                ), momentum=hp.Float(
+                    "momentum",
+                    min_value=0,
+                    max_value=0.5,
+                    default=0.2,
+                ),
+                nesterov=False
+            ),
+            loss="binary_crossentropy",
+            metrics=['accuracy', f1_m, precision_m,
+                     recall_m, tf.keras.metrics.AUC()],
+        )
+        
         return model
 
     def get_config(self):
@@ -128,7 +159,7 @@ class LSTMHyperModel(HyperModel):
         model = tf.keras.models.Model(inputs=inputLayer, outputs=out)
 
         model.compile(
-            optimizer=keras.optimizers.Adam(
+            optimizer=tf.keras.optimizers.Adam(
                 hp.Float(
                     "learning_rate",
                     min_value=1e-4,
@@ -150,31 +181,24 @@ class LSTMHyperModel(HyperModel):
 
 
 class FNNHyperModel(HyperModel):
-    def __init__(self, num_classes):
+    def __init__(self, input_shape,num_classes):
         self.num_classes = num_classes
+        self.input_shape = input_shape
 
     def build(self, hp):
         model = tf.keras.Sequential()
-
+        model.add(tf.keras.layers.Flatten(input_shape=self.input_shape))
         model.add(tf.keras.layers.Dense(units=hp.Int("units", min_value=32, max_value=512, step=32, default=128),
-                                        activation=hp.Choice("dense_act1",
-                                                             values=[
-                                                                 "relu", "tanh", "sigmoid"],
-                                                             default="relu",
-                                                             ),))
+                                        activation='relu'))
 
-        for f in range(hp.Int('dense_blocks', 0, 5, default=2)):
+        for f in range(hp.Int('dense_blocks', 1, 7, default=2)):
             model.add(tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
-                                            activation=hp.Choice("dense_activation_"+str(f),
-                                                                 values=[
-                                                "relu", "tanh", "sigmoid"],
-                default="relu",
-            ),))
+                                            activation='relu'))
 
-        model.add(keras.layers.Dense(self.num_classes, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(self.num_classes, activation='sigmoid'))
 
         model.compile(
-            optimizer=keras.optimizers.Adam(
+            optimizer=tf.keras.optimizers.Adam(
                 hp.Float(
                     "learning_rate",
                     min_value=1e-4,
@@ -190,6 +214,7 @@ class FNNHyperModel(HyperModel):
 
     def get_config(self):
         return {
+            'input_shape' : self.input_shape,
             'num_classes': self.num_classes
         }
 
@@ -202,7 +227,7 @@ class DualCNNHyperModel(HyperModel):
 
     def build(self, hp):
         inputLayer_local = tf.keras.Input(shape=self.input_shape_local)
-        inputLayer_global = Input(shape=self.input_shape_global)
+        inputLayer_global = tf.keras.Input(shape=self.input_shape_global)
 
         conv_local = tf.keras.layers.Conv1D(hp.Int("Conv_unis1", min_value=8, max_value=254, step=32, default=128), kernel_size=hp.Int("kernel1", min_value=0, max_value=7, step=1, default=4),
                                             strides=hp.Int("strides1", min_value=1, max_value=4, step=1, default=2), padding='same', dilation_rate=1,
@@ -260,7 +285,7 @@ class DualCNNHyperModel(HyperModel):
 
         out = tf.keras.layers.Dense(
             self.num_classes, activation="sigmoid")(model)
-        model = Model(inputs=[inputLayer_local,
+        model = tf.keras.models.Model(inputs=[inputLayer_local,
                               inputLayer_global], outputs=out)
 
         model.compile(
