@@ -92,7 +92,7 @@ def evaluateDual(model_name, global_X, global_y, local_X, local_y):
 
         # Evaluate Model
         score = model.evaluate(
-            [global_X_shuf, local_X_shuf], global_y_shuf, verbose=0)
+            [local_X_shuf, global_X_shuf], global_y_shuf, verbose=0)
 
         score_loss.append(score[0])
         score_acc.append(score[1])
