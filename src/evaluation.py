@@ -10,10 +10,10 @@ from sklearn.utils import shuffle
 from training import auc_roc, f1_m, precision_m, recall_m
 
 # Model Directories
-CNN_MODEL_DIRECTORY = 'model5_conf.hdf5'
-ALEXNET_MODEL_DIRECTORY = 'models/alexnet.h5'
-FNN_MODEL_DIRECTORY = 'models/FNN.h5'
-LSTM_MODEL_DIRECTORY = 'model_LSTM1.hdf5'
+CNN_MODEL_DIRECTORY = 'models/CNN.hdf5'
+FNN_MODEL_DIRECTORY = 'models/FNN.hdf5'
+LSTM_MODEL_DIRECTORY = 'models/LSTM.hdf5'
+DUAL_CNN_MODEL_DIRECTORY = 'models/CNN_DUAL.hdf5'
 
 
 def evaluate(model_name, data_X, data_y):
