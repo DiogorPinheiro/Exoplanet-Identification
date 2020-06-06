@@ -37,10 +37,10 @@ def create_file(file_name, datax, datay):
 
 if __name__ == "__main__":
 
-    data_local = np.loadtxt('Local_sovgol.csv', delimiter=',', skiprows=1)
+    data_local = np.loadtxt('Local.csv', delimiter=',', skiprows=1)
 
     data_global = np.loadtxt(
-        'Global_sovgol.csv', delimiter=',', skiprows=1)
+        'Global.csv', delimiter=',', skiprows=1)
 
     local_X = data_local[0:, 0:-1]  # Input
     local_Y = data_local[0:, -1]  # Labels
@@ -68,7 +68,17 @@ if __name__ == "__main__":
     train_global = scaler_global.fit_transform(X_train_global)
     test_global = scaler_global.transform(X_test_global)
 
-    create_file(GLOBAL_TEST, test_global, y_test_global)
-    create_file(GLOBAL_TRAIN, train_global, y_train_global)
-    create_file(LOCAL_TEST, test_local, y_test_local)
-    create_file(LOCAL_TRAIN, train_local, y_train_local)
+    #create_file(GLOBAL_TEST, test_global, y_test_global)
+    #create_file(GLOBAL_TRAIN, train_global, y_train_global)
+    #create_file(LOCAL_TEST, test_local, y_test_local)
+    #create_file(LOCAL_TRAIN, train_local, y_train_local)
+    zeros = 0
+    ones = 0
+
+    for i in local_Y:
+        if i == 0:
+            zeros += 1
+        else:
+            ones += 1
+
+    print("Zeros {} ; Ones {}".format(zeros, ones))

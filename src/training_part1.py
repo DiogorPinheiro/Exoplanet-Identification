@@ -78,7 +78,7 @@ def svmParameterTuning(train_X, train_Y, val_X, val_Y):
             Output: Prints Best Parameters Combination and Predicted Accuracy On The Training Data
         '''
     parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
-    svr = svm.SVC(probability=False)
+    svr = svm.SVC(probability=True)
     model = GridSearchCV(svr, parameters, n_jobs=4, verbose=5)
     model.fit(train_X, train_Y)
     print("Tuned Hyperparameters :(best parameters) ", model.best_params_)
@@ -108,25 +108,24 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
         #logRegParameterTuning(train_X, train_Y, val_X, val_Y)
         model = LogisticRegression(C=1000, penalty="l2")
 
-    print("Chegou")
     # Evaluate Final Model
     model.fit(train_X, train_Y)
     accuracyVal = model.score(val_X, val_Y)
     print("Algorithm: {} -> Validation Accuracy: {}".format(algorithm, accuracyVal))
-    Y_score = model.predict(val_X)
+    Y_score = model.predict_proba(val_X)
     Y_classes = Y_score.argmax(axis=-1)
 
     loss = log_loss(val_Y, Y_score)
     #curve = auc(val_X, val_Y)
-    precision = precision_score(val_Y, Y_score)
-    recall = recall_score(val_Y, Y_score)
-    f1 = f1_score(val_Y, Y_score)
+    #precision = precision_score(val_Y, Y_score)
+    #recall = recall_score(val_Y, Y_score)
+    #f1 = f1_score(val_Y, Y_score)
 
     print("Algorithm: {} -> Validation Loss: {}".format(algorithm, loss))
     #print("Algorithm: {} -> Validation AUC: {}".format(algorithm, curve))
-    print("Algorithm: {} -> Validation Precision: {}".format(algorithm, precision))
-    print("Algorithm: {} -> Validation Recall: {}".format(algorithm, recall))
-    print("Algorithm: {} -> Validation F1: {}".format(algorithm, f1))
+    #print("Algorithm: {} -> Validation Precision: {}".format(algorithm, precision))
+    #print("Algorithm: {} -> Validation Recall: {}".format(algorithm, recall))
+    #print("Algorithm: {} -> Validation F1: {}".format(algorithm, f1))
 
     # tens = []
     # for i in range(len(Y_score_log)):
@@ -214,7 +213,7 @@ def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
     result_accuracy = []
     result_acc = []
     #algorithms = ['KNN', 'SVM', 'LogReg']
-    algorithms = ['KNN']
+    algorithms = ['SVM']
     for algo in algorithms:
         ra, rac = models(algo, train_X, train_Y, val_X, val_Y, test_X, test_Y)
         result_accuracy.append(ra)
