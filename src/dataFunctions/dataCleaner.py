@@ -3,12 +3,15 @@ import prox_tv as ptv
 from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 
+
 def movingAverage(N, window):
     '''
-        Calculate The Moving Average Of The Provided Numpy Array List
+        Calculate the moving average of the provided numpy array list.
 
-        Input: Array And Window Size Used For The Moving Average
-        Output: Array With The Corresponding Moving Average
+        @param N (np.array[float]): Values to be averaged
+        @param window (int): Window size to be used to calculate the average 
+
+        @return (array[float]): Array With The Corresponding Moving Average
     '''
     N_padded = np.pad(N, (window//2, window-1-window//2), mode='edge')
 
@@ -17,10 +20,12 @@ def movingAverage(N, window):
 
 def percentageChange(data, average):
     '''
-        Calculate The Percentage Change Of An Array
+        Calculate the percentage change of an array.
 
-        Input: data (Flux Array) ; average - Array Of Values Obtained In The movingAverage Function
-        Output: Array With The Percentage Change Values
+        @param data (np.array(float)): flux values of the light curve 
+        @param average (np.array(float): Array of values obtained in the moving average function
+
+        @return (np.array(float)): Array with the percentage change values
     '''
     percentage_change_array = []
     for i, (t, f) in enumerate(zip(data, average)):
@@ -33,21 +38,23 @@ def percentageChange(data, average):
 
 def timeVariation(data):
     '''
-        Signal Low Frequency Oscilation Removal Using Time Variation Method
+        Signal low frequency oscilation removal using time variation method.
 
-        Input: Data (Flux Array)
-        Output: Data Without Noise
+        @param data (np.array(float): flux values of a light curve
+        @return (np.array(float)): flux values without noise
     '''
     return ptv.tv1_1d(data, 20)
 
 
 def normalization(data, mean, std):
     '''
-        Normalize Data Using Mean Removal Method
-            Mean Removal: New_Value = (Old_Value - Mean) / Standard_Deviation
+        Normalize Data Using Mean Removal Method using ->    Mean Removal: New_Value = (Old_Value - Mean) / Standard_Deviation.
 
-        Input: data (Flux Array) ; mean (Int) ; std (float)- Standard Deviation
-        Output: Normalized Flux Array
+        @param data (np.array(float): flux values of a light curve
+        @param mean (float): mean value of data 
+        @param std (float): standard Deviation
+
+        @return (np.array(float)): Normalized Flux Array
     '''
     aux = []
     for i in data:
@@ -57,10 +64,12 @@ def normalization(data, mean, std):
 
 def meanDivide(data, mean):
     '''
-        Divide Values By Their Mean
+        Divide values by their mean.
 
-        Input: data(Flux Array), mean (int)
-        Output: Array Of Resulting Values
+        @param data (np.array[float]): flux values of a light curve
+        @param mean (int): mean value of data
+
+        @return (array[float]): array of resulting values
     '''
     aux = []
     for i in data:
@@ -70,15 +79,22 @@ def meanDivide(data, mean):
 
 def shiftDown(data):
     '''
-        Shift All Values By 1
+        Shift all values by 1.
 
-        Input: Flux Array
-        Output: Array Of Resulting Values
+        @param data (np.array[float]): flux values of a light curve
+        @return (array[float]): array of resulting values
     '''
     aux = []
     for i in data:
         aux.append(i - 1)
     return aux
 
+
 def sovitzGolay(data):
+    '''
+        Apply Sovitsky-Golay filter to data
+
+        @param data (np.array[float]): flux values of a light curve
+        @return (array[float]): array of resulting values
+    '''
     return savgol_filter(data, 51, 3)

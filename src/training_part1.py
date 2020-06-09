@@ -15,7 +15,7 @@ from sklearn.impute import SimpleImputer
 
 def knnParametersTuning(train_X, train_Y, val_X, val_Y):
     '''
-        Tune K-Nearest Neighbors Hyper-Parameters. Trains And Tests Data Using The Area Under Curve As Evaluation Metric.
+        Tune K-Nearest Neighbors hyper-parameters. Trains and tests data using the Area Under Curve as evaluation metric.
 
         @param train_X (list[list[float]]): Training data 
         @param train_Y (list[list[int]]): Training labels
@@ -58,7 +58,7 @@ def knnParametersTuning(train_X, train_Y, val_X, val_Y):
 
 def logRegParameterTuning(train_X, train_Y, val_X, val_Y):
     '''
-        Hyper-Parameter Tuning For The Logistic Regression Algorithm.
+        Hyper-parameter tuning for the logistic regression algorithm.
 
         @param train_X (list[list[float]]): Training data 
         @param train_Y (list[list[int]]): Training labels
@@ -78,7 +78,7 @@ def logRegParameterTuning(train_X, train_Y, val_X, val_Y):
 
 def svmParameterTuning(train_X, train_Y, val_X, val_Y):
     '''
-        Hyper-Parameter Tuning For The Support Vector Machine Algorithm.
+        Hyper-parameter tuning for the support vector machine algorithm.
 
         @param train_X (list[list[float]]): Training data 
         @param train_Y (list[list[int]]): Training labels
@@ -96,7 +96,7 @@ def svmParameterTuning(train_X, train_Y, val_X, val_Y):
 
 def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
     '''
-        Choose Best HyperParameters. Trains and Evaluates the Algorithm.
+        Choose best hyper-parameters. Trains and evaluates the algorithm.
 
         @param algorithm (String): Algorithm to be trained and evaluated
         @param train_X (list[list[float]]): Training data 
@@ -151,7 +151,7 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
 
 def showComparison(acc):
     '''
-        Illustrates the Results Difference Between the Trained Algorithms.
+        Illustrates the results difference between the trained algorithms.
 
         @param acc (array[float]): Values Corresponding to the Accuracy
 
@@ -172,7 +172,7 @@ def showComparison(acc):
 
 def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
     '''
-        Creates Sequence of Training and Evaluation for all Algorithms.
+        Creates sequence of training and evaluation for all algorithms.
 
         @param train_X (list[list[float]]): Training data 
         @param train_Y (list[list[int]]): Training labels
