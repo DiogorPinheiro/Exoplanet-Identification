@@ -15,12 +15,15 @@ from sklearn.impute import SimpleImputer
 
 def knnParametersTuning(train_X, train_Y, val_X, val_Y):
     '''
-        Tune K-Nearest Neighbors Hyper-Parameters
-        Trains And Tests Data Using The Area Under Curve As Evaluation Metric
+        Tune K-Nearest Neighbors Hyper-Parameters. Trains And Tests Data Using The Area Under Curve As Evaluation Metric.
 
-        Input: X and Y Values Of The Training And Validation Sets
-        Output: Figure With Comparison Of Parameters (Saved To The Directory)
+        @param train_X (list[list[float]]): Training data 
+        @param train_Y (list[list[int]]): Training labels
+        @param val_X (list[list[float]]): Validation data 
+        @param val_Y (list[list[int]]): Validation labels
+
     '''
+
     k = list(range(1, 30))
     train_results = []
     test_results = []
@@ -45,21 +48,24 @@ def knnParametersTuning(train_X, train_Y, val_X, val_Y):
     print(test_results)
 
     # Create Figure With Parameters Comparison
-    line1, = plt.plot(k, train_results, 'b', label="Train AUC")
-    line2, = plt.plot(k, test_results, 'r', label="Validation AUC")
-    plt.legend(handler_map={line1: HandlerLine2D(numpoints=2)})
-    plt.ylabel('AUC Score')
-    plt.xlabel('Power Parameter')
-    plt.savefig('knnScores.png', bbox_inches='tight')
+    #line1, = plt.plot(k, train_results, 'b', label="Train AUC")
+    #line2, = plt.plot(k, test_results, 'r', label="Validation AUC")
+    #plt.legend(handler_map={line1: HandlerLine2D(numpoints=2)})
+    #plt.ylabel('AUC Score')
+    #plt.xlabel('Power Parameter')
+    #plt.savefig('knnScores.png', bbox_inches='tight')
 
 
 def logRegParameterTuning(train_X, train_Y, val_X, val_Y):
     '''
-        Hyper-Parameter Tuning For The Logistic Regression Algorithm
+        Hyper-Parameter Tuning For The Logistic Regression Algorithm.
 
-        Input: X and Y Values Of The Training And Validation Sets
-        Output: Prints Best Parameters Combination and Predicted Accuracy On The Training Data
+        @param train_X (list[list[float]]): Training data 
+        @param train_Y (list[list[int]]): Training labels
+        @param val_X (list[list[float]]): Validation data 
+        @param val_Y (list[list[int]]): Validation labels
     '''
+
     grid = {"C": np.logspace(-3, 3, 7),
             "penalty": ["l1", "l2"]}  # l1 lasso l2 ridge
     logreg = LogisticRegression()
@@ -72,11 +78,14 @@ def logRegParameterTuning(train_X, train_Y, val_X, val_Y):
 
 def svmParameterTuning(train_X, train_Y, val_X, val_Y):
     '''
-            Hyper-Parameter Tuning For The Support Vector Machine Algorithm
+        Hyper-Parameter Tuning For The Support Vector Machine Algorithm.
 
-            Input: X and Y Values Of The Training And Validation Sets
-            Output: Prints Best Parameters Combination and Predicted Accuracy On The Training Data
-        '''
+        @param train_X (list[list[float]]): Training data 
+        @param train_Y (list[list[int]]): Training labels
+        @param val_X (list[list[float]]): Validation data 
+        @param val_Y (list[list[int]]): Validation labels
+    '''
+
     parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
     svr = svm.SVC(probability=True)
     model = GridSearchCV(svr, parameters, n_jobs=4, verbose=5)
@@ -87,11 +96,14 @@ def svmParameterTuning(train_X, train_Y, val_X, val_Y):
 
 def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
     '''
-        Choose Best HyperParameters, Trains And Evaluates The Algorithm
+        Choose Best HyperParameters. Trains and Evaluates the Algorithm.
 
-        Input: algorithm - Array Of String With The Names Of All Used Algorithms
-               X and Y Values Of The Training And Validation Sets
-        Output: Prints The Prediction Results
+        @param algorithm (String): Algorithm to be trained and evaluated
+        @param train_X (list[list[float]]): Training data 
+        @param train_Y (list[list[int]]): Training labels
+        @param val_X (list[list[float]]): Validation data 
+        @param val_Y (list[list[int]]): Validation labels
+
     '''
     if algorithm == 'KNN':
         knnParametersTuning(train_X, train_Y, val_X, val_Y)
@@ -137,33 +149,12 @@ def models(algorithm, train_X, train_Y, val_X, val_Y, test_X, test_Y):
     return accuracyVal, accuracyTest
 
 
-def create_modelNN(unit=8, activation='relu'):
-    '''
-        Creates A Fully Connected Neural Network Model
-
-        Input: Receives Tuned Hyper-Parameters -> unit - Dimensionality Of The Output Space (int)
-                                                  activation - Activation Function (string)
-        Output: Created Keras Model
-    '''
-    model = Sequential()
-    # Input Layer -> Rectified linear unit activation function
-    model.add(Dense(137, input_dim=137, activation='relu'))
-    # Hidden Layer -> Rectified linear unit activation function
-    model.add(Dense(units=unit, activation='sigmoid'))
-    # Output Layer - > Sigmoid Function
-    model.add(Dense(1, activation='sigmoid'))
-
-    model.compile(loss='binary_crossentropy',
-                  optimizer='adam', metrics=['accuracy'])
-    return model
-
-
 def showComparison(acc):
     '''
-        Illustrates The Results Difference Between The Trained Algorithms
+        Illustrates the Results Difference Between the Trained Algorithms.
 
-        Input: acc - Array Of Float Values Corresponding To The Accuracy
-        Output: Figure With Comparison (Saved To The Current Directory)
+        @param acc (array[float]): Values Corresponding to the Accuracy
+
     '''
     plt.rcdefaults()
     tests = ['KNN', 'SVM', 'LogReg']
@@ -179,36 +170,17 @@ def showComparison(acc):
     plt.savefig('ML_Comparison.png', bbox_inches='tight')
 
 
-def fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y):
-    '''
-        Tuning of Hyper-Parameters, Training And Evaluation Of A Fully Connected Neural Network
-
-        Input: X and Y Values Of The Training And Validation Sets
-        Output: Prints The Prediction Results
-    '''
-    model = KerasClassifier(build_fn=create_modelNN, verbose=0)
-    # define the grid search parameters
-    unit = [70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270]
-    param_grid = dict(unit=unit)
-    grid = GridSearchCV(
-        estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
-    grid_result = grid.fit(train_X, train_Y)
-    print("Best: %f using %s" %
-          (grid_result.best_score_, grid_result.best_params_))
-
-    #_, accuracy = grid.evaluate(val_X, val_Y)
-    #print('Accuracy: %.2f' % (accuracy * 100))
-
-    score_accuracy = grid.score(test_X, test_Y)
-    print("Score Accuracy - Test : {}".format(score_accuracy))
-
-
 def callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y):
     '''
-        Creates Sequence Of Training And Evaluation For All Algorithms
+        Creates Sequence of Training and Evaluation for all Algorithms.
 
-        Input: X and Y Values Of The Training And Validation Sets
-        Output: Figure With Result Comparison (Provided By The showComparison Function)
+        @param train_X (list[list[float]]): Training data 
+        @param train_Y (list[list[int]]): Training labels
+        @param val_X (list[list[float]]): Validation data 
+        @param val_Y (list[list[int]]): Validation labels
+        @param test_X (list[list[float]]): Testing data 
+        @param test_Y (list[list[int]]): Testing labels
+
     '''
     result_accuracy = []
     result_acc = []
@@ -227,19 +199,16 @@ if __name__ == "__main__":
                       delimiter=',', skiprows=1)
     X = data[0:, 0:-1]  # Input
     Y = data[0:, -1]  # Labels
-    #imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-    # imp.fit(X)
-    #X = imp.transform(X)
+
     # Training = 80%, Validation = 10%, Test = 10%
     train_X, val_X, test_X = np.split(X, [int(.8*len(X)), int(0.9*len(X))])
     train_Y, val_Y, test_Y = np.split(Y, [int(.8*len(Y)), int(0.9*len(Y))])
     if np.isnan(train_X).any():
         print("nan")
-    # ------------------------- NEW ------------------------------------------
+
     scaler_local = MinMaxScaler(feature_range=(0, 1))  # Scale Values
     train_X = scaler_local.fit_transform(train_X)
     val_X = scaler_local.transform(val_X)
     test_X = scaler_local.transform(test_X)
 
     callModelTraining(train_X, train_Y, val_X, val_Y, test_X, test_Y)
-    #fullyConnectedNN(train_X, train_Y, val_X, val_Y, test_X, test_Y)

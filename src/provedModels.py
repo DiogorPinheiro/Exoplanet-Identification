@@ -5,10 +5,9 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers import ZeroPadding1D, Input
 from keras import optimizers
 
-from training import auc_roc, customLoss
-
-
 # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
+
+
 def alexNet(x_train):
     model_input = Input(shape=(x_train.shape[1], 1))
 
