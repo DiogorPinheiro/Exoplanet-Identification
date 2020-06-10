@@ -9,35 +9,39 @@ from sklearn import preprocessing
 import dataInfo as di
 #import dataReader as dr
 
-CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
-#DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
+CSV_FILE = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
 
 
 def getCSVData():
     '''
-        Call dataCSV Function To Get The Data Of CSV File
+        Call dataCSV function to get the data of CSV file.
 
-        Output: Pandas Dataframe
+        @return (Pandas Dataframe) : Dataframe with data read from the CSV
+
     '''
     return di.dataCSV(CSV_FILE)
 
 
 def getKepids(table):
     '''
-        Get All Kepids In The CSV File
+        Get all kepids in the CSV file.
 
-        Output: List of Kepids Numbers (List of Int)
+        @return (list[int]): List of kepids numbers 
+
     '''
     return di.listKepids(table)
 
 
 def getLabel(table, kepid):
     '''
-        Get The Kepid Label From The TCE Table
+        Get the kepid label from the TCE table.
 
-        Input: Table (Pandas Dataframe) and Kepid (int)
-        Output: 1 if Label Is PC (Confirmed Planet) or 0 if AFP (Astrophysical False Positive) 
-                or NTP (Nontransiting Phenomenon)
+        @param table (Pandas Dataframe): content from csv table
+        @param kepid (int): ID of target star
+
+        @return (boolean):  1 if Label Is PC (Confirmed Planet) 
+                            0 if AFP (Astrophysical False Positive) or NTP (Nontransiting Phenomenon)
+
     '''
     label = di.labelFinder(table, kepid)
     if label == 'PC':
@@ -48,9 +52,13 @@ def getLabel(table, kepid):
 
 def labelCatcher(table, kepid):
     '''
-        Get Label Associated With The Kepid From The TCE Table
-        Input: Table (Pandas Dataframe) and Kepid (int)
-        Output: Label (String)
+        Get label associated with the kepid from the TCE table.
+
+        @param table (Pandas Dataframe): content from csv table
+        @param kepid (int): ID of target star
+
+       @return (String): label/class of the kepid 
+
     '''
     return di.labelFinder(table, kepid)
 
@@ -58,15 +66,18 @@ def labelCatcher(table, kepid):
 # Label added in the second version
 def createFeaturesTable(table, kepid, normalized_flux, label):
     '''
-        1. Read and Convert Data
-        2. Clean and Normalize Light Curves
-        3. Get All Features
-            . Analyze Data
+        1. Read and convert data
+        2. Clean and normalize light curves
+        3. Get all features
+            . Analyze data
             . Label
-        4. Return Row of Features
+        4. Return row of features.
 
-        Input: CSV Table, Kepid Number, Normalized Flux Associated To The Kepid
-        Output: Row (Array) Of Features
+        @param table (Pandas Dataframe): contents of TCE table CSV Table
+        @param kepid (int): kepid number
+        @param normalized_flux (np.array[float]): Normalized flux associated to the kepid
+
+        @return (np.array[float]): Light curve's features 
     '''
     row = []
 
@@ -152,9 +163,9 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
         row.append(max_strongPeaks)
         row.append(max_strongPeaksPercentage)
     else:
-        max_strongPeaks = -1   # Verificar se faz sentido
+        max_strongPeaks = -1
         row.append(max_strongPeaks)
-        max_strongPeaksPercentage = -1   # Verificar se faz sentido
+        max_strongPeaksPercentage = -1
         row.append(max_strongPeaksPercentage)
     row.append(overall_mean)
     row.append(overall_std)
@@ -187,10 +198,10 @@ def createFeaturesTable(table, kepid, normalized_flux, label):
 
 def appendToFile(row):
     '''
-        Append Row Of Kepid Associated Values To The Table
+        Append row of kepid associated values to the table.
 
-        Input: Row Of Values
-        Output: None
+        @param row (np.array[float]): Row of features extracted from a light curve
+
     '''
     with open('dataset_teste3.csv', 'a') as fd:
         writer = csv.writer(fd)
@@ -199,9 +210,10 @@ def appendToFile(row):
 
 def normalizeTable():
     '''
-        Read CSV File And Normalize Each Column (Except Kepid and Label)
+        Read CSV file and normalize each column (except kepid and label).
 
-        Replaces Values In CSV File With Their Normalized Version
+        Replaces values in CSV file with their normalized version.
+
     '''
 
     df = pd.read_csv("dataset_teste2.csv", delimiter=',',
@@ -223,8 +235,6 @@ def normalizeTable():
 
 if __name__ == "__main__":
     '''
-        Main Controller Of This File
-
         Steps:
         1. Write Column Names To The CSV File
         2. Get All Kepids Numbers
@@ -245,7 +255,6 @@ if __name__ == "__main__":
 
     # kepids = getKepids(table)  # List of Kepids
     # print(kepids)
-    # kepids=[11442793,4458082,1576141,1576144]
 
     # for id in kepids:
     #    lab = labelCatcher(table, id)
@@ -256,8 +265,6 @@ if __name__ == "__main__":
     #        row = createFeaturesTable(table,id,normalized_flux) # Create Row Of Features
     #        appendToFile(row)   # Append Row To CSV File
 
-    # -------------------- NEW -------------------------
-    # Também mudei o createFeatures e o appendFile
     data_local = np.loadtxt('../data/local_movavg.csv', delimiter=',')
     ke = data_local[:, 0]
     labels = data_local[:, -1]

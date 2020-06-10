@@ -10,9 +10,8 @@ import dataInfo as di
 import dataCleaner as dc
 
 # Directories
-#CSV_FILE = "/home/jcneves/Documents/Identifying-Exoplanets-Using-ML/src/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
-csvmac = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
-DATA_DIRECTORY = "/home/jcneves/Documents/keplerData"
+CSV_FILE = "../data/q1_q17_dr24_tce_2020.01.28_08.52.13.csv"
+DATA_DIRECTORY = "/keplerData"
 
 # File Names
 GLOBAL_CSV = "../neural_input_global.csv"
@@ -27,19 +26,22 @@ LOCAL_CSV_MOVAVG = "../neural_input_local_movavg.csv"
 
 def getCSVData():
     '''
-        Call dataCSV Function To Get The Data Of CSV File
+        Call dataCSV function to get the data of CSV file.
 
-        Output: Pandas Dataframe
+        @return (Pandas Dataframe): content of the csv file
+
     '''
-    return di.dataCSV(csvmac)
+    return di.dataCSV(CSV_FILE)
 
 
 def globaView(curve):
     '''
-        Obtain Global View Of The Light Curve
+        Obtain global view of the light curve.
 
-        Input: curve (LightCurve Object)     
-        Output: lc_global (LightCurve Object)  
+        @param curve (LightCurve Object): light curve to be binned
+
+        @return lc_global (LightCurve Object): global binned light curve  
+
     '''
     # Fixed Length 2001 Bins
     lc_global = curve.bin(bins=2001, method='median').normalize() - 1
@@ -50,10 +52,13 @@ def globaView(curve):
 
 def localView(curve, f_dur):
     '''
-        Obtain Local View Of The Light Curve
+        Obtain local view of the light curve.
 
-        Input: curve (LightCurve Object) and f_dur (fractional duration -> float)    
-        Output: lc_local (LightCurve Object) or False     
+        @param curve (LightCurve Object): light curve to be binned
+        @param f_dur (float): fractional duration   
+
+        @return lc_global (LightCurve Object): local binned light curv or
+                False if is not possible to bin this light curve    
     '''
     phase_mask = (curve.phase > -4 * f_dur) & (curve.phase < 4.0 * f_dur)
     lc_zoom = curve[phase_mask]
@@ -69,11 +74,15 @@ def localView(curve, f_dur):
 
 def getLabel(table, kepid, index):
     '''
-        Get The Kepid Label From The TCE Table
+        Get the kepid label from the TCE table.
 
-        Input: Table (Pandas Dataframe) and Kepid (int)
-        Output: 1 if Label Is PC (Confirmed Planet), 0 if AFP (Astrophysical False Positive)
-                or NTP (Nontransiting Phenomenon) or 2 if UNK (Unknown)
+        @param table (Pandas Dataframe): content from csv table
+        @param kepid (int): ID of target star
+
+        @return (int):  1 if label is PC (Confirmed Planet),
+                        0 if AFP (Astrophysical False Positive) or NTP (Nontransiting Phenomenon)
+                        2 if UNK (Unknown)
+
     '''
     label = di.labelFinder(table, kepid, index)
     if label == 'PC':
@@ -86,9 +95,11 @@ def getLabel(table, kepid, index):
 
 def writeFile(file, row):
     '''
-        Append Row Of Values To File
+        Append row of values to file.
 
-        Input: file (String) and row (Numpy Array) 
+        @param file (String): name of file where row will be appended
+        @param row (np.array[float]): values to be written
+
     '''
     with open(file, 'a') as fd:
         writer = csv.writer(fd)
@@ -97,9 +108,12 @@ def writeFile(file, row):
 
 def createImage(name, phase, flux):
     '''
-        Plot Light Curve Views And Save To Folder
+        Plot light curve views and save to folder.
 
-        Input: name (String), phase (Numpy Array) and flux (Numpy Array)
+        @param name (String): name of figure
+        @param phase (np.array[float]): phase of the light curve 
+        @param flux (np.array[float]): flux of the light curve
+
     '''
     fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
     ax.plot(phase, flux)
@@ -109,13 +123,11 @@ def createImage(name, phase, flux):
 
 if __name__ == "__main__":
     '''
-        1. Read TCE Table And Extract Kepids
-        2. Obtain Light Curve For Each Kepid
-        3. Pre-Process That Light Curve (Folding + Binning + Optional Filter )
-        4. Generate Local And Global View
-        5. Write Views To File
-
-        Output: 2 CSV Files (Global View And Local View)
+        1. Read TCE table and extract kepids;
+        2. Obtain light curve for each kepid;
+        3. Preprocess that light curve (Folding + Binning + Optional Filter);
+        4. Generate local and global view;
+        5. Write views to file.
 
     '''
     start = t.time()
@@ -133,7 +145,7 @@ if __name__ == "__main__":
 
     global_flux = []
     local_flux = []
-    kepids = [757450, 1026957]
+
     count = 0
     for i, kep in enumerate(kepids):
 
@@ -209,16 +221,16 @@ if __name__ == "__main__":
         # Avoid Time Series With Just Nan Values and Force Correspondance Between Views
             if not (np.isnan(lc_bri).any() or np.isnan(gl_bri).any()):
                 # Save Global And Local Views Plots
-                name_1ocal = '../Images/Views/Local_' + str(kep) + ".png"
-                createImage(name_local, lc_phase, lc_bri)
-                name_global = '../Images/Views/Global_' + str(kep) + ".png"
-                createImage(name_global, gl_phase, gl_bri)
+                #name_1ocal = '../Images/Views/Local_' + str(kep) + ".png"
+                #createImage(name_local, lc_phase, lc_bri)
+                #name_global = '../Images/Views/Global_' + str(kep) + ".png"
+                #createImage(name_global, gl_phase, gl_bri)
 
-                # Write Local And Global View Flux Values To File
-                # local_info.append(label)
-                #writeFile(LOCAL_CSV_MOVAVG, local_info)
-                # global_info.append(label)
-                #writeFile(GLOBAL_CSV_MOVAVG, global_info)
+                Write Local And Global View Flux Values To File
+                local_info.append(label)
+                writeFile(LOCAL_CSV_MOVAVG, local_info)
+                global_info.append(label)
+                writeFile(GLOBAL_CSV_MOVAVG, global_info)
 
         count += 1
 
