@@ -31,10 +31,12 @@ LONG_QUARTER_PREFIXES = {'0': ['2009131105131'],
 
 def filenameWarehouse(kepid, dir):
     '''
-    Get all filenames (their absolute path) into a list  
+        Get all filenames (their absolute path) into a list.  
 
-    input : kepid(ID of the target star), dir (directory of the file)
-    output : list of paths for every file contained in the directory provided
+        @param kepid (int): ID of the target star
+        @param dir (String): database directory
+
+        @return (list[String]): paths for every file contained in the directory provided
 
     '''
     prefix = LONG_QUARTER_PREFIXES
@@ -60,10 +62,11 @@ def filenameWarehouse(kepid, dir):
 # Function to read data from file
 def fitsConverter(aggregate):
     '''
-    Read the HDUList of each file and store the quarter and data to be used (PDCSAP_FLUX and Time)
+    Read the HDUList of each file and store the quarter and data to be used (PDCSAP_FLUX and Time).
 
-    Input: List of filenames (their absolute path)
-    Output: Array of time values and an array of PDCSAP_FLUX values
+    @param aggregate (list[String]): filenames (their absolute path)
+    @return (array[float]): time values 
+    @return (array[float]): PDCSAP_FLUX values
 
     '''
     brightness = []  # PDCSAP_FLUX
@@ -89,10 +92,14 @@ def fitsConverter(aggregate):
 
 def getConcatenatedLightCurve(flux, time):
     '''
-        Concatenate all Light Curves associated with the kepid and normalize values
+        Concatenate all Light Curves associated with the kepid and normalize values.
 
-        Input: kepid number
-        Output: normalized concatenated light curve
+        @param flux (array[float]): flux values of the light curve
+        @param time (array[float]): time values of the light curve
+
+        @return (array[float]): normalized floax values
+        @return (Array[float]): time values
+
     '''
     for i in flux:  # Same scale for all segments
         i /= np.median(i)
@@ -106,11 +113,12 @@ def getConcatenatedLightCurve(flux, time):
 
 def createFluxDatabase(table, kepids, DATA_DIRECTORY):
     '''
-        Create A Pickle File That Saves All Flux Values Associated With Each KepID (Concatenated Light Curves)
+        Create a pickle file that saves all flux values associated with each kepid (concatenated light curves).
 
-        Input: table = TCE Table ;
-               kepids : Array Of All KepID Values Of The TCE Table
-               DATA_DIRECTORY  : String Will Full Path To Data Directory
+        @param table (array[array[float]]): TCE table 
+        @param kepids (array[int]): Array of all kepid values of the TCE table
+        @param DATA_DIRECTORY (String) : String with full path to data directory
+
     '''
     flux_values = []
     for id in kepids:
@@ -129,10 +137,14 @@ def createFluxDatabase(table, kepids, DATA_DIRECTORY):
 
 def getConcatenatedLightCurve(flux, time):
     '''
-        Concatenate all Light Curves associated with the kepid and normalize values
+        Concatenate all light curves associated with the kepid and normalize values.
 
-        Input: kepid number
-        Output: normalized concatenated light curve
+        @param flux (array[float]): flux values of the light curve
+        @param time (array[float]): time values of the light curve
+
+        @return (array[float]): normalized floax values
+        @return (Array[float]): time values
+
     '''
     for i in flux:  # Same scale for all segments
         i /= np.median(i)
