@@ -4,13 +4,20 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import optimizers
 from keras.models import Model
-from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Input, concatenate, Flatten, Dropout, PReLU, BatchNormalization, Activation, GaussianNoise, MaxPooling1D, LSTM
 from keras.layers.convolutional import Conv1D
-from training import f1_m, precision_m, recall_m, mainEvaluate, auc_roc
+
+from utilities import f1_m, precision_m, recall_m
 
 
 class CNNHyperModel(HyperModel):
+    '''
+        Find the best CNN model.
+
+        @param HyperModel (object): Hypermodel subclass
+
+    '''
+
     def __init__(self, input_shape, num_classes):
         self.input_shape = input_shape
         self.num_classes = num_classes
@@ -78,7 +85,7 @@ class CNNHyperModel(HyperModel):
             )
         model.add(tf.keras.layers.Dense(
             self.num_classes, activation="sigmoid"))
-        '''
+
         model.compile(
             optimizer=keras.optimizers.Adam(
                 hp.Float(
@@ -92,27 +99,6 @@ class CNNHyperModel(HyperModel):
             metrics=['accuracy', f1_m, precision_m,
                      recall_m, tf.keras.metrics.AUC()],
         )
-        '''
-        model.compile(
-            optimizer=keras.optimizers.SGD(
-                lr=hp.Float(
-                    "lr",
-                    min_value=1e-4,
-                    max_value=1e-2,
-                    default=1e-3,
-                ), momentum=hp.Float(
-                    "momentum",
-                    min_value=0,
-                    max_value=0.5,
-                    default=0.2,
-                ),
-                nesterov=False
-            ),
-            loss="binary_crossentropy",
-            metrics=['accuracy', f1_m, precision_m,
-                     recall_m, tf.keras.metrics.AUC()],
-        )
-        
         return model
 
     def get_config(self):
@@ -123,6 +109,13 @@ class CNNHyperModel(HyperModel):
 
 
 class LSTMHyperModel(HyperModel):
+    '''
+        Find the best LSTM model.
+
+        @param HyperModel (object): Hypermodel subclass
+
+    '''
+
     def __init__(self, input_shape, num_classes):
         self.input_shape = input_shape
         self.num_classes = num_classes
@@ -181,7 +174,14 @@ class LSTMHyperModel(HyperModel):
 
 
 class FNNHyperModel(HyperModel):
-    def __init__(self, input_shape,num_classes):
+    '''
+        Find the best FNN model.
+
+        @param HyperModel (object): Hypermodel subclass
+
+    '''
+
+    def __init__(self, input_shape, num_classes):
         self.num_classes = num_classes
         self.input_shape = input_shape
 
@@ -195,7 +195,8 @@ class FNNHyperModel(HyperModel):
             model.add(tf.keras.layers.Dense(units=hp.Int("units_f"+str(f), min_value=32, max_value=512, step=32, default=128),
                                             activation='relu'))
 
-        model.add(tf.keras.layers.Dense(self.num_classes, activation='sigmoid'))
+        model.add(tf.keras.layers.Dense(
+            self.num_classes, activation='sigmoid'))
 
         model.compile(
             optimizer=tf.keras.optimizers.Adam(
@@ -214,12 +215,19 @@ class FNNHyperModel(HyperModel):
 
     def get_config(self):
         return {
-            'input_shape' : self.input_shape,
+            'input_shape': self.input_shape,
             'num_classes': self.num_classes
         }
 
 
 class DualCNNHyperModel(HyperModel):
+    '''
+        Find the best Dual CNN model.
+
+        @param HyperModel (object): Hypermodel subclass
+
+    '''
+
     def __init__(self, input_shape_local, input_shape_global, num_classes):
         self.input_shape_local = input_shape_local
         self.input_shape_global = input_shape_global
@@ -286,7 +294,7 @@ class DualCNNHyperModel(HyperModel):
         out = tf.keras.layers.Dense(
             self.num_classes, activation="sigmoid")(model)
         model = tf.keras.models.Model(inputs=[inputLayer_local,
-                              inputLayer_global], outputs=out)
+                                              inputLayer_global], outputs=out)
 
         model.compile(
             optimizer=keras.optimizers.Adam(
