@@ -6,6 +6,15 @@ from keras import backend as K
 
 
 def recall_m(y_true, y_pred):
+    '''
+        Calculate Recall evaluation metric.
+
+        @param y_true (Tensor): true labels of data
+        @param y_pred (Tensor): predicted labels
+
+        @return (Tensor): evaluated Recall values
+
+    '''
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
     recall = true_positives / (possible_positives + K.epsilon())
@@ -13,6 +22,15 @@ def recall_m(y_true, y_pred):
 
 
 def precision_m(y_true, y_pred):
+    '''
+        Calculate Precision evaluation metric.
+
+        @param y_true (Tensor): true labels of data
+        @param y_pred (Tensor): predicted labels
+
+        @return (Tensor): evaluated Precision values
+
+    '''
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
     precision = true_positives / (predicted_positives + K.epsilon())
@@ -20,6 +38,15 @@ def precision_m(y_true, y_pred):
 
 
 def f1_m(y_true, y_pred):
+    '''
+        Calculate F1 evaluation metric.
+
+        @param y_true (Tensor): true labels of data
+        @param y_pred (Tensor): predicted labels
+
+        @return (Tensor): evaluated F1 values
+
+    '''
     precision = precision_m(y_true, y_pred)
     recall = recall_m(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
