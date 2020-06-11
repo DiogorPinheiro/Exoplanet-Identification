@@ -1,13 +1,3 @@
-'''
-This file creates a script (.sh) to download all files associated with the kepID of each row on the table
-of the csv file obtained at https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=q1_q17_dr24_tce
-
-Output: downloader.sh
-
-Additional Note: To execute the download, insert the command ./downloader.sh in the terminal
-
-'''
-
 import csv
 import os
 import sys
@@ -21,6 +11,13 @@ OUTPUT = "downloader.sh"
 
 
 if __name__ == "__main__":
+    '''
+        Creates a script (.sh) to download all files associated with the kepID of each row on the table
+        of the csv file obtained at https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=q1_q17_dr24_tce
+
+        Additional Note: To execute the download, insert the command ./downloader.sh in the terminal
+
+    '''
     # Get Kepler IDs
     kepids = set()
     with open(CSV_FILE) as file:
