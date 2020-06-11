@@ -10,11 +10,11 @@ import random
 # File that contains the hypermodels
 from hyperModels import CNNHyperModel, FNNHyperModel, LSTMHyperModel, DualCNNHyperModel
 
-# Directories to save models
-CNN_DIR = "/models/CNN.hdf5"
-LSTM_DIR = "/models/LSTM.hdf5"
-DUAL_CNN_DIR = "/models/DUAL_CNN.hdf5"
-FNN_DIR = "/models/FNN.hdf5"
+# Model directories
+CNN_MODEL_DIRECTORY = 'models/CNN.hdf5'
+FNN_MODEL_DIRECTORY = 'models/FNN.hdf5'
+LSTM_MODEL_DIRECTORY = 'models/LSTM.hdf5'
+DUAL_CNN_MODEL_DIRECTORY = 'models/CNN_DUAL.hdf5'
 
 
 if __name__ == "__main__":
@@ -75,4 +75,4 @@ if __name__ == "__main__":
     best_param = tuner.get_best_hyperparameters(1)[0]
     print(best_param.values)
 
-    best_model.save(CNN_DIR)
+    best_model.save(CNN_MODEL_DIRECTORY)
