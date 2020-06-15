@@ -5,10 +5,12 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers import ZeroPadding1D, Input
 from keras import optimizers
 
-# Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
+# Adaptation for time-series data of some well know NN models
 
 
 def alexNet(x_train):
+    # Adapted from https://gist.github.com/JBed/c2fb3ce8ed299f197eff
+
     model_input = Input(shape=(x_train.shape[1], 1))
 
     model = Convolution1D(filters=64, kernel_size=3)(model_input)
