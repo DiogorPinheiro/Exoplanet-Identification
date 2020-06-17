@@ -22,7 +22,9 @@
 ## References
 
 [1] Abraham Botros, "Artificial Intelligence on the Final Frontier: Using Machine Learning to Find New Earths"
+
 [2] Christopher J. Shallue and Andrew Vanderburg, "Identifying Exoplanets With Deep Learning: A Five Planet Resonant Chainaround Kepler-80 And An Eight Planet Around Kepler-90"
+
 [3] Dinis Marques Firmino, "Exoplanet Transit Detection using Deep Neural Networks"
 
 [stars-shield]: https://img.shields.io/github/stars/DiogorPinheiro/Identifying-Exoplanets-Using-ML
