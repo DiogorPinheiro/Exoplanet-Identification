@@ -5,6 +5,12 @@
 
 ## Part 1 - Feature Extraction
 
+| Classifier | Results | Reference |
+| ---------- | ------- | --------- |
+| SVM        | 0.776   | 0.833     |
+| KNN        | 0.762   | 0.839     |
+| LReg       | 0.777   | 0.845     |
+
 ## Part 2 - Deep Learning
 
 | Classifier       | Accuracy | Loss | AUC  | Precision | Recall | F1   |
