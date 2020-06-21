@@ -25,6 +25,15 @@
 | LSTM (Local)     | 0.92     | 0.19 | 0.97 | 0.85      | 0.81   | 0.81 |
 | CNN (Dual)       | 0.95     | 0.14 | 0.98 | 0.91      | 0.88   | 0.89 |
 
+# Used Libraries
+
+1. Astropy
+2. LightKurve
+3. Keras (Tensorflow backend)
+4. KerasTuner
+5. Sciki-Learn
+6. Comet
+
 ## References
 
 [1] Abraham Botros, "Artificial Intelligence on the Final Frontier: Using Machine Learning to Find New Earths"
