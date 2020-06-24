@@ -27,7 +27,7 @@
 
 ## Part 3 - Interprable Machine Learning
 
-![alt text](/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/Relatório/images/NN_LIME/Features_10_Slices_24/1/4_5k.png "Title")
+![alt text](./images/Global_1161345.png)
 
 # Used Libraries
 
