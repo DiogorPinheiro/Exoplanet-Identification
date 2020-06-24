@@ -25,6 +25,10 @@
 | LSTM (Local)     | 0.92     | 0.19 | 0.97 | 0.85      | 0.81   | 0.81 |
 | CNN (Dual)       | 0.95     | 0.14 | 0.98 | 0.91      | 0.88   | 0.89 |
 
+## Part 3 - Interprable Machine Learning
+
+![alt text](/Users/diogopinheiro/Documents/Engenharia Informática/3º Ano/2º Semestre/Projeto/Relatório/images/NN_LIME/Features_10_Slices_24/1/4_5k.png "Title")
+
 # Used Libraries
 
 1. Astropy
@@ -33,6 +37,7 @@
 4. KerasTuner
 5. Sciki-Learn
 6. Comet
+7. Lime for Time
 
 ## References
 
