@@ -27,7 +27,8 @@
 
 ## Part 3 - Interprable Machine Learning
 
-![alt text](./images/Global_1161345.png)
+![alt text](./images/Global_1161345.png "Approach 1")
+![alt text](./images/Global_1161345_mov.png "Approach 2")
 
 # Used Libraries
 
