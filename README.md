@@ -3,7 +3,7 @@
 
 # Identifying Exoplanets Using Machine Learning
 
-This is my final project for a bachelor degree in Computer Science and Engineering at University of Beira Interior. The development stage of this projet is separated in three parts: Feature Extraction, Deep Learning and Model Interpretability.
+This is my final project for an undergraduate degree in Computer Science and Engineering at University of Beira Interior. The development stage of this projet is separated in three parts: Feature Extraction, Deep Learning and Model Interpretability.
 
 ## Part 1 - Feature Extraction
 
@@ -17,8 +17,20 @@ This part is an adaptation of [1], the final results are presented in the table 
 
 ## Part 2 - Deep Learning
 
+There are three major goals for the second part of this project:
+
+1.  Find the best model for 3 different NN architectures (CNN, MLP and LSTM) and the best overall performance;
+2.  Compare two types of inputs : Local View and Global View
+3.  Compare between two preprocessing approaches
+
+### Preprocessing Approaches
+
 ![alt text](./images/Global_1161345.png "Approach 1")
 ![alt text](./images/Global_1161345_mov.png "Approach 2")
+
+### Global and Local View
+
+### Results
 
 | Classifier       | Accuracy | Loss | AUC  | Precision | Recall | F1   |
 | ---------------- | -------- | ---- | ---- | --------- | ------ | ---- |
