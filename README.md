@@ -20,8 +20,8 @@ This part is an adaptation of [1], the final results are presented in the table 
 There are three major goals for the second part of this project:
 
 1.  Find the best model for 3 different NN architectures (CNN, MLP and LSTM) and the best overall performance;
-2.  Compare two types of inputs : Local View and Global View
-3.  Compare between two preprocessing approaches
+2.  Compare two types of inputs : Local View and Global View;
+3.  Compare between two preprocessing approaches.
 
 ### Preprocessing Approaches
 
