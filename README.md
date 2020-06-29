@@ -3,7 +3,11 @@
 
 # Identifying Exoplanets Using Machine Learning
 
+This is my final project for a bachelor degree in Computer Science and Engineering at University of Beira Interior. The development stage of this projet is separated in three parts: Feature Extraction, Deep Learning and Model Interpretability.
+
 ## Part 1 - Feature Extraction
+
+This part is an adaptation of [1], the final results are presented in the table below.
 
 | Classifier | Results | Reference |
 | ---------- | ------- | --------- |
@@ -12,6 +16,9 @@
 | LReg       | 0.777   | 0.845     |
 
 ## Part 2 - Deep Learning
+
+![alt text](./images/Global_1161345.png "Approach 1")
+![alt text](./images/Global_1161345_mov.png "Approach 2")
 
 | Classifier       | Accuracy | Loss | AUC  | Precision | Recall | F1   |
 | ---------------- | -------- | ---- | ---- | --------- | ------ | ---- |
@@ -26,9 +33,6 @@
 | CNN (Dual)       | 0.95     | 0.14 | 0.98 | 0.91      | 0.88   | 0.89 |
 
 ## Part 3 - Interprable Machine Learning
-
-![alt text](./images/Global_1161345.png "Approach 1")
-![alt text](./images/Global_1161345_mov.png "Approach 2")
 
 # Used Libraries
 
