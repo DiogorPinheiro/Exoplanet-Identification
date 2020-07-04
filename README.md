@@ -25,11 +25,19 @@ There are three major goals for the second part of this project:
 
 ### Preprocessing Approaches
 
+Approach 1 : Spline Interpolation, Folding and Binning
+
+Approach 2 : Spline Interpolation, Folding, Binning & Moving Average Filter
+
 |            Approach 1            |              Approach 2              |
 | :------------------------------: | :----------------------------------: |
 | ![](./images/Global_1161345.png) | ![](./images/Global_1161345_mov.png) |
 
 ### Global and Local View
+
+Global View - Overall representation of the light curve (2001 bins)
+
+Local View - Representation of a single event in the light curve (201 bins)
 
 |            Global             |            Local             |
 | :---------------------------: | :--------------------------: |
@@ -49,7 +57,13 @@ There are three major goals for the second part of this project:
 | LSTM (Local)     | 0.92     | 0.19 | 0.97 | 0.85      | 0.81   | 0.81 |
 | CNN (Dual)       | 0.95     | 0.14 | 0.98 | 0.91      | 0.88   | 0.89 |
 
+1. Best Overall Performance : Dual CNN
+2. Global View provides greater results
+3. Significant decrease in model performance when using Approach 2, which means that the so-called noise in the signal turns out to be important for the model prediction
+
 ## Part 3 - Interpretable Machine Learning
+
+Coming soon...
 
 # Used Libraries
 
