@@ -25,10 +25,15 @@ There are three major goals for the second part of this project:
 
 ### Preprocessing Approaches
 
-![alt text](./images/Global_1161345.png "Approach 1")
-![alt text](./images/Global_1161345_mov.png "Approach 2")
+|            Approach 1            |              Approach 2              |
+| :------------------------------: | :----------------------------------: |
+| ![](./images/Global_1161345.png) | ![](./images/Global_1161345_mov.png) |
 
 ### Global and Local View
+
+|            Approach 1            |              Approach 2              |
+| :------------------------------: | :----------------------------------: |
+| ![](./images/Global_1161345.png) | ![](./images/Global_1161345_mov.png) |
 
 ### Results
 
