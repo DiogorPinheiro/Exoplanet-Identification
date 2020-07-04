@@ -3,7 +3,7 @@
 
 # Identifying Exoplanets Using Machine Learning
 
-This is my final project for the undergraduate degree in Computer Science and Engineering at University of Beira Interior. The development stage of this projet is separated in three parts: Feature Extraction, Deep Learning and Model Interpretability.
+Final project for the undergraduate degree in Computer Science and Engineering at University of Beira Interior. The development stage of this project is separated in three parts: Feature Extraction, Deep Learning and Model Interpretability.
 
 ## Part 1 - Feature Extraction
 
