@@ -31,9 +31,9 @@ There are three major goals for the second part of this project:
 
 ### Global and Local View
 
-|            Approach 1            |              Approach 2              |
-| :------------------------------: | :----------------------------------: |
-| ![](./images/Global_1161345.png) | ![](./images/Global_1161345_mov.png) |
+|            Global             |            Local             |
+| :---------------------------: | :--------------------------: |
+| ![](./images/global-view.png) | ![](./images/local_view.png) |
 
 ### Results
 
@@ -49,7 +49,7 @@ There are three major goals for the second part of this project:
 | LSTM (Local)     | 0.92     | 0.19 | 0.97 | 0.85      | 0.81   | 0.81 |
 | CNN (Dual)       | 0.95     | 0.14 | 0.98 | 0.91      | 0.88   | 0.89 |
 
-## Part 3 - Interprable Machine Learning
+## Part 3 - Interpretable Machine Learning
 
 # Used Libraries
 
