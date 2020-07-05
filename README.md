@@ -63,7 +63,7 @@ Local View - Representation of a single event in the light curve (201 bins)
 
 ## Part 3 - Interpretable Machine Learning
 
-Coming soon...
+https://github.com/DiogorPinheiro/Interpretable_Exoplanet_NeuralNet
 
 # Used Libraries
 
